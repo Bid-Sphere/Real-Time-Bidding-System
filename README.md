@@ -131,7 +131,7 @@ CDAC Project/
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone "https://github.com/Bid-Sphere/Real-Time-Bidding-System.git"
 cd "CDAC Project"
 ```
 
@@ -313,11 +313,3 @@ This project is configured to work on both Linux and Windows:
 7. Add comprehensive error handling
 8. Write unit and integration tests
 9. Configure CI/CD pipelines
-
-## Contributing
-
-Please follow the coding standards and conventions for each technology stack. Create feature branches and submit pull requests for review.
-
-## License
-
-[Add your license information here]
