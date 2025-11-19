@@ -131,8 +131,8 @@ CDAC Project/
 ### 1. Clone the Repository
 
 ```bash
-git clone "https://github.com/Bid-Sphere/Real-Time-Bidding-System.git"
-cd "CDAC Project"
+git clone "git@github.com:Bid-Sphere/Real-Time-Bidding-System.git"
+cd "Real-Time-Bidding-System"
 ```
 
 ### 2. Environment Setup
