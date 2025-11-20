@@ -13,7 +13,7 @@ const steps = [
   {
     stepNumber: 2,
     title: 'Receive Bids',
-    description: 'Get competitive proposals from qualified vendors and freelancers within hours.',
+    description: 'Get competitive proposals from qualified organizations and freelancers within hours.',
     icon: <Users className="w-full h-full" />,
   },
   {
@@ -43,10 +43,17 @@ export const HowItWorksSection = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0, y: 60, scale: 0.8, rotateX: -15 },
     visible: {
       opacity: 1,
       y: 0,
+      scale: 1,
+      rotateX: 0,
+      transition: {
+        type: 'spring' as const,
+        damping: 15,
+        stiffness: 80,
+      },
     },
   };
 
@@ -56,9 +63,8 @@ export const HowItWorksSection = () => {
         {/* Using useScrollAnimation hook for header animation */}
         <div
           ref={headerRef as React.RefObject<HTMLDivElement>}
-          className={`text-center mb-16 transition-all duration-600 ease-out ${
-            headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className={`text-center mb-16 transition-all duration-600 ease-out ${headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             How It Works
@@ -77,8 +83,8 @@ export const HowItWorksSection = () => {
           className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16"
         >
           {steps.map((step) => (
-            <motion.div 
-              key={step.stepNumber} 
+            <motion.div
+              key={step.stepNumber}
               variants={itemVariants}
               transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
             >

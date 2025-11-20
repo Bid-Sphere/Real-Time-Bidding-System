@@ -26,7 +26,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
     if (!user) return '/';
     const dashboardMap = {
       client: '/client-dashboard',
-      vendor: '/vendor-dashboard',
+      organization: '/organization-dashboard',
       freelancer: '/freelancer-dashboard',
     };
     return dashboardMap[user.role];
@@ -42,11 +42,10 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        transparent
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${transparent
           ? 'bg-transparent'
           : 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm'
-      }`}
+        }`}
       role="navigation"
       aria-label="Main navigation"
     >

@@ -26,7 +26,7 @@ export const projectCategories: ProjectCategory[] = [
   {
     id: 'procurement',
     name: 'Procurement Projects',
-    description: 'Supply chain, equipment procurement, materials sourcing, and vendor management',
+    description: 'Supply chain, equipment procurement, materials sourcing, and organization management',
     icon: Package,
     projectCount: 64,
   },

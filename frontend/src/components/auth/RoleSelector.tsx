@@ -15,8 +15,8 @@ const roles = [
     icon: User,
   },
   {
-    value: 'vendor' as UserRole,
-    label: 'Vendor',
+    value: 'organization' as UserRole,
+    label: 'Organization',
     description: 'Bid on projects with your team',
     icon: Building2,
   },
@@ -38,7 +38,7 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
         {roles.map((role) => {
           const Icon = role.icon;
           const isSelected = selectedRole === role.value;
-          
+
           return (
             <motion.button
               key={role.value}
@@ -46,10 +46,9 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
               onClick={() => onSelectRole(role.value)}
               className={`
                 relative flex flex-col items-center gap-3 rounded-xl border-2 p-6 text-center transition-all
-                ${
-                  isSelected
-                    ? 'border-primary-main bg-primary-main/5 dark:bg-primary-main/10'
-                    : 'border-gray-200 bg-white hover:border-primary-main/50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-main/50'
+                ${isSelected
+                  ? 'border-primary-main bg-primary-main/5 dark:bg-primary-main/10'
+                  : 'border-gray-200 bg-white hover:border-primary-main/50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-main/50'
                 }
               `}
               whileHover={{ scale: 1.02 }}
@@ -58,10 +57,9 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
               <div
                 className={`
                   rounded-full p-3
-                  ${
-                    isSelected
-                      ? 'bg-primary-main text-white'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                  ${isSelected
+                    ? 'bg-primary-main text-white'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                   }
                 `}
               >
@@ -71,10 +69,9 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
                 <p
                   className={`
                     font-semibold
-                    ${
-                      isSelected
-                        ? 'text-primary-main'
-                        : 'text-gray-900 dark:text-white'
+                    ${isSelected
+                      ? 'text-primary-main'
+                      : 'text-gray-900 dark:text-white'
                     }
                   `}
                 >

@@ -17,11 +17,11 @@ const clientBenefits = [
   {
     icon: <Shield className="w-6 h-6" />,
     title: 'Secure Platform',
-    description: 'Protected payments and verified vendors ensure peace of mind.',
+    description: 'Protected payments and verified organizations ensure peace of mind.',
   },
 ];
 
-const vendorBenefits = [
+const organizationBenefits = [
   {
     icon: <Star className="w-6 h-6" />,
     title: 'Quality Projects',
@@ -71,9 +71,8 @@ export const FeaturesSection = () => {
         {/* Using useScrollAnimation hook for header animation */}
         <div
           ref={headerRef as React.RefObject<HTMLDivElement>}
-          className={`text-center mb-16 transition-all duration-600 ease-out ${
-            headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className={`text-center mb-16 transition-all duration-600 ease-out ${headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            }`}
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Why Choose Our Platform
@@ -86,10 +85,10 @@ export const FeaturesSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Client Benefits */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: false, margin: '-100px', amount: 0.2 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center lg:text-left">
               For Clients
@@ -102,8 +101,8 @@ export const FeaturesSection = () => {
               className="space-y-6"
             >
               {clientBenefits.map((benefit, index) => (
-                <motion.div 
-                  key={index} 
+                <motion.div
+                  key={index}
                   variants={itemVariants}
                   transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 >
@@ -127,15 +126,15 @@ export const FeaturesSection = () => {
             </motion.div>
           </motion.div>
 
-          {/* Vendor/Freelancer Benefits */}
+          {/* Organization/Freelancer Benefits */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: false, margin: '-100px', amount: 0.2 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center lg:text-left">
-              For Vendors & Freelancers
+              For Organizations & Freelancers
             </h3>
             <motion.div
               variants={containerVariants}
@@ -144,9 +143,9 @@ export const FeaturesSection = () => {
               viewport={{ once: false, margin: '-100px', amount: 0.2 }}
               className="space-y-6"
             >
-              {vendorBenefits.map((benefit, index) => (
-                <motion.div 
-                  key={index} 
+              {organizationBenefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
                   variants={itemVariants}
                   transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 >

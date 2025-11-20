@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children, role }: ProtectedRouteProps) 
     // Redirect to appropriate dashboard based on user's actual role
     const dashboardMap: Record<UserRole, string> = {
       client: '/client-dashboard',
-      vendor: '/vendor-dashboard',
+      organization: '/organization-dashboard',
       freelancer: '/freelancer-dashboard',
     };
 

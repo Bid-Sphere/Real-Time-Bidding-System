@@ -18,7 +18,7 @@ const signupSchema = z
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
-    role: z.enum(['client', 'vendor', 'freelancer'], 'Please select a role'),
+    role: z.enum(['client', 'organization', 'freelancer'], 'Please select a role'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -57,7 +57,7 @@ export const SignupForm = () => {
         role: data.role,
       });
       toast.success('Account created successfully!');
-      
+
       // Redirect based on role
       navigate(`/${data.role}-dashboard`);
     } catch (error) {

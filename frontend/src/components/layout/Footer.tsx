@@ -31,7 +31,7 @@ export default function Footer({ variant = 'default' }: FooterProps) {
               <span className="text-gray-900 dark:text-white">System</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Connect clients with vendors and freelancers for IT, Construction, and
+              Connect clients with organizations and freelancers for IT, Construction, and
               Procurement projects.
             </p>
             <div className="flex space-x-4">

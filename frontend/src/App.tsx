@@ -10,7 +10,7 @@ const HomePage = lazy(() => import('@/pages/HomePage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
 const ClientDashboard = lazy(() => import('@/pages/ClientDashboard'));
-const VendorDashboard = lazy(() => import('@/pages/VendorDashboard'));
+const OrganizationDashboard = lazy(() => import('@/pages/OrganizationDashboard'));
 const FreelancerDashboard = lazy(() => import('@/pages/FreelancerDashboard'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
@@ -104,7 +104,7 @@ function AnimatedRoutes() {
           }
         />
         <Route
-          path="/vendor-dashboard"
+          path="/organization-dashboard"
           element={
             <motion.div
               initial="initial"
@@ -113,8 +113,8 @@ function AnimatedRoutes() {
               variants={pageVariants}
               transition={pageTransition}
             >
-              <ProtectedRoute role="vendor">
-                <VendorDashboard />
+              <ProtectedRoute role="organization">
+                <OrganizationDashboard />
               </ProtectedRoute>
             </motion.div>
           }

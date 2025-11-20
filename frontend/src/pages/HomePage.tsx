@@ -4,6 +4,7 @@ import { CategorySection } from '@/components/home/CategorySection';
 import { HowItWorksSection } from '@/components/home/HowItWorksSection';
 import { FeaturesSection } from '@/components/home/FeaturesSection';
 import { CTASection } from '@/components/home/CTASection';
+import { CursorTrail } from '@/components/ui/CursorTrail';
 
 /**
  * HomePage Component
@@ -17,24 +18,32 @@ import { CTASection } from '@/components/home/CTASection';
  * 
  * The useScrollAnimation hook uses IntersectionObserver for performance-optimized
  * scroll-triggered animations. See @/hooks/useScrollAnimation for implementation details.
+ * 
+ * Additionally includes:
+ * - CursorTrail: Antigravity-style cursor following dots (desktop only)
  */
 export default function HomePage() {
   return (
-    <Layout transparentNavbar={false}>
-      {/* Hero Section */}
-      <HeroSection />
+    <>
+      {/* Cursor Trail Effect - Desktop Only */}
+      <CursorTrail />
 
-      {/* Category Section - Uses useScrollAnimation for header */}
-      <CategorySection />
+      <Layout transparentNavbar={false}>
+        {/* Hero Section */}
+        <HeroSection />
 
-      {/* How It Works Section - Uses useScrollAnimation for header */}
-      <HowItWorksSection />
+        {/* Category Section - Uses useScrollAnimation for header */}
+        <CategorySection />
 
-      {/* Features Section - Uses useScrollAnimation for header */}
-      <FeaturesSection />
+        {/* How It Works Section - Uses useScrollAnimation for header */}
+        <HowItWorksSection />
 
-      {/* CTA Section - Uses useScrollAnimation for entire content */}
-      <CTASection />
-    </Layout>
+        {/* Features Section - Uses useScrollAnimation for header */}
+        <FeaturesSection />
+
+        {/* CTA Section - Uses useScrollAnimation for entire content */}
+        <CTASection />
+      </Layout>
+    </>
   );
 }

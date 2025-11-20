@@ -33,7 +33,7 @@ const categories = [
 export const CategorySection = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  
+
   // Use the new scroll animation hook for the section header
   const { ref: headerRef, isInView: headerInView } = useScrollAnimation({
     threshold: 0.1,
@@ -61,16 +61,22 @@ export const CategorySection = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0, x: -60, y: 20 },
     visible: {
       opacity: 1,
+      x: 0,
       y: 0,
+      transition: {
+        type: 'spring' as const,
+        damping: 20,
+        stiffness: 100,
+      },
     },
   };
 
@@ -80,9 +86,8 @@ export const CategorySection = () => {
         {/* Using useScrollAnimation hook for header animation */}
         <div
           ref={headerRef as React.RefObject<HTMLDivElement>}
-          className={`text-center mb-16 transition-all duration-600 ease-out ${
-            headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
+          className={`text-center mb-16 transition-all duration-700 ease-out ${headerInView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-12 scale-95'
+            }`}
         >
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
             Explore Project Categories
@@ -101,8 +106,8 @@ export const CategorySection = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {categories.map((category) => (
-            <motion.div 
-              key={category.id} 
+            <motion.div
+              key={category.id}
               variants={itemVariants}
               transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
             >

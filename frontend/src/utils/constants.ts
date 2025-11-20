@@ -11,7 +11,7 @@ export const ROUTES = {
   LOGIN: '/login',
   SIGNUP: '/signup',
   CLIENT_DASHBOARD: '/client-dashboard',
-  VENDOR_DASHBOARD: '/vendor-dashboard',
+  ORGANIZATION_DASHBOARD: '/organization-dashboard',
   FREELANCER_DASHBOARD: '/freelancer-dashboard',
 } as const;
 
@@ -41,7 +41,7 @@ export const BREAKPOINTS = {
 // User roles
 export const USER_ROLES = {
   CLIENT: 'client',
-  VENDOR: 'vendor',
+  ORGANIZATION: 'organization',
   FREELANCER: 'freelancer',
 } as const;
 

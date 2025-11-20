@@ -7,7 +7,7 @@ export const HeroSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section 
+    <section
       className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-main/10 via-info-main/10 to-primary-main/5 dark:from-primary-main/20 dark:via-info-main/20 dark:to-primary-main/10"
       aria-label="Hero section"
     >
@@ -38,7 +38,7 @@ export const HeroSection = () => {
           </h1>
 
           <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Post your IT, Construction, or Procurement projects and receive competitive bids from qualified vendors and freelancers worldwide.
+            Post your IT, Construction, or Procurement projects and receive competitive bids from qualified organizations and freelancers worldwide.
           </p>
 
           <motion.div

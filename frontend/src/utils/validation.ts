@@ -37,7 +37,7 @@ export const signupSchema = z
     confirmPassword: z
       .string()
       .min(1, 'Please confirm your password'),
-    role: z.enum(['client', 'vendor', 'freelancer'], {
+    role: z.enum(['client', 'organization', 'freelancer'], {
       message: 'Please select a role',
     }),
   })
