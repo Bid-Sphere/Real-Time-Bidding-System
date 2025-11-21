@@ -1,49 +1,27 @@
-import Layout from '@/components/layout/Layout';
-import { HeroSection } from '@/components/home/HeroSection';
-import { CategorySection } from '@/components/home/CategorySection';
-import { HowItWorksSection } from '@/components/home/HowItWorksSection';
-import { FeaturesSection } from '@/components/home/FeaturesSection';
-import { CTASection } from '@/components/home/CTASection';
-import { CursorTrail } from '@/components/ui/CursorTrail';
+import React from 'react';
+import Layout from '../components/layout/Layout';
+import { HeroSection } from '../components/home/HeroSection';
+import { BentoGrid } from '../components/home/BentoGrid';
+import { HowItWorksSection } from '../components/home/HowItWorksSection';
+import { CategorySection } from '../components/home/CategorySection';
 
-/**
- * HomePage Component
- * 
- * This page demonstrates the use of scroll animations using the useScrollAnimation hook.
- * The hook is implemented in the following sections:
- * - CategorySection: Header animation with fade-in from bottom
- * - HowItWorksSection: Header animation with fade-in from bottom
- * - FeaturesSection: Header animation with fade-in from bottom
- * - CTASection: Full content animation with fade-in from bottom
- * 
- * The useScrollAnimation hook uses IntersectionObserver for performance-optimized
- * scroll-triggered animations. See @/hooks/useScrollAnimation for implementation details.
- * 
- * Additionally includes:
- * - CursorTrail: Antigravity-style cursor following dots (desktop only)
- */
-export default function HomePage() {
+const HomePage: React.FC = () => {
   return (
-    <>
-      {/* Cursor Trail Effect - Desktop Only */}
-      <CursorTrail />
-
-      <Layout transparentNavbar={false}>
-        {/* Hero Section */}
+    <Layout>
+      <main className="min-h-screen bg-background-deep text-text-primary selection:bg-primary-main selection:text-white">
         <HeroSection />
-
-        {/* Category Section - Uses useScrollAnimation for header */}
-        <CategorySection />
-
-        {/* How It Works Section - Uses useScrollAnimation for header */}
         <HowItWorksSection />
+        <CategorySection />
+        <BentoGrid />
 
-        {/* Features Section - Uses useScrollAnimation for header */}
-        <FeaturesSection />
-
-        {/* CTA Section - Uses useScrollAnimation for entire content */}
-        <CTASection />
-      </Layout>
-    </>
+        {/* Decorative background gradients */}
+        <div className="fixed inset-0 pointer-events-none z-[-1]">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-main/10 rounded-full blur-3xl animate-pulse-glow" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary-main/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '2s' }} />
+        </div>
+      </main>
+    </Layout>
   );
-}
+};
+
+export default HomePage;

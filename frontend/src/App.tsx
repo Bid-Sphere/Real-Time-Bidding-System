@@ -29,7 +29,7 @@ const pageTransition = {
 // Loading component
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-background-deep">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-main"></div>
     </div>
   );
@@ -156,6 +156,10 @@ function AnimatedRoutes() {
   );
 }
 
+
+
+// ... imports
+
 function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
@@ -170,28 +174,45 @@ function App() {
         <AnimatedRoutes />
       </Suspense>
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 3000,
+          className: 'toast-notification',
           style: {
-            background: 'var(--color-bg-elevated)',
-            color: 'var(--color-text-primary)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '0.5rem',
-            padding: '1rem',
+            background: 'rgba(17, 24, 39, 0.95)',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '0.75rem',
+            padding: '1rem 1.5rem',
+            fontSize: '0.95rem',
+            fontWeight: '500',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 9999,
+            maxWidth: '500px',
           },
           success: {
             iconTheme: {
-              primary: 'var(--color-success-main)',
+              primary: '#10b981',
               secondary: '#fff',
+            },
+            style: {
+              border: '1px solid rgba(16, 185, 129, 0.3)',
             },
           },
           error: {
             iconTheme: {
-              primary: 'var(--color-error-main)',
+              primary: '#ef4444',
               secondary: '#fff',
             },
+            style: {
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+            },
           },
+        }}
+        containerStyle={{
+          top: 80,
+          zIndex: 9999,
         }}
       />
     </BrowserRouter>

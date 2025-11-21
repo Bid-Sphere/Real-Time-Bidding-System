@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Building2, User, Users } from 'lucide-react';
+import { Building2, User, Briefcase } from 'lucide-react';
 import type { UserRole } from '@/types/user';
 
 interface RoleSelectorProps {
@@ -24,7 +24,7 @@ const roles = [
     value: 'freelancer' as UserRole,
     label: 'Freelancer',
     description: 'Bid on projects independently',
-    icon: Users,
+    icon: Briefcase,
   },
 ];
 
