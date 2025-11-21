@@ -12,7 +12,7 @@ export const AnimatedCard: React.FC<AnimatedCardProps> = ({ children, className 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.5, delay, ease: [0.4, 0, 0.2, 1] }}
             whileHover={{
                 y: -5,

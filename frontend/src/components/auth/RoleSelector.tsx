@@ -11,13 +11,13 @@ const roles = [
   {
     value: 'client' as UserRole,
     label: 'Client',
-    description: 'Post projects and receive bids',
+    description: 'Post tasks and receive bids',
     icon: User,
   },
   {
     value: 'organization' as UserRole,
     label: 'Organization',
-    description: 'Bid on projects with your team',
+    description: 'Company account for team projects',
     icon: Building2,
   },
   {

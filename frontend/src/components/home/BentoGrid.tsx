@@ -13,7 +13,7 @@ export const BentoGrid: React.FC = () => {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                         className="text-center mb-16"
                     >

@@ -4,6 +4,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import('@/pages/HomePage'));
@@ -169,11 +170,12 @@ function App() {
   }, [checkAuth]);
 
   return (
-    <BrowserRouter>
-      <Suspense fallback={<PageLoader />}>
-        <AnimatedRoutes />
-      </Suspense>
-      <Toaster
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
+          <AnimatedRoutes />
+        </Suspense>
+        <Toaster
         position="top-center"
         toastOptions={{
           duration: 3000,
@@ -215,7 +217,8 @@ function App() {
           zIndex: 9999,
         }}
       />
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

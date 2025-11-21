@@ -1,20 +1,20 @@
 import React from 'react';
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   helperText?: string;
-  icon?: React.ReactNode;
+  options: { value: string; label: string }[];
   fullWidth?: boolean;
 }
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
       label,
       error,
       helperText,
-      icon,
+      options,
       fullWidth = false,
       className = '',
       id,
@@ -24,39 +24,28 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    // Generate a unique ID if not provided
-    const inputId = id || `input-${React.useId()}`;
-    const errorId = `${inputId}-error`;
-    const helperId = `${inputId}-helper`;
+    const selectId = id || `select-${React.useId()}`;
+    const errorId = `${selectId}-error`;
+    const helperId = `${selectId}-helper`;
 
-    // Base input styles
-    const baseInputStyles = 'w-full px-4 py-2.5 text-base rounded-lg border-2 transition-all duration-200 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder:text-gray-500 dark:placeholder:text-gray-600';
+    const baseSelectStyles = 'w-full px-4 py-2.5 text-base rounded-lg border-2 transition-all duration-200 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] appearance-none cursor-pointer';
 
-    // Border and focus styles
     const borderStyles = error
       ? 'border-[var(--color-error-main)] focus:border-[var(--color-error-main)] focus:ring-2 focus:ring-[var(--color-error-main)]/20'
       : 'border-[var(--color-border)] focus:border-[var(--color-primary-main)] focus:ring-2 focus:ring-[var(--color-primary-main)]/20';
 
-    // Disabled styles
     const disabledStyles = disabled
       ? 'opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]'
       : 'hover:border-[var(--color-primary-light)]';
 
-    // Icon padding
-    const iconPaddingStyles = icon ? 'pl-11' : '';
-
-    // Combine input styles
-    const inputStyles = `${baseInputStyles} ${borderStyles} ${disabledStyles} ${iconPaddingStyles} ${className}`;
-
-    // Container width
+    const selectStyles = `${baseSelectStyles} ${borderStyles} ${disabledStyles} ${className}`;
     const containerWidth = fullWidth ? 'w-full' : '';
 
     return (
       <div className={`flex flex-col gap-1.5 ${containerWidth}`}>
-        {/* Label */}
         {label && (
           <label
-            htmlFor={inputId}
+            htmlFor={selectId}
             className="text-sm font-medium text-[var(--color-text-primary)]"
           >
             {label}
@@ -64,32 +53,34 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
 
-        {/* Input wrapper with icon */}
         <div className="relative">
-          {/* Icon */}
-          {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none">
-              {icon}
-            </div>
-          )}
-
-          {/* Input field */}
-          <input
+          <select
             ref={ref}
-            id={inputId}
-            className={inputStyles}
+            id={selectId}
+            className={selectStyles}
             disabled={disabled}
             required={required}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={
-              error ? errorId : helperText ? helperId : undefined
-            }
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
             aria-required={required}
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.5rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em',
+              paddingRight: '2.5rem',
+            }}
             {...props}
-          />
+          >
+            <option value="" className="text-gray-500 dark:text-gray-600">Select an option</option>
+            {options.map((option) => (
+              <option key={option.value} value={option.value} className="bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]">
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* Error message */}
         {error && (
           <span
             id={errorId}
@@ -112,12 +103,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </span>
         )}
 
-        {/* Helper text */}
         {helperText && !error && (
-          <span
-            id={helperId}
-            className="text-sm text-[var(--color-text-secondary)]"
-          >
+          <span id={helperId} className="text-sm text-[var(--color-text-secondary)]">
             {helperText}
           </span>
         )}
@@ -126,6 +113,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = 'Input';
+Select.displayName = 'Select';
 
-export default Input;
+export default Select;

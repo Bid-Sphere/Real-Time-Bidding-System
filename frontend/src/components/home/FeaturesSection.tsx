@@ -87,7 +87,7 @@ export const FeaturesSection = () => {
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center lg:text-left">
@@ -97,7 +97,7 @@ export const FeaturesSection = () => {
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+              viewport={{ once: true }}
               className="space-y-6"
             >
               {clientBenefits.map((benefit, index) => (
@@ -130,7 +130,7 @@ export const FeaturesSection = () => {
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center lg:text-left">
@@ -140,7 +140,7 @@ export const FeaturesSection = () => {
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: false, margin: '-100px', amount: 0.2 }}
+              viewport={{ once: true }}
               className="space-y-6"
             >
               {organizationBenefits.map((benefit, index) => (

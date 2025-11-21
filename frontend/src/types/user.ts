@@ -7,4 +7,19 @@ export interface User {
   role: UserRole;
   avatar?: string;
   createdAt: string;
+  // Client-specific fields
+  phone?: string;
+  location?: string;
+  // Organization-specific fields
+  organizationName?: string;
+  companySize?: string;
+  industry?: string;
+  website?: string;
+  // Freelancer-specific fields
+  professionalTitle?: string;
+  skills?: string[];
+  experienceLevel?: 'beginner' | 'intermediate' | 'expert';
+  hourlyRate?: string;
+  portfolioUrl?: string;
+  bio?: string;
 }

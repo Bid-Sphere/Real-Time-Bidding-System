@@ -19,6 +19,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     
     try {
       // Mock authentication - find user in localStorage
+      // NOTE: Replace with real API call when backend is ready
       const user = findMockUser(credentials.email, credentials.password);
       
       if (user) {
@@ -38,7 +39,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         set({ user: mockUser, isAuthenticated: true, isLoading: false });
       }
     } catch (error) {
-      console.error('Login error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Login error:', error);
+      }
       set({ isLoading: false });
       throw error;
     }
@@ -49,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     
     try {
       // Create new user
+      // NOTE: Replace with real API call when backend is ready
       const newUser: User = {
         id: crypto.randomUUID(),
         name: data.name,
@@ -64,7 +68,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       saveUser(newUser);
       set({ user: newUser, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      console.error('Signup error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Signup error:', error);
+      }
       set({ isLoading: false });
       throw error;
     }

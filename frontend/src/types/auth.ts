@@ -10,6 +10,20 @@ export interface SignupData {
   email: string;
   password: string;
   role: UserRole;
+  // Client fields
+  phone?: string;
+  location?: string;
+  // Organization fields
+  organizationName?: string;
+  companySize?: string;
+  industry?: string;
+  website?: string;
+  // Freelancer fields
+  professionalTitle?: string;
+  skills?: string[];
+  experienceLevel?: 'beginner' | 'intermediate' | 'expert';
+  hourlyRate?: string;
+  portfolioUrl?: string;
 }
 
 export interface AuthState {

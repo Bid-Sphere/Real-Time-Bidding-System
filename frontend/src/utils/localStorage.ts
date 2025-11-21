@@ -12,7 +12,10 @@ export const saveUser = (user: User): void => {
   try {
     localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(user));
   } catch (error) {
-    console.error('Error saving user to localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving user to localStorage:', error);
+    }
+    // In production, silently fail or use a logging service
   }
 };
 
@@ -21,7 +24,9 @@ export const getUser = (): User | null => {
     const userJson = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
     return userJson ? JSON.parse(userJson) : null;
   } catch (error) {
-    console.error('Error getting user from localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error getting user from localStorage:', error);
+    }
     return null;
   }
 };
@@ -30,18 +35,23 @@ export const removeUser = (): void => {
   try {
     localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
   } catch (error) {
-    console.error('Error removing user from localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error removing user from localStorage:', error);
+    }
   }
 };
 
 // Mock users storage (for authentication)
+// NOTE: This is for development only. Replace with real API calls in production.
 export const saveMockUser = (user: User, password: string): void => {
   try {
     const users = getMockUsers();
     users.push({ ...user, password });
     localStorage.setItem(STORAGE_KEYS.MOCK_USERS, JSON.stringify(users));
   } catch (error) {
-    console.error('Error saving mock user to localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving mock user to localStorage:', error);
+    }
   }
 };
 
@@ -50,7 +60,9 @@ export const getMockUsers = (): Array<User & { password: string }> => {
     const usersJson = localStorage.getItem(STORAGE_KEYS.MOCK_USERS);
     return usersJson ? JSON.parse(usersJson) : [];
   } catch (error) {
-    console.error('Error getting mock users from localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error getting mock users from localStorage:', error);
+    }
     return [];
   }
 };
@@ -65,7 +77,9 @@ export const findMockUser = (email: string, password: string): User | null => {
     }
     return null;
   } catch (error) {
-    console.error('Error finding mock user:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error finding mock user:', error);
+    }
     return null;
   }
 };
@@ -75,7 +89,9 @@ export const saveTheme = (mode: 'light' | 'dark'): void => {
   try {
     localStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
   } catch (error) {
-    console.error('Error saving theme to localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving theme to localStorage:', error);
+    }
   }
 };
 
@@ -84,7 +100,9 @@ export const getTheme = (): 'light' | 'dark' | null => {
     const theme = localStorage.getItem(STORAGE_KEYS.THEME_MODE);
     return theme === 'light' || theme === 'dark' ? theme : null;
   } catch (error) {
-    console.error('Error getting theme from localStorage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error getting theme from localStorage:', error);
+    }
     return null;
   }
 };
