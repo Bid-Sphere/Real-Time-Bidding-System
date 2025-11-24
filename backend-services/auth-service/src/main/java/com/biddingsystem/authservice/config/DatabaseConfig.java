@@ -18,9 +18,13 @@ public class DatabaseConfig {
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
-        dataSource.setUrl("jdbc:postgresql://localhost:5432/bidding_system");
-        dataSource.setUsername("postgres");
-        dataSource.setPassword("pass12345");
+        dataSource.setUrl("jdbc:postgresql://ep-cool-heart-a4cf7091-pooler.us-east-1.aws.neon.tech:5432/neondb");
+        dataSource.setUsername("neondb_owner");
+        dataSource.setPassword("npg_N14CEqfSWGcj");
+//        dataSource.setDriverClassName("org.postgresql.Driver");
+//        dataSource.setUrl("jdbc:postgresql://localhost:5432/bidding_system");
+//        dataSource.setUsername("postgres");
+//        dataSource.setPassword("pass12345");
 
         log.info("DataSource configured for PostgreSQL");
         return dataSource;

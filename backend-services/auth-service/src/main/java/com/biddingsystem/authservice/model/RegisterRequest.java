@@ -22,12 +22,18 @@ public class RegisterRequest {
     //@Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    //@NotBlank(message = "First name is required")
-    private String firstName;
-
-    //@NotBlank(message = "Last name is required")
-    private String lastName;
+    //@NotBlank(message = "Full name is required") // Changed from firstName/lastName
+    private String fullName;
 
     //@NotBlank(message = "Role is required")
-    private String role; // CLIENT, VENDOR, ORGANISATION, FREELANCER
+    private String role; // CLIENT, ORGANISATION, FREELANCER
+
+    // Common optional fields
+    private String phone;
+    private String location;
+
+    // Role-specific data
+    private Freelancer freelancerProfile;
+    private Client clientProfile;
+    private Organization organizationProfile;
 }

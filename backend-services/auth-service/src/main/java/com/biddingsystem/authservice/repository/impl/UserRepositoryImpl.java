@@ -36,10 +36,10 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Long saveUser(UserEntity userEntity) {
-        String sql = "INSERT INTO users (email, password_hash, first_name, last_name, role, is_active, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO users (email, password_hash, full_name, role, is_active, created_at, updated_at, phone, location) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"; // Changed to full_name
 
-        log.info("Saving user: {}", userEntity.getEmail());
+        log.info("Saving user: {} with role: {}", userEntity.getEmail(), userEntity.getRole());
 
         try {
             Timestamp createdAt = Timestamp.valueOf(userEntity.getCreatedAt());
@@ -48,12 +48,13 @@ public class UserRepositoryImpl implements UserRepository {
             Long userId = jdbcTemplate.queryForObject(sql, Long.class,
                     userEntity.getEmail(),
                     userEntity.getPasswordHash(),
-                    userEntity.getFirstName(),
-                    userEntity.getLastName(),
+                    userEntity.getFullName(), // Changed from firstName/lastName
                     userEntity.getRole(),
                     userEntity.getIsActive(),
                     createdAt,
-                    updatedAt
+                    updatedAt,
+                    userEntity.getPhone(),
+                    userEntity.getLocation()
             );
 
             log.info("User saved with ID: {}", userId);
@@ -91,7 +92,6 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public String formatSqlWithValues(String sql, Object... values) {
-        // Simple and safe - no complex string manipulation
         return sql;
     }
 }

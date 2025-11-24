@@ -20,12 +20,20 @@ public class UserEntity implements UserDetails {
     private Long id;
     private String email;
     private String passwordHash;
-    private String firstName;
-    private String lastName;
+    private String fullName; // Changed from firstName/lastName
     private String role;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // Common fields for all users
+    private String phone;
+    private String location;
+
+    // Composition with role-specific entities
+    private Freelancer freelancerProfile;
+    private Client clientProfile;
+    private Organization organizationProfile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

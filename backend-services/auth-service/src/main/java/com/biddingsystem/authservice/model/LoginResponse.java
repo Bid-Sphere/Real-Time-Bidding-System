@@ -14,8 +14,7 @@ public class LoginResponse {
     private String tokenType;
     private Long userId;
     private String email;
-    private String firstName;
-    private String lastName;
+    private String fullName;
     private String role;
     private Long expiresIn;
 
@@ -25,8 +24,7 @@ public class LoginResponse {
         this.tokenType = "Bearer";
         this.userId = userId;
         this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.fullName = fullName;
         this.role = role;
         this.expiresIn = expiresIn;
     }

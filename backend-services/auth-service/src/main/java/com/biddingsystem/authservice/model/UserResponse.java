@@ -14,9 +14,17 @@ import java.time.LocalDateTime;
 public class UserResponse {
     private Long id;
     private String email;
-    private String firstName;
-    private String lastName;
+    private String fullName; // Changed from firstName/lastName
     private String role;
     private Boolean isActive;
     private LocalDateTime createdAt;
+
+    // Common fields
+    private String phone;
+    private String location;
+
+    // Role-specific profiles
+    private Freelancer freelancerProfile;
+    private Client clientProfile;
+    private Organization organizationProfile;
 }
