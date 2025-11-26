@@ -9,11 +9,13 @@ import { CountryDropdown } from './CountryDropdown';
 // Register English locale
 countries.registerLocale(en);
 
-export interface PhoneInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface PhoneInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange' | 'value'> {
   label?: string;
   error?: string;
   helperText?: string;
   fullWidth?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
@@ -55,7 +57,7 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
       handlePhoneChange,
       handleSearchChange,
       toggleDropdown,
-    } = usePhoneInput({ countryList, value: value as string | undefined, onChange, ref });
+    } = usePhoneInput({ countryList, value, onChange });
 
     const baseInputStyles = 'w-full px-4 py-2.5 pl-11 text-base rounded-lg border-2 transition-all duration-200 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] placeholder:text-gray-500 dark:placeholder:text-gray-600';
 

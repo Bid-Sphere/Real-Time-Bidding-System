@@ -3,12 +3,11 @@ import type { Country } from './useCountryList';
 
 interface UsePhoneInputProps {
   countryList: Country[];
-  value?: string | number | readonly string[];
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  ref: React.ForwardedRef<HTMLInputElement>;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-export const usePhoneInput = ({ countryList, value, onChange, ref }: UsePhoneInputProps) => {
+export const usePhoneInput = ({ countryList, value, onChange }: UsePhoneInputProps) => {
   const [selectedCountry, setSelectedCountry] = useState('US');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -40,7 +39,7 @@ export const usePhoneInput = ({ countryList, value, onChange, ref }: UsePhoneInp
     setHighlightedIndex(-1);
   }, [filteredCountries]);
 
-  // Close dropdown when clicking outside or scrolling
+  // Close dropdown when clicking outside or scrolling outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -48,8 +47,11 @@ export const usePhoneInput = ({ countryList, value, onChange, ref }: UsePhoneInp
       }
     };
 
-    const handleScroll = () => {
-      setIsDropdownOpen(false);
+    const handleScroll = (event: Event) => {
+      // Only close if scrolling outside the dropdown
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -115,20 +117,12 @@ export const usePhoneInput = ({ countryList, value, onChange, ref }: UsePhoneInp
     const country = countryList.find(c => c.code === countryCode);
     if (!country) return;
 
-    // Update the full value
-    const fullValue = phoneNumber ? `${country.callingCode} ${phoneNumber}` : country.callingCode;
-    if (onChange && ref && typeof ref !== 'function') {
-      const inputElement = ref.current;
-      if (inputElement) {
-        inputElement.value = fullValue;
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLInputElement.prototype,
-          'value'
-        )?.set;
-        nativeInputValueSetter?.call(inputElement, fullValue);
-        const event = new Event('input', { bubbles: true });
-        inputElement.dispatchEvent(event);
-      }
+    // Update the full value with the new country code
+    const fullValue = phoneNumber ? `${country.callingCode} ${phoneNumber}` : '';
+    
+    // Call onChange with the updated value
+    if (onChange) {
+      onChange(fullValue);
     }
   };
 
@@ -177,11 +171,12 @@ export const usePhoneInput = ({ countryList, value, onChange, ref }: UsePhoneInp
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
     
-    // Update the full value
-    const fullValue = formatted ? `${currentCountry.callingCode} ${formatted}` : currentCountry.callingCode;
-    e.target.value = fullValue;
+    // Create the full formatted value with country code
+    const fullValue = formatted ? `${currentCountry.callingCode} ${formatted}` : '';
+    
+    // Call onChange with the full value
     if (onChange) {
-      onChange(e);
+      onChange(fullValue);
     }
   };
 

@@ -5,25 +5,48 @@ export interface LoginCredentials {
   password: string;
 }
 
+// Profile interfaces matching backend structure
+export interface FreelancerProfile {
+  professionalTitle: string;
+  skills: string[];
+  experienceLevel: 'beginner' | 'intermediate' | 'expert';
+  hourlyRate: number;
+  portfolioUrl?: string;
+  bio?: string;
+  resumeUrl?: string;
+}
+
+export interface ClientProfile {
+  companyName?: string;
+  industry?: string;
+  companySize?: string;
+  website?: string;
+  billingAddress?: string;
+  taxId?: string;
+}
+
+export interface OrganizationProfile {
+  companyName: string;
+  industry: string;
+  companySize?: string;
+  website?: string;
+  taxId?: string;
+  businessRegistrationNumber?: string;
+  contactPerson?: string;
+  contactPersonRole?: string;
+}
+
 export interface SignupData {
-  name: string;
+  fullName: string;
   email: string;
   password: string;
   role: UserRole;
-  // Client fields
   phone?: string;
   location?: string;
-  // Organization fields
-  organizationName?: string;
-  companySize?: string;
-  industry?: string;
-  website?: string;
-  // Freelancer fields
-  professionalTitle?: string;
-  skills?: string[];
-  experienceLevel?: 'beginner' | 'intermediate' | 'expert';
-  hourlyRate?: string;
-  portfolioUrl?: string;
+  // Role-specific profiles
+  freelancerProfile?: FreelancerProfile;
+  clientProfile?: ClientProfile;
+  organizationProfile?: OrganizationProfile;
 }
 
 export interface AuthState {

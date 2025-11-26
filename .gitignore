@@ -9,6 +9,7 @@ target/
 build/
 dist/
 node_modules/
+docs/
 
 # Environment
 .env
@@ -17,3 +18,6 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# E2E Tests
+e2e-tests/

@@ -24,30 +24,45 @@ const baseSchema = z.object({
 });
 
 const phoneSchema = z.string()
-  .regex(/^\+\d{1,4}\s?\d{6,14}$/, 'Enter valid country code (e.g., +1 1234567890)')
+  .regex(/^\+\d{1,4}\s?\d{6,14}$/, 'Invalid phone number format')
   .optional()
   .or(z.literal(''));
 
 const clientSchema = baseSchema.extend({
-  phone: phoneSchema,
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\+\d{1,4}\s?\d{6,14}$/, 'Invalid phone number format'),
   location: z.string().min(2, 'Location is required').optional(),
+  // Client profile fields
+  companyName: z.string().optional(),
+  clientIndustry: z.string().optional(),
+  clientCompanySize: z.string().optional(),
+  clientWebsite: z.string().url('Invalid URL').optional().or(z.literal('')),
+  billingAddress: z.string().optional(),
+  taxId: z.string().optional(),
 });
 
 const organizationSchema = baseSchema.extend({
   organizationName: z.string().min(2, 'Organization name is required'),
-  companySize: z.string().optional(),
-  industry: z.string().optional(),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
+  orgIndustry: z.string().min(1, 'Industry is required'),
+  orgCompanySize: z.string().optional(),
+  orgWebsite: z.string().url('Invalid URL').optional().or(z.literal('')),
   phone: phoneSchema,
   location: z.string().min(2, 'Location is required').optional(),
+  taxId: z.string().optional(),
+  businessRegistrationNumber: z.string().optional(),
+  contactPerson: z.string().optional(),
+  contactPersonRole: z.string().optional(),
 });
 
 const freelancerSchema = baseSchema.extend({
   professionalTitle: z.string().min(2, 'Professional title is required'),
   skills: z.array(z.string()).min(1, 'Add at least one skill'),
   experienceLevel: z.enum(['beginner', 'intermediate', 'expert'], 'Select experience level'),
-  hourlyRate: z.string().optional(),
+  hourlyRate: z.string().min(1, 'Hourly rate is required').regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid number'),
   portfolioUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
+  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
+  resumeUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   location: z.string().min(2, 'Location is required').optional(),
 });
 
@@ -93,6 +108,21 @@ export const SignupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
+  const customResolver = async (data: any, context: any, options: any) => {
+    console.log('=== FORM VALIDATION ===');
+    console.log('Data being validated:', data);
+    console.log('Phone value specifically:', data.phone);
+    console.log('Phone value type:', typeof data.phone);
+    console.log('Phone value length:', data.phone?.length);
+    
+    const result = await zodResolver(signupSchema)(data, context, options);
+    
+    console.log('Validation result:', result);
+    console.log('Validation errors:', result.errors);
+    
+    return result;
+  };
+
   const {
     register,
     handleSubmit,
@@ -100,8 +130,9 @@ export const SignupForm = () => {
     control,
     formState: { errors },
   } = useForm<any>({
-    resolver: zodResolver(signupSchema),
-    mode: 'onChange',
+    resolver: customResolver,
+    mode: 'onBlur', // Validate on blur initially
+    reValidateMode: 'onChange', // Re-validate on change after first validation
   });
 
   const handleRoleSelect = (role: UserRole) => {
@@ -110,41 +141,72 @@ export const SignupForm = () => {
   };
 
   const onSubmit = async (data: any) => {
+    console.log('=== SIGNUP FORM SUBMITTED ===');
+    console.log('Form data received:', data);
+    console.log('Form errors:', errors);
+    
     setIsSubmitting(true);
     try {
       const signupData: any = {
-        name: data.name,
+        fullName: data.name,
         email: data.email,
         password: data.password,
         role: data.role,
+        phone: data.phone,
+        location: data.location,
       };
 
-      // Add role-specific fields
+      console.log('Base signup data:', signupData);
+
+      // Build role-specific profile objects
       if (data.role === 'client') {
-        if (data.phone) signupData.phone = data.phone;
-        if (data.location) signupData.location = data.location;
+        signupData.clientProfile = {
+          companyName: data.companyName || undefined,
+          industry: data.clientIndustry || undefined,
+          companySize: data.clientCompanySize || undefined,
+          website: data.clientWebsite || undefined,
+          billingAddress: data.billingAddress || undefined,
+          taxId: data.taxId || undefined,
+        };
+        console.log('Client profile added:', signupData.clientProfile);
       } else if (data.role === 'organization') {
-        signupData.organizationName = data.organizationName;
-        if (data.companySize) signupData.companySize = data.companySize;
-        if (data.industry) signupData.industry = data.industry;
-        if (data.website) signupData.website = data.website;
-        if (data.phone) signupData.phone = data.phone;
-        if (data.location) signupData.location = data.location;
+        signupData.organizationProfile = {
+          companyName: data.organizationName,
+          industry: data.orgIndustry,
+          companySize: data.orgCompanySize || undefined,
+          website: data.orgWebsite || undefined,
+          taxId: data.taxId || undefined,
+          businessRegistrationNumber: data.businessRegistrationNumber || undefined,
+          contactPerson: data.contactPerson || undefined,
+          contactPersonRole: data.contactPersonRole || undefined,
+        };
+        console.log('Organization profile added:', signupData.organizationProfile);
       } else if (data.role === 'freelancer') {
-        signupData.professionalTitle = data.professionalTitle;
-        signupData.skills = data.skills;
-        signupData.experienceLevel = data.experienceLevel;
-        if (data.hourlyRate) signupData.hourlyRate = data.hourlyRate;
-        if (data.portfolioUrl) signupData.portfolioUrl = data.portfolioUrl;
-        if (data.location) signupData.location = data.location;
+        signupData.freelancerProfile = {
+          professionalTitle: data.professionalTitle,
+          skills: data.skills,
+          experienceLevel: data.experienceLevel,
+          hourlyRate: parseFloat(data.hourlyRate),
+          portfolioUrl: data.portfolioUrl || undefined,
+          bio: data.bio || undefined,
+          resumeUrl: data.resumeUrl || undefined,
+        };
+        console.log('Freelancer profile added:', signupData.freelancerProfile);
       }
 
+      console.log('Final signup data being sent:', signupData);
+      console.log('Calling signup API...');
+      
       await signup(signupData);
-      toast.success('Account created successfully!');
+      
+      console.log('Signup successful!');
+      toast.success('Account created successfully! Please login to continue.');
 
-      // Redirect based on role
-      navigate(`/${data.role}-dashboard`);
+      // Redirect to login page
+      navigate('/login');
     } catch (error) {
+      console.error('=== SIGNUP ERROR ===');
+      console.error('Error details:', error);
       toast.error('Signup failed. Please try again.');
       console.error('Signup error:', error);
     } finally {
@@ -265,7 +327,8 @@ export const SignupForm = () => {
                       },
                     },
                   }}
-                  className="grid grid-cols-1 gap-6 sm:grid-cols-2 overflow-visible"
+                  className="grid grid-cols-1 gap-6 sm:grid-cols-2"
+                  style={{ overflow: 'visible' }}
                 >
                 {/* Client Fields */}
                 {selectedRole === 'client' && (
@@ -276,11 +339,20 @@ export const SignupForm = () => {
                         visible: { opacity: 1, y: 0 },
                       }}
                     >
-                      <PhoneInput
-                        {...register('phone')}
-                        label="Phone Number"
-                        error={errors.phone?.message as string}
-                        disabled={isSubmitting}
+                      <Controller
+                        name="phone"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <PhoneInput
+                            label="Phone Number"
+                            error={errors.phone?.message as string}
+                            disabled={isSubmitting}
+                            required
+                            value={field.value}
+                            onChange={(value) => field.onChange(value)}
+                          />
+                        )}
                       />
                     </motion.div>
                     <motion.div
@@ -296,6 +368,98 @@ export const SignupForm = () => {
                         placeholder="City, Country"
                         error={errors.location?.message as string}
                         icon={<MapPin className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      className="sm:col-span-2"
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('companyName')}
+                        type="text"
+                        label="Company Name (Optional)"
+                        placeholder="Your company name"
+                        error={errors.companyName?.message as string}
+                        icon={<Building2 className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Select
+                        {...register('clientIndustry')}
+                        label="Industry (Optional)"
+                        options={INDUSTRIES}
+                        error={errors.clientIndustry?.message as string}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Select
+                        {...register('clientCompanySize')}
+                        label="Company Size (Optional)"
+                        options={COMPANY_SIZES}
+                        error={errors.clientCompanySize?.message as string}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('clientWebsite')}
+                        type="url"
+                        label="Website (Optional)"
+                        placeholder="https://example.com"
+                        error={errors.clientWebsite?.message as string}
+                        icon={<LinkIcon className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('billingAddress')}
+                        type="text"
+                        label="Billing Address (Optional)"
+                        placeholder="Street, City, State, ZIP"
+                        error={errors.billingAddress?.message as string}
+                        icon={<MapPin className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('taxId')}
+                        type="text"
+                        label="Tax ID (Optional)"
+                        placeholder="Tax identification number"
+                        error={errors.taxId?.message as string}
                         disabled={isSubmitting}
                       />
                     </motion.div>
@@ -330,11 +494,12 @@ export const SignupForm = () => {
                       }}
                     >
                       <Select
-                        {...register('companySize')}
-                        label="Company Size"
-                        options={COMPANY_SIZES}
-                        error={errors.companySize?.message as string}
+                        {...register('orgIndustry')}
+                        label="Industry"
+                        options={INDUSTRIES}
+                        error={errors.orgIndustry?.message as string}
                         disabled={isSubmitting}
+                        required
                       />
                     </motion.div>
                     <motion.div
@@ -344,10 +509,10 @@ export const SignupForm = () => {
                       }}
                     >
                       <Select
-                        {...register('industry')}
-                        label="Industry"
-                        options={INDUSTRIES}
-                        error={errors.industry?.message as string}
+                        {...register('orgCompanySize')}
+                        label="Company Size"
+                        options={COMPANY_SIZES}
+                        error={errors.orgCompanySize?.message as string}
                         disabled={isSubmitting}
                       />
                     </motion.div>
@@ -358,11 +523,11 @@ export const SignupForm = () => {
                       }}
                     >
                       <Input
-                        {...register('website')}
+                        {...register('orgWebsite')}
                         type="url"
                         label="Website"
                         placeholder="https://example.com"
-                        error={errors.website?.message as string}
+                        error={errors.orgWebsite?.message as string}
                         icon={<LinkIcon className="h-5 w-5" />}
                         disabled={isSubmitting}
                       />
@@ -373,15 +538,22 @@ export const SignupForm = () => {
                         visible: { opacity: 1, y: 0 },
                       }}
                     >
-                      <PhoneInput
-                        {...register('phone')}
-                        label="Phone Number"
-                        error={errors.phone?.message as string}
-                        disabled={isSubmitting}
+                      <Controller
+                        name="phone"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <PhoneInput
+                            label="Phone Number"
+                            error={errors.phone?.message as string}
+                            disabled={isSubmitting}
+                            value={field.value}
+                            onChange={(value) => field.onChange(value)}
+                          />
+                        )}
                       />
                     </motion.div>
                     <motion.div
-                      className="sm:col-span-2"
                       variants={{
                         hidden: { opacity: 0, y: 10 },
                         visible: { opacity: 1, y: 0 },
@@ -394,6 +566,67 @@ export const SignupForm = () => {
                         placeholder="City, Country"
                         error={errors.location?.message as string}
                         icon={<MapPin className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('taxId')}
+                        type="text"
+                        label="Tax ID (Optional)"
+                        placeholder="Tax identification number"
+                        error={errors.taxId?.message as string}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('businessRegistrationNumber')}
+                        type="text"
+                        label="Business Registration Number (Optional)"
+                        placeholder="Registration number"
+                        error={errors.businessRegistrationNumber?.message as string}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('contactPerson')}
+                        type="text"
+                        label="Contact Person (Optional)"
+                        placeholder="Primary contact name"
+                        error={errors.contactPerson?.message as string}
+                        icon={<User className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('contactPersonRole')}
+                        type="text"
+                        label="Contact Person Role (Optional)"
+                        placeholder="e.g., CEO, Manager"
+                        error={errors.contactPersonRole?.message as string}
                         disabled={isSubmitting}
                       />
                     </motion.div>
@@ -473,12 +706,13 @@ export const SignupForm = () => {
                     >
                       <Input
                         {...register('hourlyRate')}
-                        type="text"
-                        label="Hourly Rate"
-                        placeholder="e.g., $50/hr or TBD"
+                        type="number"
+                        label="Hourly Rate (USD)"
+                        placeholder="50"
                         error={errors.hourlyRate?.message as string}
                         icon={<DollarSign className="h-5 w-5" />}
                         disabled={isSubmitting}
+                        required
                       />
                     </motion.div>
                     <motion.div
@@ -490,7 +724,7 @@ export const SignupForm = () => {
                       <Input
                         {...register('portfolioUrl')}
                         type="url"
-                        label="Portfolio URL"
+                        label="Portfolio URL (Optional)"
                         placeholder="https://portfolio.com"
                         error={errors.portfolioUrl?.message as string}
                         icon={<LinkIcon className="h-5 w-5" />}
@@ -498,6 +732,44 @@ export const SignupForm = () => {
                       />
                     </motion.div>
                     <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <Input
+                        {...register('resumeUrl')}
+                        type="url"
+                        label="Resume URL (Optional)"
+                        placeholder="https://resume.com/yourname"
+                        error={errors.resumeUrl?.message as string}
+                        icon={<LinkIcon className="h-5 w-5" />}
+                        disabled={isSubmitting}
+                      />
+                    </motion.div>
+                    <motion.div
+                      className="sm:col-span-2"
+                      variants={{
+                        hidden: { opacity: 0, y: 10 },
+                        visible: { opacity: 1, y: 0 },
+                      }}
+                    >
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Bio (Optional)
+                      </label>
+                      <textarea
+                        {...register('bio')}
+                        rows={3}
+                        placeholder="Tell us about yourself and your experience..."
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-main focus:border-transparent transition-colors resize-none"
+                        disabled={isSubmitting}
+                      />
+                      {errors.bio && (
+                        <p className="mt-1 text-sm text-error-main">{errors.bio.message as string}</p>
+                      )}
+                    </motion.div>
+                    <motion.div
+                      className="sm:col-span-2"
                       variants={{
                         hidden: { opacity: 0, y: 10 },
                         visible: { opacity: 1, y: 0 },

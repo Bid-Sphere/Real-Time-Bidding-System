@@ -48,8 +48,8 @@ export const CountryDropdown = React.forwardRef<HTMLDivElement, CountryDropdownP
   }, [highlightedIndex]);
 
   return (
-    <div className="relative w-32 overflow-visible" ref={ref}>
-      <div className="relative">
+    <div className="relative w-32 flex items-stretch" style={{ overflow: 'visible' }} ref={ref}>
+      <div className="relative flex-1">
         <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-lg">
           {currentCountry.flag}
         </div>
@@ -84,7 +84,7 @@ export const CountryDropdown = React.forwardRef<HTMLDivElement, CountryDropdownP
       {/* Custom Dropdown Menu */}
       {isOpen && filteredCountries.length > 0 && (
         <div 
-          className="absolute z-[9999] bg-white dark:bg-slate-800 border-2 border-[var(--color-border)] rounded-lg shadow-2xl overflow-y-auto left-0"
+          className="absolute z-[9999] bg-white dark:bg-slate-800 border-2 border-[var(--color-border)] rounded-lg shadow-2xl left-0 overflow-hidden"
           style={{
             width: `${Math.max(dropdownWidth || 280, 280)}px`,
             maxHeight: '240px',
@@ -93,24 +93,39 @@ export const CountryDropdown = React.forwardRef<HTMLDivElement, CountryDropdownP
             pointerEvents: 'auto',
           }}
           onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.preventDefault()}
+          onWheel={(e) => e.stopPropagation()}
         >
-          {filteredCountries.map((country, index) => (
-            <button
-              key={country.code}
-              ref={index === highlightedIndex ? highlightedItemRef : null}
-              type="button"
-              onClick={() => onSelect(country.code)}
-              className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
-                index === highlightedIndex 
-                  ? 'bg-primary-main/20 text-primary-main font-medium' 
-                  : selectedCountry === country.code 
-                  ? 'bg-primary-main/10 text-primary-main font-medium' 
-                  : 'text-[var(--color-text-primary)] hover:bg-primary-main/10'
-              }`}
-            >
-              {country.flag} {country.callingCode} {country.name}
-            </button>
-          ))}
+          <div 
+            className="overflow-y-auto overflow-x-hidden max-h-[240px] overscroll-contain dropdown-scrollable"
+            onWheel={(e) => e.stopPropagation()}
+          >
+            {filteredCountries.map((country, index) => (
+              <button
+                key={country.code}
+                ref={index === highlightedIndex ? highlightedItemRef : null}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onSelect(country.code);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors border-b border-gray-200 dark:border-gray-700 last:border-b-0 ${
+                  index === highlightedIndex 
+                    ? 'bg-primary-main/20 text-primary-main font-medium' 
+                    : selectedCountry === country.code 
+                    ? 'bg-primary-main/10 text-primary-main font-medium' 
+                    : 'text-[var(--color-text-primary)] hover:bg-primary-main/10'
+                }`}
+              >
+                {country.flag} {country.callingCode} {country.name}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

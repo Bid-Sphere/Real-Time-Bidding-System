@@ -242,3 +242,38 @@ select {
   }
 }
 
+/* Custom scrollbar for dropdown menus */
+.dropdown-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.5) transparent;
+}
+
+.dropdown-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(59, 130, 246, 0.5);
+  border-radius: 3px;
+}
+
+.dropdown-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(59, 130, 246, 0.8);
+}
+
+.dark .dropdown-scrollable {
+  scrollbar-color: rgba(139, 92, 246, 0.5) transparent;
+}
+
+.dark .dropdown-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 92, 246, 0.5);
+}
+
+.dark .dropdown-scrollable::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 92, 246, 0.8);
+}
+

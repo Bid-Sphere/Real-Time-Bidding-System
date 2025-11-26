@@ -1,13 +1,7 @@
 import { create } from 'zustand';
 import type { AuthState, LoginCredentials, SignupData } from '@/types/auth';
-import type { User } from '@/types/user';
-import {
-  saveUser,
-  getUser,
-  removeUser,
-  saveMockUser,
-  findMockUser,
-} from '@/utils/localStorage';
+import authService from '@/services/authService';
+import { saveUser, getUser, removeUser } from '@/utils/localStorage';
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
@@ -18,31 +12,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     
     try {
-      // Mock authentication - find user in localStorage
-      // NOTE: Replace with real API call when backend is ready
-      const user = findMockUser(credentials.email, credentials.password);
+      const { user } = await authService.login(credentials);
       
-      if (user) {
-        saveUser(user);
-        set({ user, isAuthenticated: true, isLoading: false });
-      } else {
-        // For mock purposes, accept any credentials and create a temporary user
-        // This allows testing without signup
-        const mockUser: User = {
-          id: crypto.randomUUID(),
-          name: credentials.email.split('@')[0],
-          email: credentials.email,
-          role: 'client', // Default role for mock login
-          createdAt: new Date().toISOString(),
-        };
-        saveUser(mockUser);
-        set({ user: mockUser, isAuthenticated: true, isLoading: false });
-      }
+      // Save user to localStorage
+      saveUser(user);
+      
+      set({ user, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Login error:', error);
-      }
       set({ isLoading: false });
+      console.error('Login error:', error);
       throw error;
     }
   },
@@ -51,39 +29,54 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     
     try {
-      // Create new user
-      // NOTE: Replace with real API call when backend is ready
-      const newUser: User = {
-        id: crypto.randomUUID(),
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        createdAt: new Date().toISOString(),
+      // Map frontend role to backend role (backend uses British spelling)
+      const roleMap: Record<string, string> = {
+        'client': 'CLIENT',
+        'organization': 'ORGANISATION',
+        'freelancer': 'FREELANCER',
       };
-      
-      // Save to mock users database
-      saveMockUser(newUser, data.password);
-      
-      // Set as current user
-      saveUser(newUser);
-      set({ user: newUser, isAuthenticated: true, isLoading: false });
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error('Signup error:', error);
+
+      // Transform frontend data to backend format
+      const backendData: any = {
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        role: roleMap[data.role] || data.role.toUpperCase(),
+        phone: data.phone,
+        location: data.location,
+      };
+
+      // Add role-specific profiles
+      if (data.role === 'freelancer' && data.freelancerProfile) {
+        backendData.freelancerProfile = data.freelancerProfile;
+      } else if (data.role === 'client' && data.clientProfile) {
+        backendData.clientProfile = data.clientProfile;
+      } else if (data.role === 'organization' && data.organizationProfile) {
+        backendData.organizationProfile = data.organizationProfile;
       }
+
+      await authService.register(backendData);
+      
+      // Don't auto-login after registration
       set({ isLoading: false });
+    } catch (error) {
+      set({ isLoading: false });
+      console.error('Signup error:', error);
       throw error;
     }
   },
 
   logout: () => {
+    authService.logout();
     removeUser();
     set({ user: null, isAuthenticated: false });
   },
 
   checkAuth: () => {
     const user = getUser();
-    if (user) {
+    const isAuthenticated = authService.isAuthenticated();
+    
+    if (user && isAuthenticated) {
       set({ user, isAuthenticated: true });
     } else {
       set({ user: null, isAuthenticated: false });

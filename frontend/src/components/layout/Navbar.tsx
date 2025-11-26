@@ -87,12 +87,12 @@ export default function Navbar({ }: NavbarProps) {
                   >
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-main to-secondary-main flex items-center justify-center text-white shadow-inner">
                       {user?.avatar ? (
-                        <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                        <img src={user.avatar} alt={user.fullName} className="w-full h-full rounded-full object-cover" />
                       ) : (
                         <User size={18} />
                       )}
                     </div>
-                    <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">{user?.name?.split(' ')[0]}</span>
+                    <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">{user?.fullName?.split(' ')[0]}</span>
                   </button>
 
                   <AnimatePresence>
@@ -104,7 +104,7 @@ export default function Navbar({ }: NavbarProps) {
                         className="absolute right-0 mt-2 w-56 glass-card rounded-xl overflow-hidden shadow-xl border border-border-glass"
                       >
                         <div className="px-4 py-4 border-b border-border-glass bg-bg-glass-subtle">
-                          <p className="text-sm font-medium text-white">{user?.name}</p>
+                          <p className="text-sm font-medium text-white">{user?.fullName}</p>
                           <p className="text-xs text-gray-400 mt-0.5">{user?.email}</p>
                         </div>
                         <div className="p-2">
@@ -170,7 +170,7 @@ export default function Navbar({ }: NavbarProps) {
                       {user?.avatar ? <img src={user.avatar} alt="" className="rounded-full" /> : <User size={24} />}
                     </div>
                     <div>
-                      <p className="text-white font-medium text-lg">{user?.name}</p>
+                      <p className="text-white font-medium text-lg">{user?.fullName}</p>
                       <p className="text-sm text-gray-400">{user?.email}</p>
                     </div>
                   </div>
