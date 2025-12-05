@@ -34,8 +34,9 @@ export const usePhoneInput = ({ countryList, value, onChange }: UsePhoneInputPro
     );
   }, [countryList, searchQuery]);
 
-  // Reset highlighted index when filtered countries change
+  // Reset highlighted index when filtered countries change - valid pattern for derived state
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHighlightedIndex(-1);
   }, [filteredCountries]);
 
@@ -85,7 +86,7 @@ export const usePhoneInput = ({ countryList, value, onChange }: UsePhoneInputPro
     }
   }, [isDropdownOpen]);
 
-  // Parse initial value if provided
+  // Parse initial value if provided - valid pattern for syncing external value with internal state
   useEffect(() => {
     if (value && typeof value === 'string') {
       const match = value.match(/^(\+\d{1,4})\s?(.*)$/);
@@ -93,9 +94,9 @@ export const usePhoneInput = ({ countryList, value, onChange }: UsePhoneInputPro
         const callingCode = match[1];
         const country = countryList.find(c => c.callingCode === callingCode);
         if (country) {
-          setSelectedCountry(country.code);
+          setSelectedCountry(country.code); // eslint-disable-line react-hooks/set-state-in-effect
         }
-        setPhoneNumber(match[2]);
+        setPhoneNumber(match[2]); // eslint-disable-line react-hooks/set-state-in-effect
       }
     }
   }, [value, countryList]);

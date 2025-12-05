@@ -1,6 +1,11 @@
 export { HeroSection } from './HeroSection';
+export { TrustBadges } from './TrustBadges';
+export { AboutSection } from './AboutSection';
+export { PostProjectPreview } from './PostProjectPreview';
 export { CategoryCard } from './CategoryCard';
 export { CategorySection } from './CategorySection';
 export { HowItWorksSection } from './HowItWorksSection';
 export { FeaturesSection } from './FeaturesSection';
 export { CTASection } from './CTASection';
+export { StatsSection } from './StatsSection';
+export { ContactSection } from './ContactSection';

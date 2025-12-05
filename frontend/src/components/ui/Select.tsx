@@ -24,19 +24,21 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     },
     ref
   ) => {
-    const selectId = id || `select-${React.useId()}`;
+    const generatedId = React.useId();
+    const selectId = id || `select-${generatedId}`;
     const errorId = `${selectId}-error`;
     const helperId = `${selectId}-helper`;
 
-    const baseSelectStyles = 'w-full px-4 py-2.5 text-base rounded-lg border-2 transition-all duration-200 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] appearance-none cursor-pointer';
+    // Enhanced styles for form interaction feedback (Requirement 15.4)
+    const baseSelectStyles = 'w-full px-4 py-2.5 text-base rounded-lg border-2 transition-all duration-150 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] appearance-none cursor-pointer focus:outline-none';
 
     const borderStyles = error
-      ? 'border-[var(--color-error-main)] focus:border-[var(--color-error-main)] focus:ring-2 focus:ring-[var(--color-error-main)]/20'
-      : 'border-[var(--color-border)] focus:border-[var(--color-primary-main)] focus:ring-2 focus:ring-[var(--color-primary-main)]/20';
+      ? 'border-[var(--color-error-main)] focus:border-[var(--color-error-main)] focus:ring-2 focus:ring-[var(--color-error-main)]/20 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+      : 'border-[var(--color-border)] focus:border-[var(--color-primary-main)] focus:ring-2 focus:ring-[var(--color-primary-main)]/20 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.15)]';
 
     const disabledStyles = disabled
       ? 'opacity-50 cursor-not-allowed bg-[var(--color-bg-secondary)]'
-      : 'hover:border-[var(--color-primary-light)]';
+      : 'hover:border-[var(--color-primary-light)] hover:bg-[var(--color-bg-elevated)]/80';
 
     const selectStyles = `${baseSelectStyles} ${borderStyles} ${disabledStyles} ${className}`;
     const containerWidth = fullWidth ? 'w-full' : '';
@@ -81,14 +83,15 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           </select>
         </div>
 
+        {/* Error message with animation (Requirement 15.4) */}
         {error && (
           <span
             id={errorId}
             role="alert"
-            className="text-sm text-[var(--color-error-main)] flex items-center gap-1"
+            className="text-sm text-[var(--color-error-main)] flex items-center gap-1 animate-fade-in"
           >
             <svg
-              className="w-4 h-4"
+              className="w-4 h-4 animate-[shake_0.4s_ease-in-out]"
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"

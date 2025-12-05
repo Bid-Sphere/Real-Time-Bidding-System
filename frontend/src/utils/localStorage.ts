@@ -72,7 +72,8 @@ export const findMockUser = (email: string, password: string): User | null => {
     const users = getMockUsers();
     const user = users.find(u => u.email === email && u.password === password);
     if (user) {
-      const { password: _, ...userWithoutPassword } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _password, ...userWithoutPassword } = user;
       return userWithoutPassword;
     }
     return null;

@@ -1,34 +1,38 @@
+/**
+ * Layout Component
+ * Phase 1 Frontend Redesign
+ * 
+ * Provides consistent page structure with floating navbar and footer.
+ * Requirements: 1.1 (Global dark theme background)
+ */
+
 import type { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
 interface LayoutProps {
   children: ReactNode;
-  transparentNavbar?: boolean;
-  simpleFooter?: boolean;
   hideNavbar?: boolean;
   hideFooter?: boolean;
 }
 
 export default function Layout({
   children,
-  transparentNavbar = false,
-  simpleFooter = false,
   hideNavbar = false,
   hideFooter = false,
 }: LayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      {!hideNavbar && <Navbar transparent={transparentNavbar} />}
+    <div className="min-h-screen flex flex-col bg-[var(--bg-primary)] transition-colors duration-300">
+      {!hideNavbar && <Navbar />}
       
       <main className="flex-grow">
-        {/* Add padding-top to account for fixed navbar */}
-        <div className={!hideNavbar ? 'pt-16' : ''}>
+        {/* Add padding-top to account for floating navbar with margin */}
+        <div className={!hideNavbar ? 'pt-24 sm:pt-28' : ''}>
           {children}
         </div>
       </main>
       
-      {!hideFooter && <Footer variant={simpleFooter ? 'simple' : 'default'} />}
+      {!hideFooter && <Footer />}
     </div>
   );
 }

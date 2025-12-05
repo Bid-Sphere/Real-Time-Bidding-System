@@ -87,8 +87,8 @@ export const useScrollAnimation = (
     // Check if IntersectionObserver is supported
     if (!('IntersectionObserver' in window)) {
       // Fallback: immediately show content if IntersectionObserver is not supported
-      setIsInView(true);
-      setHasBeenViewed(true);
+      setIsInView(true); // eslint-disable-line react-hooks/set-state-in-effect
+      setHasBeenViewed(true); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 

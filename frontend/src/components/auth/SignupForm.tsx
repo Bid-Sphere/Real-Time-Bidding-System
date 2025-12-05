@@ -15,6 +15,32 @@ import PhoneInput from '@/components/ui/PhoneInput';
 import { RoleSelector } from './RoleSelector';
 import type { UserRole } from '@/types/user';
 
+// Google Icon SVG Component - Requirement 12.5
+const GoogleIcon = () => (
+  <svg
+    className="w-5 h-5"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
+    />
+    <path
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
+    />
+    <path
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
+    />
+    <path
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
+    />
+  </svg>
+);
+
 const baseSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -108,18 +134,19 @@ export const SignupForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const customResolver = async (data: any, context: any, options: any) => {
     console.log('=== FORM VALIDATION ===');
     console.log('Data being validated:', data);
     console.log('Phone value specifically:', data.phone);
     console.log('Phone value type:', typeof data.phone);
     console.log('Phone value length:', data.phone?.length);
-    
+
     const result = await zodResolver(signupSchema)(data, context, options);
-    
+
     console.log('Validation result:', result);
     console.log('Validation errors:', result.errors);
-    
+
     return result;
   };
 
@@ -129,6 +156,7 @@ export const SignupForm = () => {
     setValue,
     control,
     formState: { errors },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = useForm<any>({
     resolver: customResolver,
     mode: 'onBlur', // Validate on blur initially
@@ -140,13 +168,15 @@ export const SignupForm = () => {
     setValue('role', role);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = async (data: any) => {
     console.log('=== SIGNUP FORM SUBMITTED ===');
     console.log('Form data received:', data);
     console.log('Form errors:', errors);
-    
+
     setIsSubmitting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const signupData: any = {
         fullName: data.name,
         email: data.email,
@@ -196,9 +226,9 @@ export const SignupForm = () => {
 
       console.log('Final signup data being sent:', signupData);
       console.log('Calling signup API...');
-      
+
       await signup(signupData);
-      
+
       console.log('Signup successful!');
       toast.success('Account created successfully! Please login to continue.');
 
@@ -215,121 +245,116 @@ export const SignupForm = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="w-full max-w-2xl"
-    >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <RoleSelector selectedRole={selectedRole} onSelectRole={handleRoleSelect} />
-        {errors.role && (
-          <p className="text-sm text-error-main">{errors.role.message as string}</p>
-        )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-        {/* Basic Information - Only show after role selection */}
+      <RoleSelector selectedRole={selectedRole} onSelectRole={handleRoleSelect} />
+      {errors.role && (
+        <p className="text-sm text-error-main">{errors.role.message as string}</p>
+      )}
+
+      {/* Basic Information - Only show after role selection */}
+      {selectedRole && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <Input
+                {...register('name')}
+                type="text"
+                label="Full Name"
+                placeholder="Enter your name"
+                error={errors.name?.message as string}
+                icon={<User className="h-5 w-5" />}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div>
+              <Input
+                {...register('email')}
+                type="email"
+                label="Email"
+                placeholder="Enter your email"
+                error={errors.email?.message as string}
+                icon={<Mail className="h-5 w-5" />}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div>
+              <Input
+                {...register('password')}
+                type="password"
+                label="Password"
+                placeholder="Enter your password"
+                error={errors.password?.message as string}
+                icon={<Lock className="h-5 w-5" />}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div>
+              <Input
+                {...register('confirmPassword')}
+                type="password"
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                error={errors.confirmPassword?.message as string}
+                icon={<Lock className="h-5 w-5" />}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Role-specific fields */}
+      <AnimatePresence mode="wait">
         {selectedRole && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            transition={{ duration: 0.3 }}
+            key={selectedRole}
+            initial={{ opacity: 0, height: 0, y: -20 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <Input
-                  {...register('name')}
-                  type="text"
-                  label="Full Name"
-                  placeholder="Enter your name"
-                  error={errors.name?.message as string}
-                  icon={<User className="h-5 w-5" />}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+              <motion.h3
+                key={`heading-${selectedRole}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                className="text-lg font-semibold text-gray-900 dark:text-white mb-4"
+              >
+                {selectedRole === 'client' && 'Contact Information'}
+                {selectedRole === 'organization' && 'Organization Details'}
+                {selectedRole === 'freelancer' && 'Professional Information'}
+              </motion.h3>
 
-              <div>
-                <Input
-                  {...register('email')}
-                  type="email"
-                  label="Email"
-                  placeholder="Enter your email"
-                  error={errors.email?.message as string}
-                  icon={<Mail className="h-5 w-5" />}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-
-              <div>
-                <Input
-                  {...register('password')}
-                  type="password"
-                  label="Password"
-                  placeholder="Enter your password"
-                  error={errors.password?.message as string}
-                  icon={<Lock className="h-5 w-5" />}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-
-              <div>
-                <Input
-                  {...register('confirmPassword')}
-                  type="password"
-                  label="Confirm Password"
-                  placeholder="Confirm your password"
-                  error={errors.confirmPassword?.message as string}
-                  icon={<Lock className="h-5 w-5" />}
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Role-specific fields */}
-        <AnimatePresence mode="wait">
-          {selectedRole && (
-            <motion.div
-              key={selectedRole}
-              initial={{ opacity: 0, height: 0, y: -20 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
-              exit={{ opacity: 0, height: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="space-y-6"
-            >
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                <motion.h3
-                  key={`heading-${selectedRole}`}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
-                  className="text-lg font-semibold text-gray-900 dark:text-white mb-4"
-                >
-                  {selectedRole === 'client' && 'Contact Information'}
-                  {selectedRole === 'organization' && 'Organization Details'}
-                  {selectedRole === 'freelancer' && 'Professional Information'}
-                </motion.h3>
-
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: {
-                        staggerChildren: 0.1,
-                      },
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: {
+                      staggerChildren: 0.1,
                     },
-                  }}
-                  className="grid grid-cols-1 gap-6 sm:grid-cols-2"
-                  style={{ overflow: 'visible' }}
-                >
+                  },
+                }}
+                className="grid grid-cols-1 gap-6 sm:grid-cols-2"
+                style={{ overflow: 'visible' }}
+              >
                 {/* Client Fields */}
                 {selectedRole === 'client' && (
                   <>
@@ -787,33 +812,59 @@ export const SignupForm = () => {
                     </motion.div>
                   </>
                 )}
-                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         )}
-        </AnimatePresence>
+      </AnimatePresence>
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={isSubmitting || !selectedRole}
-          icon={isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : undefined}
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        disabled={isSubmitting || !selectedRole}
+        icon={isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : undefined}
+      >
+        {isSubmitting ? 'Creating account...' : 'Create Account'}
+      </Button>
+
+      {/* Divider - Requirement 12.5 */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+            or continue with
+          </span>
+        </div>
+      </div>
+
+      {/* Google Sign Up Button - Requirement 12.5 */}
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        fullWidth
+        disabled={isSubmitting}
+        icon={<GoogleIcon />}
+        onClick={() => {
+          toast('Google Sign Up coming soon!', { icon: '🚀' });
+        }}
+      >
+        Sign up with Google
+      </Button>
+
+      <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+        Already have an account?{' '}
+        <Link
+          to="/login"
+          className="font-semibold text-primary-main hover:text-primary-dark transition-colors"
         >
-          {isSubmitting ? 'Creating account...' : 'Create Account'}
-        </Button>
-
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            className="font-semibold text-primary-main hover:text-primary-dark transition-colors"
-          >
-            Log in
-          </Link>
-        </p>
-      </form>
-    </motion.div>
+          Log in
+        </Link>
+      </p>
+    </form>
   );
 };

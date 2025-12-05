@@ -2,12 +2,24 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
+/**
+ * Button Component - Phase 1 Frontend Redesign
+ * Requirements: 1.5, 1.6 - Consistent border-radius and subtle glow effects
+ * 
+ * Variants:
+ * - primary: Gradient blue/purple background with glow
+ * - secondary: Solid purple background
+ * - ghost: Transparent with hover background
+ * - outline: Border only with transparent background
+ */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'text';
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   loading?: boolean;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode; // Legacy support
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -19,29 +31,76 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth = false,
       loading = false,
       disabled = false,
-      icon,
+      icon, // Legacy support
+      leftIcon,
+      rightIcon,
       children,
       className = '',
       ...props
     },
     ref
   ) => {
-    // Base styles
-    const baseStyles = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+    // Support both 'icon' (legacy) and 'leftIcon' props
+    const resolvedLeftIcon = leftIcon || icon;
+    // Base styles with dark theme
+    const baseStyles = `
+      inline-flex items-center justify-center gap-2 
+      font-medium 
+      transition-all duration-[var(--transition-fast)]
+      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
+    `.trim().replace(/\s+/g, ' ');
 
-    // Variant styles
+    // Variant styles with dark theme (Requirements 1.5, 1.6, 15.1, 15.5)
+    // All hover transitions are under 300ms for responsiveness
     const variantStyles = {
-      primary: 'bg-[var(--color-primary-main)] text-white hover:bg-[var(--color-primary-dark)] focus:ring-[var(--color-primary-main)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-primary)] active:scale-95',
-      secondary: 'bg-[var(--color-secondary-main)] text-white hover:bg-[var(--color-secondary-dark)] focus:ring-[var(--color-secondary-main)] shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] active:scale-95',
-      outline: 'border-2 border-[var(--color-primary-main)] text-[var(--color-primary-main)] hover:bg-[var(--color-primary-main)] hover:text-white focus:ring-[var(--color-primary-main)] active:scale-95',
-      text: 'text-[var(--color-primary-main)] hover:bg-[var(--color-primary-main)]/10 focus:ring-[var(--color-primary-main)] active:scale-95',
+      primary: `
+        bg-gradient-to-r from-[var(--accent-blue)] to-[var(--accent-purple)]
+        text-white
+        hover:from-[var(--accent-blue-dark)] hover:to-[var(--accent-purple-dark)]
+        hover:shadow-[var(--shadow-glow)]
+        hover:brightness-110
+        active:brightness-95
+        focus-visible:ring-[var(--accent-blue)]
+        rounded-full
+      `.trim().replace(/\s+/g, ' '),
+      secondary: `
+        bg-[var(--accent-purple)]
+        text-white
+        hover:bg-[var(--accent-purple-dark)]
+        hover:shadow-[var(--shadow-glow-purple)]
+        hover:brightness-110
+        active:brightness-95
+        focus-visible:ring-[var(--accent-purple)]
+        rounded-full
+      `.trim().replace(/\s+/g, ' '),
+      ghost: `
+        bg-transparent
+        text-[var(--text-secondary)]
+        hover:bg-[var(--border-light)]
+        hover:text-[var(--text-primary)]
+        active:bg-[var(--border-medium)]
+        focus-visible:ring-[var(--accent-blue)]
+        rounded-[var(--radius-lg)]
+      `.trim().replace(/\s+/g, ' '),
+      outline: `
+        bg-transparent
+        border border-[var(--border-medium)]
+        text-[var(--text-primary)]
+        hover:bg-[var(--border-light)]
+        hover:border-[var(--accent-blue)]
+        hover:text-[var(--accent-blue)]
+        active:bg-[var(--border-medium)]
+        focus-visible:ring-[var(--accent-blue)]
+        rounded-full
+      `.trim().replace(/\s+/g, ' '),
     };
 
     // Size styles
     const sizeStyles = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
+      sm: 'px-4 py-1.5 text-sm',
+      md: 'px-6 py-2.5 text-base',
+      lg: 'px-8 py-3.5 text-lg',
     };
 
     // Width styles
@@ -68,7 +127,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         initial="rest"
         whileHover={!disabled && !loading ? "hover" : "rest"}
         whileTap={!disabled && !loading ? "tap" : "rest"}
-        transition={{ duration: 0.2, ease: 'easeInOut' }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         type={props.type || 'button'}
         onClick={props.onClick}
         onBlur={props.onBlur}
@@ -85,8 +144,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {icon && <span className="inline-flex items-center" aria-hidden="true">{icon}</span>}
+            {resolvedLeftIcon && <span className="inline-flex items-center" aria-hidden="true">{resolvedLeftIcon}</span>}
             <span>{children}</span>
+            {rightIcon && <span className="inline-flex items-center" aria-hidden="true">{rightIcon}</span>}
           </>
         )}
       </MotionButton>

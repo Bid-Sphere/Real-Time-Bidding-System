@@ -10,6 +10,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ClientDashboard = lazy(() => import('@/pages/ClientDashboard'));
 const OrganizationDashboard = lazy(() => import('@/pages/OrganizationDashboard'));
 const FreelancerDashboard = lazy(() => import('@/pages/FreelancerDashboard'));
@@ -83,6 +84,20 @@ function AnimatedRoutes() {
               transition={pageTransition}
             >
               <SignupPage />
+            </motion.div>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <ForgotPasswordPage />
             </motion.div>
           }
         />
