@@ -75,7 +75,6 @@ export default function Navbar() {
     const dashboardMap: Record<string, string> = {
       client: '/client-dashboard',
       organization: '/organization-dashboard',
-      freelancer: '/freelancer-dashboard',
     };
     return dashboardMap[user.role] || '/';
   };

@@ -1,40 +1,19 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, FileText, Users, Trophy, Briefcase, TrendingUp, Shield } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
  * HeroSection Component
  * Phase 1 Frontend Redesign - Hero Section
  * 
- * Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 15.3
+ * Requirements: 3.1, 3.2, 3.3, 3.5, 15.3
  * - 3.1: Prominent tagline adapted for bidding platform context
- * - 3.2: Highlighted keyword with bordered box effect
- * - 3.3: Illustrative graphic representing bidding/project concept
- * - 3.4: Floating service labels around illustration
+ * - 3.2: Highlighted keyword with subtle glow effect
+ * - 3.3: Modern flow visualization showing the bidding process
  * - 3.5: Primary CTA button directing to post project or browse
  * - 15.3: Fade-in and slide-up animations using Framer Motion
  */
-
-interface FloatingLabelProps {
-  icon: React.ReactNode;
-  text: string;
-  position: string;
-  delay: number;
-}
-
-const FloatingLabel: React.FC<FloatingLabelProps> = ({ icon, text, position, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.5, delay }}
-    whileHover={{ scale: 1.05, y: -2 }}
-    className={`absolute ${position} hidden sm:flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full glass-panel text-xs sm:text-sm font-medium text-text-secondary hover:text-text-primary hover:border-border-medium hover:bg-white/10 cursor-default transition-all duration-150`}
-  >
-    {icon}
-    <span className="whitespace-nowrap">{text}</span>
-  </motion.div>
-);
 
 export const HeroSection: React.FC = () => {
   // Refs for scroll-triggered animations (Requirement 15.3)
@@ -114,8 +93,8 @@ export const HeroSection: React.FC = () => {
                 <span className="relative z-10 px-3 py-1 text-gradient-primary">
                   organizations
                 </span>
-                {/* Bordered box effect - Requirement 3.2 */}
-                <span className="absolute inset-0 border-2 border-accent-blue/50 rounded-lg" />
+                {/* Subtle glow effect instead of border - Requirement 3.2 */}
+                <span className="absolute inset-0 bg-gradient-to-r from-accent-blue/10 to-accent-purple/10 rounded-lg blur-sm" />
               </span>{' '}
               compete for
             </motion.h1>
@@ -149,66 +128,109 @@ export const HeroSection: React.FC = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right Column - Illustration with Floating Labels and scroll-triggered animation (Requirement 15.3) */}
+          {/* Right Column - Illustrated Scene with Floating Labels (Requirement 15.3) */}
           <motion.div
             ref={illustrationRef}
             variants={slideUpVariants}
             initial="hidden"
             animate={isIllustrationInView ? "visible" : "hidden"}
-            className="relative flex items-center justify-center mt-8 lg:mt-0"
+            className="relative flex items-center justify-center mt-8 lg:mt-0 min-h-[400px] sm:min-h-[500px]"
           >
-            {/* Illustrative Graphic - Requirement 3.3 */}
-            <div className="relative w-full max-w-xs sm:max-w-md lg:max-w-lg aspect-square">
-              {/* Central illustration placeholder */}
-              <div className="absolute inset-8 rounded-3xl glass-card flex items-center justify-center overflow-hidden">
-                <div className="relative w-full h-full flex items-center justify-center">
-                  {/* Abstract bidding visualization */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-accent-blue/30 to-accent-purple/30 animate-pulse-glow" />
-                  </div>
-                  <div className="relative z-10 text-center p-6">
-                    <Briefcase className="w-16 h-16 mx-auto mb-4 text-accent-blue" />
-                    <p className="text-text-secondary text-sm">Your Project</p>
-                    <div className="mt-4 flex justify-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-accent-blue animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-accent-purple animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-accent-blue animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="relative w-full max-w-lg">
+              {/* Central SVG Illustration */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="relative z-10 flex items-center justify-center"
+              >
+                <img 
+                  src="/hero-illustration-custom.svg" 
+                  alt="Project Bidding Platform Illustration" 
+                  className="w-full h-auto max-w-md opacity-90"
+                />
+              </motion.div>
 
-              {/* Floating Service Labels - Requirement 3.4 - Hidden on mobile for cleaner layout */}
-              <FloatingLabel
-                icon={<FileText className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />}
-                text="Project Posting"
-                position="top-0 left-0 sm:-translate-x-2 md:-translate-x-4"
-                delay={0.5}
+              {/* Floating Label Pills */}
+              {/* Top Left */}
+              <motion.div
+                initial={{ opacity: 0, x: -30, y: 10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="absolute top-8 left-0 sm:left-4 px-4 py-2 rounded-full bg-gradient-to-r from-accent-blue to-accent-blue-dark text-white text-xs sm:text-sm font-semibold shadow-lg shadow-accent-blue/30 whitespace-nowrap"
+              >
+                PROJECT POSTING
+              </motion.div>
+
+              {/* Top Right */}
+              <motion.div
+                initial={{ opacity: 0, x: 30, y: 10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+                className="absolute top-4 right-0 sm:right-4 px-4 py-2 rounded-full bg-gradient-to-r from-accent-purple to-accent-purple-dark text-white text-xs sm:text-sm font-semibold shadow-lg shadow-accent-purple/30 whitespace-nowrap"
+              >
+                COMPETITIVE BIDS
+              </motion.div>
+
+              {/* Middle Left */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="absolute top-1/2 -translate-y-1/2 left-0 sm:-left-8 px-4 py-2 rounded-full bg-gradient-to-r from-accent-blue/80 to-accent-blue-dark/80 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-accent-blue/20 whitespace-nowrap"
+              >
+                VERIFIED ORGS
+              </motion.div>
+
+              {/* Middle Right */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                className="absolute top-1/2 -translate-y-1/2 right-0 sm:-right-8 px-4 py-2 rounded-full bg-gradient-to-r from-accent-purple/80 to-accent-purple-dark/80 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-accent-purple/20 whitespace-nowrap"
+              >
+                BEST MATCH
+              </motion.div>
+
+              {/* Bottom Left */}
+              <motion.div
+                initial={{ opacity: 0, x: -30, y: -10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ delay: 1, duration: 0.5 }}
+                className="absolute bottom-8 left-4 sm:left-8 px-4 py-2 rounded-full bg-gradient-to-r from-accent-blue/80 to-accent-purple/80 text-white text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap"
+              >
+                SECURE PLATFORM
+              </motion.div>
+
+              {/* Bottom Right */}
+              <motion.div
+                initial={{ opacity: 0, x: 30, y: -10 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+                className="absolute bottom-12 right-4 sm:right-8 px-4 py-2 rounded-full bg-gradient-to-r from-accent-purple/80 to-accent-blue/80 text-white text-xs sm:text-sm font-semibold shadow-lg whitespace-nowrap"
+              >
+                REAL-TIME UPDATES
+              </motion.div>
+
+              {/* Decorative floating elements */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-20 right-12 w-8 h-8 rounded-lg bg-accent-blue/20 backdrop-blur-sm border border-accent-blue/30 rotate-12"
               />
-              <FloatingLabel
-                icon={<TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-accent-purple" />}
-                text="Competitive Bids"
-                position="top-0 right-0 sm:translate-x-2 md:translate-x-4"
-                delay={0.6}
+              <motion.div
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute bottom-24 left-8 w-6 h-6 rounded-full bg-accent-purple/20 backdrop-blur-sm border border-accent-purple/30"
               />
-              <FloatingLabel
-                icon={<Users className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />}
-                text="Organization Profiles"
-                position="bottom-1/4 sm:-left-4 md:-left-8"
-                delay={0.7}
+              <motion.div
+                animate={{ y: [0, -15, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute top-32 left-16 w-4 h-4 rounded-full bg-accent-blue/30"
               />
-              <FloatingLabel
-                icon={<Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-accent-purple" />}
-                text="Best Match"
-                position="bottom-1/4 sm:-right-4 md:-right-8"
-                delay={0.8}
-              />
-              <FloatingLabel
-                icon={<Shield className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />}
-                text="Secure Platform"
-                position="bottom-0 left-1/2 -translate-x-1/2 sm:translate-y-2 md:translate-y-4"
-                delay={0.9}
-              />
+
+              {/* Background glow */}
+              <div className="absolute inset-0 -z-10 bg-gradient-radial from-accent-blue/10 via-accent-purple/5 to-transparent blur-3xl" />
             </div>
           </motion.div>
         </div>

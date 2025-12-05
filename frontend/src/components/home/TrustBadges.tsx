@@ -21,17 +21,17 @@ interface TrustBadge {
 
 const badges: TrustBadge[] = [
   {
-    icon: <Building2 className="w-6 h-6 text-accent-blue" />,
+    icon: <Building2 className="w-6 h-6 text-accent-blue" strokeWidth={2} />,
     title: 'Professional Organizations',
     description: 'Verified and vetted business partners',
   },
   {
-    icon: <Trophy className="w-6 h-6 text-accent-purple" />,
+    icon: <Trophy className="w-6 h-6 text-accent-purple" strokeWidth={2} />,
     title: 'Competitive Bidding',
     description: 'Get the best value for your projects',
   },
   {
-    icon: <Shield className="w-6 h-6 text-accent-blue" />,
+    icon: <Shield className="w-6 h-6 text-accent-blue" strokeWidth={2} />,
     title: 'Secure Platform',
     description: 'Your data and transactions protected',
   },
@@ -48,12 +48,14 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge, index }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.15 }}
-      whileHover={{ y: -4, scale: 1.02 }}
-      className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl glass-panel hover:bg-white/5 hover:border-[var(--border-medium)] cursor-default transition-all duration-150"
+      whileHover={{ y: -4 }}
+      className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl glass-panel hover:bg-white/5 hover:border-[var(--border-medium)] cursor-default transition-all duration-200"
     >
       {/* Icon with circular background - Requirement 4.4 */}
-      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center mb-3 sm:mb-4 ring-1 ring-border-light">
-        {badge.icon}
+      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-accent-blue/20 to-accent-purple/20 flex items-center justify-center mb-3 sm:mb-4 border border-[var(--border-light)] transition-all duration-200 hover:border-[var(--border-medium)] hover:shadow-lg hover:shadow-accent-blue/20">
+        <div className="w-6 h-6 flex items-center justify-center" style={{ WebkitFontSmoothing: 'antialiased', backfaceVisibility: 'hidden' }}>
+          {badge.icon}
+        </div>
       </div>
       
       {/* Title - Requirement 4.3 */}

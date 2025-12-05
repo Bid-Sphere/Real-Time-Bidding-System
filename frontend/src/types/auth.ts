@@ -44,7 +44,6 @@ export interface SignupData {
   phone?: string;
   location?: string;
   // Role-specific profiles
-  freelancerProfile?: FreelancerProfile;
   clientProfile?: ClientProfile;
   organizationProfile?: OrganizationProfile;
 }

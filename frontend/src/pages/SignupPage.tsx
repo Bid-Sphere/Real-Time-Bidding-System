@@ -74,7 +74,7 @@ export default function SignupPage() {
 
               <p className="text-xl text-purple-100 mb-12 leading-relaxed">
                 Create your account and unlock access to unlimited opportunities.
-                Whether you're a client or freelancer, we've got you covered.
+                Whether you're a client or organization, we've got you covered.
               </p>
 
               {/* Feature highlights */}
@@ -158,30 +158,22 @@ export default function SignupPage() {
           animate="animate"
           exit="exit"
           transition={{ ...pageTransition, delay: 0.2 }}
-          className="w-full lg:w-1/2 flex items-start justify-center px-6 py-12 bg-white dark:bg-gray-900 overflow-y-auto"
+          className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-[var(--bg-primary)]"
         >
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-md">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.3 }}
-              className="mb-8"
             >
               {/* Mobile logo */}
-              <div className="lg:hidden flex items-center gap-2 mb-6">
-                <Sparkles className="h-8 w-8 text-primary-main" />
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">BidSphere</h1>
+              <div className="lg:hidden flex items-center justify-center gap-2 mb-6 sm:mb-8">
+                <Sparkles className="h-7 w-7 sm:h-8 sm:w-8 text-[var(--accent-blue)]" />
+                <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">BidSphere</h1>
               </div>
 
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Create Your Account
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Join our platform and start bidding on projects
-              </p>
+              <SignupForm />
             </motion.div>
-
-            <SignupForm />
           </div>
         </motion.div>
       </motion.div>

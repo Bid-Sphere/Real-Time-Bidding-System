@@ -26,7 +26,7 @@ export interface Testimonial {
 
 export const heroContent = {
     title: "Build the Future with Top Talent",
-    subtitle: "Connect with world-class freelancers and organizations. The decentralized marketplace for the next generation of work.",
+    subtitle: "Connect with world-class organizations. The decentralized marketplace for the next generation of work.",
     ctaPrimary: "Get Started",
     ctaSecondary: "Explore Talent"
 };
@@ -98,8 +98,8 @@ export const testimonials: Testimonial[] = [
         id: '2',
         name: "Alex Rivera",
         role: "Full Stack Dev",
-        company: "Freelancer",
-        content: "Finally, a platform that treats freelancers fairly. The payments are instant.",
+        company: "Tech Solutions Inc",
+        content: "Finally, a platform that treats organizations fairly. The payments are instant.",
         avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80"
     },
     {

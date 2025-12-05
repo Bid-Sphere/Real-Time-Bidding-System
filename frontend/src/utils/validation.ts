@@ -129,7 +129,7 @@ export const validateRequired = (
 export const validateRole = (
   role: string | undefined | null
 ): string | null => {
-  const validRoles = ['client', 'organization', 'freelancer'];
+  const validRoles = ['client', 'organization'];
   
   if (!role || typeof role !== 'string') {
     return 'Please select a role';
@@ -284,7 +284,7 @@ export const signupSchema = z
     confirmPassword: z
       .string()
       .min(1, 'Please confirm your password'),
-    role: z.enum(['client', 'organization', 'freelancer'], {
+    role: z.enum(['client', 'organization'], {
       message: 'Please select a role',
     }),
   })

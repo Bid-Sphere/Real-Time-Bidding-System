@@ -31,7 +31,6 @@ export interface RegisterResponse {
   createdAt: string;
   phone?: string;
   location?: string;
-  freelancerProfile?: Record<string, unknown>;
   clientProfile?: Record<string, unknown>;
   organizationProfile?: Record<string, unknown>;
 }
@@ -56,7 +55,6 @@ class AuthService {
       const roleMap: Record<string, string> = {
         'ORGANISATION': 'organization',
         'CLIENT': 'client',
-        'FREELANCER': 'freelancer',
       };
       return roleMap[backendRole] || backendRole.toLowerCase();
     };
@@ -70,7 +68,6 @@ class AuthService {
       phone: response.data.phone,
       location: response.data.location,
       createdAt: response.data.createdAt,
-      freelancerProfile: response.data.freelancerProfile,
       clientProfile: response.data.clientProfile,
       organizationProfile: response.data.organizationProfile,
     };
@@ -88,7 +85,6 @@ class AuthService {
       phone: data.phone,
       location: data.location,
       createdAt: new Date().toISOString(),
-      freelancerProfile: data.freelancerProfile,
       clientProfile: data.clientProfile,
       organizationProfile: data.organizationProfile,
     };
@@ -122,7 +118,6 @@ class AuthService {
       const roleMap: Record<string, string> = {
         'ORGANISATION': 'organization',
         'CLIENT': 'client',
-        'FREELANCER': 'freelancer',
       };
       return roleMap[backendRole] || backendRole.toLowerCase();
     };
@@ -145,10 +140,8 @@ class AuthService {
     localStorage.setItem('accessToken', mockToken);
     
     // Determine role based on email for testing
-    let role: 'client' | 'freelancer' | 'organization' = 'client';
-    if (credentials.email.includes('freelancer')) {
-      role = 'freelancer';
-    } else if (credentials.email.includes('org')) {
+    let role: 'client' | 'organization' = 'client';
+    if (credentials.email.includes('org')) {
       role = 'organization';
     }
     

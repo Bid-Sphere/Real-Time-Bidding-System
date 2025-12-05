@@ -12,7 +12,6 @@ export const ROUTES = {
   SIGNUP: '/signup',
   CLIENT_DASHBOARD: '/client-dashboard',
   ORGANIZATION_DASHBOARD: '/organization-dashboard',
-  FREELANCER_DASHBOARD: '/freelancer-dashboard',
 } as const;
 
 // Animation durations (in milliseconds)
@@ -42,7 +41,6 @@ export const BREAKPOINTS = {
 export const USER_ROLES = {
   CLIENT: 'client',
   ORGANIZATION: 'organization',
-  FREELANCER: 'freelancer',
 } as const;
 
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];

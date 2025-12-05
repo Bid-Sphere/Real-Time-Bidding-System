@@ -13,7 +13,6 @@ const SignupPage = lazy(() => import('@/pages/SignupPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ClientDashboard = lazy(() => import('@/pages/ClientDashboard'));
 const OrganizationDashboard = lazy(() => import('@/pages/OrganizationDashboard'));
-const FreelancerDashboard = lazy(() => import('@/pages/FreelancerDashboard'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Page transition variants
@@ -131,22 +130,6 @@ function AnimatedRoutes() {
             >
               <ProtectedRoute role="organization">
                 <OrganizationDashboard />
-              </ProtectedRoute>
-            </motion.div>
-          }
-        />
-        <Route
-          path="/freelancer-dashboard"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <ProtectedRoute role="freelancer">
-                <FreelancerDashboard />
               </ProtectedRoute>
             </motion.div>
           }

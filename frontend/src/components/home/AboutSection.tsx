@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Handshake, Target, Users, Zap } from 'lucide-react';
+import { Target, Users, Zap } from 'lucide-react';
 
 /**
  * AboutSection Component
@@ -82,45 +82,17 @@ export const AboutSection: React.FC = () => {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="relative order-2 lg:order-1 mt-8 lg:mt-0"
           >
-            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto aspect-square">
+            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">
               {/* Background glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/10 to-accent-purple/10 rounded-3xl blur-2xl" />
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/10 to-accent-purple/10 rounded-3xl blur-3xl" />
               
-              {/* Main illustration container */}
-              <div className="relative h-full rounded-3xl glass-card overflow-hidden p-8 flex flex-col items-center justify-center">
-                {/* Central icon representing connection */}
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-accent-blue/30 to-accent-purple/30 flex items-center justify-center animate-pulse-glow">
-                    <Handshake className="w-12 h-12 text-accent-blue" />
-                  </div>
-                  
-                  {/* Orbiting elements */}
-                  <div className="absolute -top-4 -right-4 w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center ring-1 ring-accent-blue/30">
-                    <Users className="w-4 h-4 text-accent-blue" />
-                  </div>
-                  <div className="absolute -bottom-4 -left-4 w-8 h-8 rounded-full bg-accent-purple/20 flex items-center justify-center ring-1 ring-accent-purple/30">
-                    <Target className="w-4 h-4 text-accent-purple" />
-                  </div>
-                </div>
-                
-                {/* Connection lines visualization */}
-                <div className="mt-8 flex items-center gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-xl bg-bg-secondary flex items-center justify-center ring-1 ring-border-light">
-                      <span className="text-xs font-medium text-text-secondary">Client</span>
-                    </div>
-                  </div>
-                  <div className="flex-1 h-px bg-gradient-to-r from-accent-blue to-accent-purple" />
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 rounded-xl bg-bg-secondary flex items-center justify-center ring-1 ring-border-light">
-                      <span className="text-xs font-medium text-text-secondary">Org</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <p className="mt-6 text-text-muted text-sm text-center">
-                  Connecting projects with the right organizations
-                </p>
+              {/* Illustration */}
+              <div className="relative flex items-center justify-center">
+                <img 
+                  src="/about-illustration.svg" 
+                  alt="Team Collaboration Illustration" 
+                  className="w-full h-auto"
+                />
               </div>
             </div>
           </motion.div>

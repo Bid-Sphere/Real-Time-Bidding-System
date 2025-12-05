@@ -594,3 +594,18 @@ select:not(:disabled):not(:focus):hover {
     min-height: 44px;
   }
 }
+
+/* SVG icon rendering optimization */
+svg {
+  shape-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent icon distortion on transform */
+.icon-container {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
