@@ -10,9 +10,9 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 const HomePage = lazy(() => import('@/pages/HomePage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ClientDashboard = lazy(() => import('@/pages/ClientDashboard'));
 const OrganizationDashboard = lazy(() => import('@/pages/OrganizationDashboard'));
-const FreelancerDashboard = lazy(() => import('@/pages/FreelancerDashboard'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Page transition variants
@@ -86,6 +86,20 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        <Route
+          path="/forgot-password"
+          element={
+            <motion.div
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <ForgotPasswordPage />
+            </motion.div>
+          }
+        />
 
         {/* Protected routes */}
         <Route
@@ -116,22 +130,6 @@ function AnimatedRoutes() {
             >
               <ProtectedRoute role="organization">
                 <OrganizationDashboard />
-              </ProtectedRoute>
-            </motion.div>
-          }
-        />
-        <Route
-          path="/freelancer-dashboard"
-          element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <ProtectedRoute role="freelancer">
-                <FreelancerDashboard />
               </ProtectedRoute>
             </motion.div>
           }

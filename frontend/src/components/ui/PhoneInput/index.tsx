@@ -35,7 +35,8 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     },
     ref
   ) => {
-    const inputId = id || `phone-input-${React.useId()}`;
+    const generatedId = React.useId();
+    const inputId = id || `phone-input-${generatedId}`;
     const errorId = `${inputId}-error`;
     const helperId = `${inputId}-helper`;
 

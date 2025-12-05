@@ -1,19 +1,4 @@
-export type UserRole = 'client' | 'organization' | 'freelancer';
-
-// Profile interfaces matching backend structure
-export interface FreelancerProfile {
-  id?: number;
-  userId?: number;
-  professionalTitle: string;
-  skills: string[];
-  experienceLevel: 'beginner' | 'intermediate' | 'expert';
-  hourlyRate: number;
-  portfolioUrl?: string;
-  bio?: string;
-  totalProjects?: number;
-  rating?: number;
-  resumeUrl?: string;
-}
+export type UserRole = 'client' | 'organization';
 
 export interface ClientProfile {
   id?: number;
@@ -50,7 +35,6 @@ export interface User {
   location?: string;
   isActive?: boolean;
   // Role-specific profiles
-  freelancerProfile?: FreelancerProfile;
   clientProfile?: ClientProfile;
   organizationProfile?: OrganizationProfile;
 }

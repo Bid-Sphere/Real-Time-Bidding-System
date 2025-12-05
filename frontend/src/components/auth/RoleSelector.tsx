@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Building2, User, Briefcase } from 'lucide-react';
+import { Building2, User } from 'lucide-react';
 import type { UserRole } from '@/types/user';
 
 interface RoleSelectorProps {
@@ -20,21 +20,15 @@ const roles = [
     description: 'Company account for team projects',
     icon: Building2,
   },
-  {
-    value: 'freelancer' as UserRole,
-    label: 'Freelancer',
-    description: 'Bid on projects independently',
-    icon: Briefcase,
-  },
 ];
 
 export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <h3 className="text-lg font-semibold text-[var(--text-primary)] text-center">
         Select Your Role
       </h3>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-xl mx-auto">
         {roles.map((role) => {
           const Icon = role.icon;
           const isSelected = selectedRole === role.value;
@@ -47,8 +41,8 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
               className={`
                 relative flex flex-col items-center gap-3 rounded-xl border-2 p-6 text-center transition-all
                 ${isSelected
-                  ? 'border-primary-main bg-primary-main/5 dark:bg-primary-main/10'
-                  : 'border-gray-200 bg-white hover:border-primary-main/50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-main/50'
+                  ? 'border-[var(--accent-blue)] bg-[var(--accent-blue)]/10'
+                  : 'border-[var(--border-light)] bg-[var(--bg-elevated)] hover:border-[var(--accent-blue)]/50'
                 }
               `}
               whileHover={{ scale: 1.02 }}
@@ -58,8 +52,8 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
                 className={`
                   rounded-full p-3
                   ${isSelected
-                    ? 'bg-primary-main text-white'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                    ? 'bg-[var(--accent-blue)] text-white'
+                    : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
                   }
                 `}
               >
@@ -70,20 +64,20 @@ export const RoleSelector = ({ selectedRole, onSelectRole }: RoleSelectorProps) 
                   className={`
                     font-semibold
                     ${isSelected
-                      ? 'text-primary-main'
-                      : 'text-gray-900 dark:text-white'
+                      ? 'text-[var(--accent-blue)]'
+                      : 'text-[var(--text-primary)]'
                     }
                   `}
                 >
                   {role.label}
                 </p>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {role.description}
                 </p>
               </div>
               {isSelected && (
                 <motion.div
-                  className="absolute right-3 top-3 h-5 w-5 rounded-full bg-primary-main"
+                  className="absolute right-3 top-3 h-5 w-5 rounded-full bg-[var(--accent-blue)]"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}

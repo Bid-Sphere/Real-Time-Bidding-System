@@ -81,7 +81,7 @@ export const CategorySection = () => {
   };
 
   return (
-    <section id="categories" className="py-20 bg-gray-50 dark:bg-gray-900">
+    <section id="categories" className="py-20 bg-[var(--bg-primary)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Using useScrollAnimation hook for header animation */}
         <div
@@ -89,10 +89,10 @@ export const CategorySection = () => {
           className={`text-center mb-16 transition-all duration-700 ease-out ${headerInView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-12 scale-95'
             }`}
         >
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text-primary)] mb-4">
             Explore Project Categories
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">
             Browse through our diverse range of project categories and find the perfect match for your expertise.
           </p>
         </div>

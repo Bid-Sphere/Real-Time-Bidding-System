@@ -33,23 +33,20 @@ export const useAuthStore = create<AuthState>((set) => ({
       const roleMap: Record<string, string> = {
         'client': 'CLIENT',
         'organization': 'ORGANISATION',
-        'freelancer': 'FREELANCER',
       };
 
       // Transform frontend data to backend format
-      const backendData: any = {
+      const backendData = {
         email: data.email,
         password: data.password,
         fullName: data.fullName,
         role: roleMap[data.role] || data.role.toUpperCase(),
         phone: data.phone,
         location: data.location,
-      };
+      } as SignupData;
 
       // Add role-specific profiles
-      if (data.role === 'freelancer' && data.freelancerProfile) {
-        backendData.freelancerProfile = data.freelancerProfile;
-      } else if (data.role === 'client' && data.clientProfile) {
+      if (data.role === 'client' && data.clientProfile) {
         backendData.clientProfile = data.clientProfile;
       } else if (data.role === 'organization' && data.organizationProfile) {
         backendData.organizationProfile = data.organizationProfile;

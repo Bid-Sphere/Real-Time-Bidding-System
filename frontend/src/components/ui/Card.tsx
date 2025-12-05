@@ -1,35 +1,66 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
+/**
+ * Card Component - Phase 1 Frontend Redesign
+ * Requirements: 1.5, 1.6 - Consistent border-radius and subtle glow effects
+ * 
+ * Variants:
+ * - default: Standard dark card with subtle shadow
+ * - elevated: Higher elevation with stronger shadow
+ * - bordered: Visible border with transparent background
+ * - glass: Glassmorphism effect with backdrop blur
+ */
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'elevated' | 'outlined' | 'filled';
-  hoverable?: boolean;
-  clickable?: boolean;
+  variant?: 'default' | 'elevated' | 'bordered' | 'glass';
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  hoverable?: boolean;
+  clickable?: boolean; // Legacy support - use onClick instead
   children: React.ReactNode;
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   (
     {
-      variant = 'elevated',
+      variant = 'default',
+      padding = 'md',
       hoverable = false,
       clickable = false,
-      padding = 'md',
       children,
       className = '',
       onClick,
+      ...props
     },
     ref
   ) => {
-    // Base styles
-    const baseStyles = 'rounded-xl transition-shadow duration-150 bg-[var(--color-bg-elevated)]';
+    // Determine if card should be interactive
+    const isInteractive = clickable || !!onClick;
+    // Base styles with dark theme
+    const baseStyles = `
+      rounded-[var(--radius-xl)]
+      transition-all duration-[var(--transition-fast)]
+    `.trim().replace(/\s+/g, ' ');
 
-    // Variant styles
+    // Variant styles (Requirements 1.5, 1.6)
     const variantStyles = {
-      elevated: 'shadow-[var(--shadow-md)]',
-      outlined: 'border-2 border-[var(--color-border)]',
-      filled: 'bg-[var(--color-bg-secondary)]',
+      default: `
+        bg-[var(--bg-card)]
+        shadow-[var(--shadow-card)]
+      `.trim().replace(/\s+/g, ' '),
+      elevated: `
+        bg-[var(--bg-card)]
+        shadow-[var(--shadow-elevated)]
+      `.trim().replace(/\s+/g, ' '),
+      bordered: `
+        bg-transparent
+        border border-[var(--border-light)]
+      `.trim().replace(/\s+/g, ' '),
+      glass: `
+        bg-[var(--bg-navbar)]
+        backdrop-blur-xl
+        border border-[var(--border-light)]
+        shadow-[var(--shadow-card)]
+      `.trim().replace(/\s+/g, ' '),
     };
 
     // Padding styles
@@ -40,13 +71,19 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       lg: 'p-8',
     };
 
-    // Hoverable styles - only shadow, scale and translate handled by Framer Motion
-    const hoverStyles = hoverable
-      ? 'hover:shadow-[var(--shadow-xl)]'
+    // Hoverable styles - Enhanced for Requirement 15.1, 15.5
+    // All hover transitions are under 300ms for responsiveness
+    const hoverStyles = (hoverable || isInteractive)
+      ? `
+        cursor-pointer
+        hover:shadow-[var(--shadow-card-hover)]
+        hover:border-[var(--border-medium)]
+        hover:-translate-y-1
+      `.trim().replace(/\s+/g, ' ')
       : '';
 
     // Clickable styles
-    const clickableStyles = clickable || onClick
+    const clickableStyles = isInteractive
       ? 'cursor-pointer active:scale-[0.98]'
       : '';
 
@@ -61,8 +98,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       },
       hover: hoverable
         ? {
-            scale: 1.02,
-            y: -4,
+            scale: 1.01,
+            y: -2,
           }
         : {
             scale: 1,
@@ -72,8 +109,13 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
 
     const MotionDiv = motion.div;
     
+    // Extract drag-related props to avoid type conflicts with Framer Motion
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { onDrag, onDragStart, onDragEnd, onDragOver, ...restProps } = props;
+    void restProps; // Acknowledge unused variable
+
     // If clickable or has onClick, use motion.div with tap animation
-    if (clickable || onClick) {
+    if (isInteractive) {
       return (
         <MotionDiv
           ref={ref}
@@ -84,19 +126,14 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           whileHover="hover"
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.15, ease: 'easeOut' }}
-          role={onClick ? 'button' : undefined}
-          tabIndex={onClick ? 0 : undefined}
-          aria-label={className?.includes('category') ? 'Project category card' : undefined}
-          onKeyDown={
-            onClick
-              ? (e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onClick(e as any);
-                  }
-                }
-              : undefined
-          }
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+            }
+          }}
         >
           {children}
         </MotionDiv>
@@ -110,7 +147,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         className={combinedStyles}
         variants={cardVariants}
         initial="rest"
-        whileHover="hover"
+        whileHover={hoverable ? "hover" : "rest"}
         transition={{ duration: 0.15, ease: 'easeOut' }}
       >
         {children}

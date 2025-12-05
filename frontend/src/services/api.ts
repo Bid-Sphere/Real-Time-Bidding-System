@@ -1,8 +1,22 @@
-import axios, { type AxiosInstance, AxiosError, type InternalAxiosRequestConfig } from 'axios';
+// Axios imports kept for future backend reconnection
+// @ts-expect-error - Keeping axios import for future backend reconnection
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
+// ============================================
+// BACKEND DISCONNECTED - API CLIENT DISABLED
+// ============================================
+// This file has been temporarily disconnected from the backend
+// All API calls are commented out while changes are being made
+// ============================================
+
+// @ts-expect-error - Keeping for future backend reconnection
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
 // Create axios instance with default config
+// COMMENTED OUT - Backend disconnected
+/*
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
@@ -84,5 +98,23 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+*/
+
+// Mock API client for disconnected mode
+interface MockApiClient {
+  get: () => Promise<never>;
+  post: () => Promise<never>;
+  put: () => Promise<never>;
+  delete: () => Promise<never>;
+  patch: () => Promise<never>;
+}
+
+const apiClient: MockApiClient = {
+  get: () => Promise.reject(new Error('Backend disconnected')),
+  post: () => Promise.reject(new Error('Backend disconnected')),
+  put: () => Promise.reject(new Error('Backend disconnected')),
+  delete: () => Promise.reject(new Error('Backend disconnected')),
+  patch: () => Promise.reject(new Error('Backend disconnected')),
+};
 
 export default apiClient;
