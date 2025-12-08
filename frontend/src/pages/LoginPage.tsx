@@ -94,7 +94,7 @@ export default function LoginPage() {
         animate="animate"
         exit="exit"
         transition={pageTransition}
-        className="min-h-[calc(100vh-4rem)] flex"
+        className="min-h-screen flex -mt-24 sm:-mt-28"
       >
         {/* Left Panel - Branding */}
         <motion.div
@@ -103,7 +103,7 @@ export default function LoginPage() {
           animate="animate"
           exit="exit"
           transition={{ ...pageTransition, delay: 0.1 }}
-          className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[var(--accent-blue)] via-[var(--accent-purple)] to-purple-900"
+          className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[var(--accent-blue)] via-[var(--accent-purple)] to-purple-900 pt-24 sm:pt-28"
         >
           {/* Animated background elements */}
           <div className="absolute inset-0 opacity-10">
@@ -193,7 +193,7 @@ export default function LoginPage() {
           animate="animate"
           exit="exit"
           transition={{ ...pageTransition, delay: 0.2 }}
-          className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-[var(--bg-primary)]"
+          className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 bg-[var(--bg-primary)] pt-24 sm:pt-28"
         >
           <div className="w-full max-w-md">
             <motion.div

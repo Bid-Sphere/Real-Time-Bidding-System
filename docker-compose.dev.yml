@@ -46,8 +46,14 @@ services:
     container_name: frontend
     ports:
       - "3000:80"
-    depends_on:
-      - auth-service
+    # ============================================
+    # BACKEND DISCONNECTED
+    # ============================================
+    # Frontend-backend dependency temporarily disabled
+    # Uncomment the lines below to reconnect
+    # ============================================
+    # depends_on:
+    #   - auth-service
 
 volumes:
   auth_data:

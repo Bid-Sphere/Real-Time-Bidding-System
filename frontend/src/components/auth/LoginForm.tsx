@@ -160,7 +160,7 @@ export const LoginForm = ({
             <div className="w-full border-t border-[var(--border-light)]" />
           </div>
           <div className="relative flex justify-center text-xs sm:text-sm">
-            <span className="px-3 sm:px-4 bg-[var(--bg-card)] text-[var(--text-muted)]">
+            <span className="px-3 sm:px-4 bg-[var(--bg-primary)] text-[var(--text-muted)]">
               or continue with
             </span>
           </div>
