@@ -52,7 +52,7 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<User>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;

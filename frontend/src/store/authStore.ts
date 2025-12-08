@@ -18,6 +18,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       saveUser(user);
       
       set({ user, isAuthenticated: true, isLoading: false });
+      
+      return user;
     } catch (error) {
       set({ isLoading: false });
       console.error('Login error:', error);

@@ -18,6 +18,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
+import NotificationDropdown from '@/components/notifications/NotificationDropdown';
 
 // Navigation items (Requirement 2.4)
 const navItems = [
@@ -200,7 +201,13 @@ export default function Navbar() {
                   </>
                 ) : (
                   /* Authenticated User Menu (Requirement 2.7) */
-                  <div className="relative" ref={userMenuRef}>
+                  <>
+                    {/* Notification Dropdown - Only for organization users */}
+                    {user?.role === 'organization' && user?.id && (
+                      <NotificationDropdown organizationId={user.id} />
+                    )}
+                    
+                    <div className="relative" ref={userMenuRef}>
                     <button
                       onClick={() => setUserMenuOpen(!userMenuOpen)}
                       className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-[var(--border-light)] transition-all duration-200"
@@ -274,6 +281,7 @@ export default function Navbar() {
                       )}
                     </AnimatePresence>
                   </div>
+                  </>
                 )}
               </div>
 

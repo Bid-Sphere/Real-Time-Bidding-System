@@ -1,18 +1,34 @@
-import Layout from '@/components/layout/Layout';
+import { Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { useDashboardStore } from '@/store/useDashboardStore';
+// Import notification demo utilities for testing
+import '@/utils/notificationDemo';
 
 export default function OrganizationDashboard() {
+  const location = useLocation();
+  const setActiveSection = useDashboardStore((state) => state.setActiveSection);
+
+  // Update active section based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    
+    if (path.includes('/analytics')) {
+      setActiveSection('analytics');
+    } else if (path.includes('/profile')) {
+      setActiveSection('profile');
+    } else if (path.includes('/teams')) {
+      setActiveSection('teams');
+    } else if (path.includes('/projects')) {
+      setActiveSection('projects');
+    } else if (path.includes('/chat')) {
+      setActiveSection('chat');
+    }
+  }, [location.pathname, setActiveSection]);
+
   return (
-    <Layout>
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Organization Dashboard
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            This is the Organization Dashboard
-          </p>
-        </div>
-      </div>
-    </Layout>
+    <DashboardLayout>
+      <Outlet />
+    </DashboardLayout>
   );
 }

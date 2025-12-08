@@ -56,12 +56,15 @@ export default function LoginPage() {
     setError(undefined);
     
     try {
-      await login(data);
+      const user = await login(data);
       toast.success('Login successful!');
       
-      // Redirect to dashboard - the auth store will have the user role
-      // For now, redirect to a generic dashboard route
-      navigate('/client-dashboard');
+      // Redirect to appropriate dashboard based on user role
+      const dashboardPath = user.role === 'organization' 
+        ? '/organization-dashboard' 
+        : '/client-dashboard';
+      
+      navigate(dashboardPath);
     } catch (err) {
       // Requirement 11.7: Generic error message for security
       // Don't reveal whether email or password was incorrect

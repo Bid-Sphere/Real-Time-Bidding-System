@@ -139,9 +139,24 @@ class AuthService {
     const mockToken = 'mock-jwt-token-' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('accessToken', mockToken);
     
+    // Try to get user from localStorage (if they just signed up)
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser.email === credentials.email) {
+          console.log('AuthService.login - Using stored user from signup:', parsedUser);
+          return { user: parsedUser, token: mockToken };
+        }
+      } catch (e) {
+        console.error('Failed to parse stored user:', e);
+      }
+    }
+    
     // Determine role based on email for testing
     let role: 'client' | 'organization' = 'client';
-    if (credentials.email.includes('org')) {
+    if (credentials.email.toLowerCase().includes('org') || 
+        credentials.email.toLowerCase().includes('organisation')) {
       role = 'organization';
     }
     

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { lazy, Suspense, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -14,6 +14,13 @@ const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ClientDashboard = lazy(() => import('@/pages/ClientDashboard'));
 const OrganizationDashboard = lazy(() => import('@/pages/OrganizationDashboard'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+
+// Organization Dashboard sections
+const AnalyticsHome = lazy(() => import('@/pages/dashboard/AnalyticsHome'));
+const ProfileSection = lazy(() => import('@/pages/dashboard/ProfileSection'));
+const TeamsSection = lazy(() => import('@/pages/dashboard/TeamsSection'));
+const ProjectDiscoverySection = lazy(() => import('@/pages/dashboard/ProjectDiscoverySection'));
+const ChatSection = lazy(() => import('@/pages/dashboard/ChatSection'));
 
 // Page transition variants
 const pageVariants = {
@@ -118,22 +125,24 @@ function AnimatedRoutes() {
             </motion.div>
           }
         />
+        
+        {/* Organization Dashboard with nested routes */}
         <Route
           path="/organization-dashboard"
           element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <ProtectedRoute role="organization">
-                <OrganizationDashboard />
-              </ProtectedRoute>
-            </motion.div>
+            <ProtectedRoute role="organization">
+              <OrganizationDashboard />
+            </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="analytics" replace />} />
+          <Route path="analytics" element={<AnalyticsHome />} />
+          <Route path="profile" element={<ProfileSection />} />
+          <Route path="teams" element={<TeamsSection />} />
+          <Route path="projects" element={<ProjectDiscoverySection />} />
+          <Route path="chat" element={<ChatSection />} />
+          <Route path="chat/:conversationId" element={<ChatSection />} />
+        </Route>
 
         {/* Catch-all route */}
         <Route
