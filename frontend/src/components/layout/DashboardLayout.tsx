@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SidePanel from './SidePanel';
+import Navbar from './Navbar';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -16,10 +17,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background-deep">
+      {/* Navbar at the top */}
+      <Navbar />
       {/* Mobile hamburger button - Touch-friendly 44x44px minimum */}
       <button
         onClick={toggleMobileMenu}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 rounded-lg bg-background-card border border-white/10 hover:border-primary-main/50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="lg:hidden fixed top-20 left-4 z-40 p-3 rounded-lg bg-background-card border border-white/10 hover:border-primary-main/50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Toggle menu"
         aria-expanded={isMobileMenuOpen}
       >
@@ -77,7 +80,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </AnimatePresence>
 
         {/* Main Content Area */}
-        <main className="flex-1 lg:ml-0">
+        <main className="flex-1 lg:ml-0 pt-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
             {children}
           </div>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { ProfileCompletionBar } from '@/components/profile/ProfileCompletionBar';
 import { EmailVerification } from '@/components/profile/EmailVerification';
@@ -95,11 +94,7 @@ export default function ProfileSection() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 pb-8"
-    >
+    <div className="space-y-6 pb-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Profile Management</h1>
@@ -122,6 +117,6 @@ export default function ProfileSection() {
 
       {/* Profile Form */}
       <ProfileForm profile={profile} onSave={handleSaveProfile} isLoading={isLoading} />
-    </motion.div>
+    </div>
   );
 }

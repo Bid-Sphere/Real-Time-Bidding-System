@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { ProjectFilters } from '@/components/projects/ProjectFilters';
@@ -77,12 +76,7 @@ function ProjectDiscoverySection() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Project Discovery</h1>
@@ -131,28 +125,9 @@ function ProjectDiscoverySection() {
             </p>
           </div>
 
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1
-                }
-              }
-            }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <motion.div
-                key={project.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 }
-                }}
-              >
+              <div key={project.id}>
                 <ProjectCard
                   project={project}
                   isVerified={isVerified}
@@ -160,9 +135,9 @@ function ProjectDiscoverySection() {
                   onBid={() => handleBidClick(project)}
                   onInterest={() => handleInterestClick(project)}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       )}
 
@@ -219,7 +194,7 @@ function ProjectDiscoverySection() {
           />
         </>
       )}
-    </motion.div>
+    </div>
   );
 }
 

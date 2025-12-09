@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { useBidStore } from '@/store/useBidStore';
 import { useProjectStore } from '@/store/useProjectStore';
@@ -124,27 +123,9 @@ const AnalyticsHome = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Metrics Grid */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: {
-            opacity: 1,
-            transition: {
-              staggerChildren: 0.1
-            }
-          }
-        }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Bids Submitted"
           value={analytics?.totalBids || 0}
@@ -167,7 +148,7 @@ const AnalyticsHome = () => {
           icon={<DollarSign className="w-6 h-6" />}
           trend={{ value: 12.5, direction: 'up' }}
         />
-      </motion.div>
+      </div>
 
       {/* Recommended Projects */}
       {isLoadingRecommended ? (
@@ -211,7 +192,7 @@ const AnalyticsHome = () => {
         onClose={handleCloseEditModal}
         onSave={handleSaveBid}
       />
-    </motion.div>
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import type { Project } from '@/types/organization';
 import { CountdownTimer } from '@/components/shared/CountdownTimer';
 import Button from '@/components/ui/Button';
@@ -23,10 +22,7 @@ export function ProjectCard({
   };
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, y: -4 }}
-      transition={{ duration: 0.2 }}
-      className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-xl p-6 border border-white/5 hover:border-blue-500/30 transition-colors duration-300 group"
+    <div className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-300 group hover:scale-[1.02] hover:-translate-y-1 animate-fade-in-up"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
@@ -164,6 +160,6 @@ export function ProjectCard({
           </svg>
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }

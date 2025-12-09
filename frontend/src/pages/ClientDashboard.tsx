@@ -1,9 +1,10 @@
-import Layout from '@/components/layout/Layout';
+import Navbar from '@/components/layout/Navbar';
 
 export default function ClientDashboard() {
   return (
-    <Layout>
-      <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen bg-background-deep">
+      <Navbar />
+      <div className="pt-20 flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Client Dashboard
@@ -13,6 +14,6 @@ export default function ClientDashboard() {
           </p>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }

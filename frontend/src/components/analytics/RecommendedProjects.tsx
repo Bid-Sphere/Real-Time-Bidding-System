@@ -1,5 +1,4 @@
 import type { Project } from '@/types/organization';
-import { motion } from 'framer-motion';
 import { Calendar, DollarSign, Users, MapPin } from 'lucide-react';
 
 interface RecommendedProjectsProps {
@@ -43,13 +42,10 @@ export const RecommendedProjects = ({
       <h2 className="text-xl font-semibold text-white mb-6">Recommended Projects</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayProjects.map((project, index) => (
-          <motion.div
+        {displayProjects.map((project) => (
+          <div
             key={project.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className="bg-[rgba(26,26,46,0.4)] rounded-lg p-4 border border-gray-800 hover:border-blue-500/50 transition-all duration-300"
+            className="bg-[rgba(26,26,46,0.4)] rounded-lg p-4 border border-gray-800 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up"
           >
             {/* Category Badge */}
             <div className="flex items-center justify-between mb-3">
@@ -116,7 +112,7 @@ export const RecommendedProjects = ({
                 ★
               </button>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

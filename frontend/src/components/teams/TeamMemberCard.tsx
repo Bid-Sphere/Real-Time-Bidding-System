@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import type { TeamMember } from '@/types/organization';
 import { User, Edit2, Trash2 } from 'lucide-react';
 
@@ -10,12 +9,7 @@ interface TeamMemberCardProps {
 
 export const TeamMemberCard = ({ member, onEdit, onDelete }: TeamMemberCardProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.3 }}
-      className="bg-[rgba(26,26,46,0.6)] backdrop-blur-sm border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-300"
+    <div className="bg-[rgba(26,26,46,0.6)] backdrop-blur-sm border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up"
     >
       {/* Avatar */}
       <div className="flex items-start justify-between mb-4">
@@ -104,6 +98,6 @@ export const TeamMemberCard = ({ member, onEdit, onDelete }: TeamMemberCardProps
           )}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };

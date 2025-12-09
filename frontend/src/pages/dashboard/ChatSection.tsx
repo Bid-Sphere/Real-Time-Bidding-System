@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import { useChatStore } from '@/store/useChatStore';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
@@ -62,12 +61,7 @@ const ChatSection = () => {
   const currentUserId = profile?.userId || '';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="flex h-[calc(100vh-4rem)]"
-    >
+    <div className="flex h-[calc(100vh-4rem)]">
       <ChatList
         conversations={conversations}
         activeConversationId={activeConversationId}
@@ -81,7 +75,7 @@ const ChatSection = () => {
         onSendMessage={handleSendMessage}
         isLoading={isLoading && messages.length === 0 && !!activeConversation}
       />
-    </motion.div>
+    </div>
   );
 };
 

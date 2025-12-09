@@ -6,7 +6,7 @@ import { saveUser, getUser, removeUser } from '@/utils/localStorage';
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true, // Start as true to prevent flash of login page
 
   login: async (credentials: LoginCredentials) => {
     set({ isLoading: true });
@@ -76,9 +76,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     const isAuthenticated = authService.isAuthenticated();
     
     if (user && isAuthenticated) {
-      set({ user, isAuthenticated: true });
+      set({ user, isAuthenticated: true, isLoading: false });
     } else {
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

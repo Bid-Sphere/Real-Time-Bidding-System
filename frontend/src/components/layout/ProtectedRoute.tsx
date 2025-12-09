@@ -8,8 +8,17 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, role }: ProtectedRouteProps) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isLoading } = useAuthStore();
   const location = useLocation();
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-blue)]"></div>
+      </div>
+    );
+  }
 
   // Check if user is authenticated
   if (!isAuthenticated) {

@@ -88,15 +88,8 @@ export default function SidePanel({ onNavigate }: SidePanelProps) {
   return (
     <aside className="w-[280px] h-screen bg-background-card/60 backdrop-blur-xl border-r border-white/10 sticky top-0">
       <div className="flex flex-col h-full">
-        {/* Logo/Brand */}
-        <div className="p-6 border-b border-white/10">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-primary-main to-accent-purple bg-clip-text text-transparent">
-            Organization Dashboard
-          </h2>
-        </div>
-
         {/* Navigation Items */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 pt-24 space-y-2">
           {navItems.map((item) => {
             const active = isActive(item.path);
             
@@ -111,33 +104,27 @@ export default function SidePanel({ onNavigate }: SidePanelProps) {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className={`
-                    relative flex items-center gap-3 px-4 py-3 rounded-xl
+                    relative flex items-center gap-3 px-4 py-3 rounded-lg
                     transition-all duration-200 min-h-[44px]
                     ${
                       active
-                        ? 'bg-gradient-to-r from-primary-main/20 to-accent-purple/20 text-white shadow-lg shadow-primary-main/20'
+                        ? 'bg-primary-main/10 text-white border border-primary-main/30'
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }
                   `}
                 >
-                  {/* Active indicator */}
-                  {active && (
-                    <motion.div
-                      layoutId="activeIndicator"
-                      className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary-main to-accent-purple rounded-r-full"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-
                   {/* Icon */}
                   <div className={`
+                    transition-colors duration-200
                     ${active ? 'text-primary-main' : ''}
                   `}>
                     {item.icon}
                   </div>
 
                   {/* Label */}
-                  <span className="font-medium">{item.label}</span>
+                  <span className={`font-medium transition-colors duration-200 ${active ? 'text-white' : ''}`}>
+                    {item.label}
+                  </span>
 
                   {/* Notification badge for Chat */}
                   {item.id === 'chat' && totalUnreadCount > 0 && (

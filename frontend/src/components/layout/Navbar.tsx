@@ -37,6 +37,9 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Check if we're on a dashboard page
+  const isDashboard = location.pathname.includes('-dashboard');
 
   // Handle scroll behavior (Requirement 2.6)
   useEffect(() => {
@@ -104,27 +107,36 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Floating Navbar Container (Requirements 2.1, 2.2) */}
-      <nav
-        className={`
-          fixed top-0 left-0 right-0 z-50
-          flex justify-center
-          px-4 sm:px-6 lg:px-8
-          pt-4 sm:pt-5
-          transition-all duration-300
-        `}
+      {/* Navbar Container with morphing animation */}
+      <motion.nav
+        initial={false}
+        animate={{
+          paddingTop: isDashboard ? 0 : '1rem',
+          paddingLeft: isDashboard ? 0 : '1rem',
+          paddingRight: isDashboard ? 0 : '1rem',
+        }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center"
       >
-        {/* Pill-shaped navbar (Requirement 2.1) */}
-        <div
+        {/* Morphing navbar - pill to rectangle */}
+        <motion.div
+          initial={false}
+          animate={{
+            borderRadius: isDashboard ? '0px' : '9999px',
+            maxWidth: isDashboard ? '100%' : '1152px',
+            width: '100%',
+          }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className={`
-            w-full max-w-6xl
             px-4 sm:px-6 py-3
-            rounded-full
-            border border-[var(--border-light)]
             transition-all duration-300
-            ${scrolled 
-              ? 'bg-[var(--bg-navbar)] backdrop-blur-xl shadow-lg border-[var(--border-medium)]' 
-              : 'bg-[var(--bg-navbar)] backdrop-blur-md'
+            ${isDashboard 
+              ? 'border-b border-[var(--border-light)] bg-[var(--bg-navbar)] backdrop-blur-xl shadow-lg' 
+              : `border border-[var(--border-light)] ${
+                  scrolled 
+                    ? 'bg-[var(--bg-navbar)] backdrop-blur-xl shadow-lg border-[var(--border-medium)]' 
+                    : 'bg-[var(--bg-navbar)] backdrop-blur-md'
+                }`
             }
           `}
         >
@@ -296,8 +308,8 @@ export default function Navbar() {
               </button>
             </div>
           </div>
-        </div>
-      </nav>
+        </motion.div>
+      </motion.nav>
 
       {/* Mobile Navigation Drawer (Requirement 14.2) */}
       <AnimatePresence>
