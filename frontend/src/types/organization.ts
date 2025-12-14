@@ -43,6 +43,7 @@ export interface Project {
   title: string;
   description: string;
   category: string;
+  tags?: string[]; // Tags for easier searching (e.g., 'Web Development', 'Mobile Development')
   budgetMin: number;
   budgetMax: number;
   deadline: string; // ISO date

@@ -54,7 +54,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         backendData.organizationProfile = data.organizationProfile;
       }
 
-      await authService.register(backendData);
+      const user = await authService.register(backendData);
+      
+      // Store the user in localStorage so login can retrieve it
+      // The user returned from register already has the correct lowercase role
+      saveUser(user);
       
       // Don't auto-login after registration
       set({ isLoading: false });

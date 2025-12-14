@@ -127,15 +127,14 @@ function ProjectDiscoverySection() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <div key={project.id}>
-                <ProjectCard
-                  project={project}
-                  isVerified={isVerified}
-                  onViewDetails={() => handleViewDetails(project)}
-                  onBid={() => handleBidClick(project)}
-                  onInterest={() => handleInterestClick(project)}
-                />
-              </div>
+              <ProjectCard
+                key={project.id}
+                project={project}
+                isVerified={isVerified}
+                onViewDetails={() => handleViewDetails(project)}
+                onBid={() => handleBidClick(project)}
+                onInterest={() => handleInterestClick(project)}
+              />
             ))}
           </div>
         </div>

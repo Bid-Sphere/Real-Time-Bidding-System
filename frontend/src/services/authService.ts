@@ -77,11 +77,22 @@ class AuthService {
     */
     
     // Mock response for disconnected mode
+    // Map backend role to frontend role (backend uses British spelling and uppercase)
+    const backendToFrontendRole = (backendRole: string): 'client' | 'organization' => {
+      const roleMap: Record<string, 'client' | 'organization'> = {
+        'ORGANISATION': 'organization',
+        'CLIENT': 'client',
+        'organization': 'organization',
+        'client': 'client',
+      };
+      return roleMap[backendRole] || 'client';
+    };
+    
     const user: User = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       fullName: data.fullName,
       email: data.email,
-      role: data.role,
+      role: backendToFrontendRole(data.role),
       phone: data.phone,
       location: data.location,
       createdAt: new Date().toISOString(),
@@ -136,11 +147,11 @@ class AuthService {
     */
     
     // Mock response for disconnected mode
-    const mockToken = 'mock-jwt-token-' + Math.random().toString(36).substr(2, 9);
+    const mockToken = 'mock-jwt-token-' + Math.random().toString(36).substring(2, 11);
     localStorage.setItem('accessToken', mockToken);
     
     // Try to get user from localStorage (if they just signed up)
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('bidding_platform_user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -161,7 +172,7 @@ class AuthService {
     }
     
     const user: User = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       fullName: 'Mock User',
       email: credentials.email,
       role: role,
@@ -177,7 +188,7 @@ class AuthService {
    */
   logout(): void {
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
+    localStorage.removeItem('bidding_platform_user');
   }
 
   /**
