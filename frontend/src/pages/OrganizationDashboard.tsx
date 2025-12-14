@@ -2,8 +2,6 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useDashboardStore } from '@/store/useDashboardStore';
-// Import notification demo utilities for testing
-import '@/utils/notificationDemo';
 
 export default function OrganizationDashboard() {
   const location = useLocation();
