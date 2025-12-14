@@ -579,15 +579,9 @@ Or manually create tables using schema.sql
 
 ---
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
 
 ---
 
@@ -599,9 +593,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 📞 Contact
-
-Project Link: [https://github.com/yourusername/project-service](https://github.com/yourusername/project-service)
 
 ---
 
@@ -613,4 +604,3 @@ Project Link: [https://github.com/yourusername/project-service](https://github.c
 
 ---
 
-Made with ❤️ for BidSphere Platform
