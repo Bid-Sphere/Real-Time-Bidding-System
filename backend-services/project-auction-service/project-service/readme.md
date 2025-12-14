@@ -585,13 +585,6 @@ Or manually create tables using schema.sql
 
 ---
 
-## 🙏 Acknowledgments
-
-- Spring Boot team for the amazing framework
-- BidSphere project team
-- All contributors
-
----
 
 
 ---
@@ -603,4 +596,5 @@ Or manually create tables using schema.sql
 ![GitHub issues](https://img.shields.io/github/issues/yourusername/project-service)
 
 ---
+
 
