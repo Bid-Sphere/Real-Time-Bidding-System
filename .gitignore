@@ -21,3 +21,7 @@ Thumbs.db
 
 # E2E Tests
 e2e-tests/
+
+# .NET build outputs
+**/bin/
+**/obj/
