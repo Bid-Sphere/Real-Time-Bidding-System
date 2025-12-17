@@ -3,27 +3,22 @@
 # =============================================
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-WORKDIR /build
+WORKDIR /app
 
-# Copy parent pom
-COPY pom.xml ../pom.xml
-
-# Copy service pom and download dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline
 
-# Copy source code and build
 COPY src ./src
-RUN mvn clean package -DskipTests -B
+RUN mvn clean package -DskipTests
 
 # =============================================
 # Runtime Stage
 # =============================================
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-COPY --from=build /build/target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8081
 
