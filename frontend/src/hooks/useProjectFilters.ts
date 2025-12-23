@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Project, ProjectFilter } from '@/types/project';
+import type { Project, ProjectFilter } from '../types/project';
 
 export function useProjectFilters(projects: Project[], filter: ProjectFilter, searchQuery: string) {
   return useMemo(() => {

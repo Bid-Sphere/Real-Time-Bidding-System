@@ -2,7 +2,7 @@ import { Plus, Search } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
-import type { ProjectFilter } from '@/types/project';
+import type { ProjectFilter } from '../../types/project';
 
 interface QuickActionsBarProps {
   onPostProject: () => void;

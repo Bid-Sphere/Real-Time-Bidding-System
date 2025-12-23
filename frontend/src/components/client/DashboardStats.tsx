@@ -1,6 +1,6 @@
 import { BarChart3, Users, CheckCircle, DollarSign } from 'lucide-react';
 import Card from '@/components/ui/Card';
-import type { DashboardStats } from '@/types/project';
+import type { DashboardStats } from '../../types/project';
 
 interface DashboardStatsProps {
   stats: DashboardStats;

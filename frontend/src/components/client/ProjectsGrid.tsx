@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import ProjectCard from './ProjectCard';
-import type { Project } from '@/types/project';
+import type { Project } from '../../types/project';
 
 interface ProjectsGridProps {
   projects: Project[];
