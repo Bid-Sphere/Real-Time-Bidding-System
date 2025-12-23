@@ -120,7 +120,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               <button
                 key={option}
                 type="button"
-                onClick={() => handleAddTag(option)}
+                onMouseDown={() => handleAddTag(option)}
                 className="w-full px-4 py-2.5 text-left hover:bg-primary-main/10 transition-colors text-sm border-b border-gray-200 dark:border-gray-700 last:border-b-0 text-gray-900 dark:text-gray-100 bg-white dark:bg-slate-800"
               >
                 {option}
