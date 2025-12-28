@@ -10,14 +10,9 @@ interface ProjectFiltersProps {
 
 const categoryOptions = [
   { value: '', label: 'All Categories' },
-  { value: 'Web Development', label: 'Web Development' },
-  { value: 'Mobile Development', label: 'Mobile Development' },
-  { value: 'UI/UX Design', label: 'UI/UX Design' },
-  { value: 'Data Science', label: 'Data Science' },
-  { value: 'DevOps', label: 'DevOps' },
-  { value: 'Marketing', label: 'Marketing' },
-  { value: 'Content Writing', label: 'Content Writing' },
-  { value: 'Consulting', label: 'Consulting' },
+  { value: 'IT', label: 'IT' },
+  { value: 'Construction', label: 'Construction' },
+  { value: 'Supplies', label: 'Supplies' },
 ];
 
 const deadlineOptions = [
@@ -84,12 +79,12 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Search Input */}
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Search Input - Full width */}
+        <div className="md:col-span-2">
           <Input
             type="text"
-            placeholder="Search projects by title or description..."
+            placeholder="Search projects by title, description, or tags..."
             value={localFilters.searchQuery || ''}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="w-full"
@@ -107,7 +102,7 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
           />
         </div>
 
-        {/* Budget Range */}
+        {/* Budget Min */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Min Budget ($)
@@ -122,6 +117,7 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
           />
         </div>
 
+        {/* Budget Max */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Max Budget ($)

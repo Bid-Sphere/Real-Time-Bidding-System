@@ -40,11 +40,12 @@ const STORAGE_KEYS = {
 
 // Initialize localStorage with mock data if not present
 const initializeStorage = () => {
+  // Force update projects data to include new categories and tags
+  // Remove this line after first load if you want to persist user changes
+  localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(mockProjects));
+  
   if (!localStorage.getItem(STORAGE_KEYS.PROFILE)) {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(currentOrganization));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.PROJECTS)) {
-    localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(mockProjects));
   }
   if (!localStorage.getItem(STORAGE_KEYS.BIDS)) {
     localStorage.setItem(STORAGE_KEYS.BIDS, JSON.stringify(mockBids));
@@ -279,7 +280,8 @@ export const projectsApi = {
         const query = filters.searchQuery.toLowerCase();
         projects = projects.filter(p => 
           p.title.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query)
+          p.description.toLowerCase().includes(query) ||
+          (p.tags && p.tags.some(tag => tag.toLowerCase().includes(query)))
         );
       }
       

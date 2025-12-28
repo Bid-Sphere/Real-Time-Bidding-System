@@ -22,12 +22,12 @@ export function ProjectCard({
   };
 
   return (
-    <div className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-300 group hover:scale-[1.02] hover:-translate-y-1 animate-fade-in-up"
+    <div className="bg-[#1a1a2e]/60 backdrop-blur-sm rounded-xl p-6 border border-white/5 hover:border-blue-500/30 transition-all duration-300 group hover:scale-[1.02] hover:-translate-y-1 animate-fade-in-up h-full flex flex-col"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      {/* Header - Fixed height */}
+      <div className="flex items-start justify-between mb-4 min-h-[60px]">
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors">
+          <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-400 transition-colors line-clamp-1">
             {project.title}
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -44,23 +44,25 @@ export function ProjectCard({
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            <span>{project.clientName}</span>
+            <span className="truncate">{project.clientName}</span>
           </div>
         </div>
 
         {/* Category Badge */}
-        <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+        <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 flex-shrink-0 ml-2">
           {project.category}
         </span>
       </div>
 
-      {/* Description */}
-      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-        {project.description}
-      </p>
+      {/* Description - Fixed height */}
+      <div className="h-10 mb-4">
+        <p className="text-gray-300 text-sm line-clamp-2">
+          {project.description}
+        </p>
+      </div>
 
-      {/* Budget and Deadline */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5">
+      {/* Budget and Deadline - Fixed height */}
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/5 h-[60px]">
         <div>
           <p className="text-xs text-gray-400 mb-1">Budget</p>
           <p className="text-lg font-semibold text-white">
@@ -71,8 +73,11 @@ export function ProjectCard({
         <CountdownTimer deadline={project.deadline} />
       </div>
 
-      {/* Bid Count and Location */}
-      <div className="flex items-center gap-4 mb-4 text-sm text-gray-400">
+      {/* Spacer to push buttons to bottom */}
+      <div className="flex-1"></div>
+
+      {/* Bid Count and Location - Fixed height, always same position, centered */}
+      <div className="flex items-center justify-center gap-4 mb-4 text-sm text-gray-400 h-[20px]">
         <div className="flex items-center gap-1.5">
           <svg
             className="w-4 h-4"
@@ -116,28 +121,30 @@ export function ProjectCard({
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-3">
+      {/* Action Buttons - Always at bottom, centered */}
+      <div className="flex items-center justify-center gap-3">
         <Button
           onClick={onViewDetails}
           variant="outline"
-          className="flex-1"
+          size="md"
+          className="w-[110px] h-[44px]"
         >
-          View Details
+          Details
         </Button>
 
         <Button
           onClick={onBid}
           disabled={!isVerified || project.hasBid}
-          className="flex-1"
+          size="md"
+          className="w-[130px] h-[44px]"
           title={!isVerified ? 'Email verification required' : project.hasBid ? 'Already bid on this project' : ''}
         >
-          {project.hasBid ? 'Bid Submitted' : 'Bid Now'}
+          {project.hasBid ? 'Submitted' : 'Bid'}
         </Button>
 
         <button
           onClick={onInterest}
-          className={`p-2.5 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center ${
+          className={`rounded-full transition-colors w-[44px] h-[44px] flex items-center justify-center ${
             project.isInterested
               ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
               : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/5'
