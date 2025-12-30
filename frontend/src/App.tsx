@@ -22,6 +22,13 @@ const TeamsSection = lazy(() => import('@/pages/dashboard/TeamsSection'));
 const ProjectDiscoverySection = lazy(() => import('@/pages/dashboard/ProjectDiscoverySection'));
 const ChatSection = lazy(() => import('@/pages/dashboard/ChatSection'));
 
+// Client Dashboard sections
+const ClientAnalytics = lazy(() => import('@/components/client/ClientAnalytics'));
+const ClientProfile = lazy(() => import('@/components/client/ClientProfile'));
+const ClientProjects = lazy(() => import('@/components/client/ClientProjects'));
+const ClientBids = lazy(() => import('@/components/client/ClientBids'));
+const ClientChat = lazy(() => import('@/components/client/ClientChat'));
+
 // Page transition variants
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -108,23 +115,23 @@ function AnimatedRoutes() {
           }
         />
 
-        {/* Protected routes */}
+        {/* Client Dashboard with nested routes */}
         <Route
           path="/client-dashboard"
           element={
-            <motion.div
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={pageVariants}
-              transition={pageTransition}
-            >
-              <ProtectedRoute role="client">
-                <ClientDashboard />
-              </ProtectedRoute>
-            </motion.div>
+            <ProtectedRoute role="client">
+              <ClientDashboard />
+            </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="analytics" replace />} />
+          <Route path="analytics" element={<ClientAnalytics />} />
+          <Route path="profile" element={<ClientProfile />} />
+          <Route path="projects" element={<ClientProjects />} />
+          <Route path="bids" element={<ClientBids />} />
+          <Route path="chat" element={<ClientChat />} />
+          <Route path="chat/:conversationId" element={<ClientChat />} />
+        </Route>
         
         {/* Organization Dashboard with nested routes */}
         <Route

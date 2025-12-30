@@ -2,15 +2,15 @@ package com.biddingsystem.authservice.controller;
 
 import com.biddingsystem.authservice.constant.Endpoints;
 import com.biddingsystem.authservice.constant.ErrorCodeEnum;
-import com.biddingsystem.authservice.model.ErrorResponse;
-import com.biddingsystem.authservice.model.LoginRequest;
-import com.biddingsystem.authservice.model.LoginResponse;
-import com.biddingsystem.authservice.model.RegisterRequest;
-import com.biddingsystem.authservice.model.UserResponse;
+import com.biddingsystem.authservice.dto.request.GoogleRegisterRequest;
+import com.biddingsystem.authservice.dto.request.Phase1RegisterRequest;
+import com.biddingsystem.authservice.dto.request.Phase2RegisterRequest;
+import com.biddingsystem.authservice.dto.response.RegistrationResponse;
+import com.biddingsystem.authservice.model.*;
 import com.biddingsystem.authservice.service.impl.AuthServiceImpl;
+import com.biddingsystem.authservice.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +23,19 @@ import java.util.Map;
 
 @RestController
 @RequestMapping(Endpoints.AUTH_BASE)
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Log4j2
 public class AuthController {
 
     private final AuthServiceImpl authService;
     private final JdbcTemplate jdbcTemplate;
+    private final JwtUtil jwtUtil;
+
+    public AuthController(AuthServiceImpl authService, JdbcTemplate jdbcTemplate, JwtUtil jwtUtil) {
+        this.authService = authService;
+        this.jdbcTemplate = jdbcTemplate;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping(Endpoints.REGISTER)
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,
@@ -80,6 +87,102 @@ public class AuthController {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .error("LOGIN_FAILED")
                     .message("Login failed due to server error")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    // Phase 1: Initial registration (email + password + role)
+    @PostMapping(Endpoints.REGISTER_INITIAL)
+    public ResponseEntity<?> registerInitial(@Valid @RequestBody Phase1RegisterRequest request,
+                                             HttpServletRequest servletRequest) {
+        log.info("Received initial registration request for: {}", request.getEmail());
+
+        try {
+            RegistrationResponse response = authService.registerInitial(request);
+            log.info("Initial registration completed successfully for: {}", request.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Initial registration failed for {}: {}", request.getEmail(), e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("INITIAL_REGISTRATION_FAILED")
+                    .message("Initial registration failed due to server error")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    // Phase 2: Complete registration with profile details
+    @PostMapping(Endpoints.REGISTER_COMPLETE)
+    public ResponseEntity<?> registerComplete(@Valid @RequestBody Phase2RegisterRequest request,
+                                              @RequestHeader("Authorization") String authHeader,
+                                              HttpServletRequest servletRequest) {
+        try {
+            // Extract token and validate
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractUsername(token);
+
+            if (email == null || !jwtUtil.validateToken(token, email)) {
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            log.info("Received complete registration request for: {}", email);
+            UserResponse response = authService.registerComplete(email, request);
+
+            log.info("Registration completed successfully for: {}", email);
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Complete registration failed: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("COMPLETE_REGISTRATION_FAILED")
+                    .message("Failed to complete registration")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    // Google Registration Endpoint (Phase 1 only)
+    @PostMapping("/register/google")
+    public ResponseEntity<?> registerWithGoogle(@Valid @RequestBody GoogleRegisterRequest request,
+                                                HttpServletRequest servletRequest) {
+        log.info("Received Google registration request for: {}", request.getEmail());
+
+        try {
+            RegistrationResponse response = authService.registerWithGoogle(request);
+            log.info("Google registration completed successfully for: {}", request.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google registration failed for {}: {}", request.getEmail(), e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("GOOGLE_REGISTRATION_FAILED")
+                    .message("Google registration failed due to server error")
                     .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
                     .timestamp(LocalDateTime.now())
                     .path(servletRequest.getRequestURI())

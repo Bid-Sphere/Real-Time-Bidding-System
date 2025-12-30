@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import SidePanel from './SidePanel';
+import ClientSidePanel from '@/components/client/ClientSidePanel';
 import Navbar from './Navbar';
 
 interface DashboardLayoutProps {
@@ -10,6 +12,11 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  
+  // Determine which sidebar to use based on current route
+  const isClientDashboard = location.pathname.startsWith('/client-dashboard');
+  const SidePanelComponent = isClientDashboard ? ClientSidePanel : SidePanel;
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -61,7 +68,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="flex">
         {/* Desktop Side Panel */}
         <div className="hidden lg:block">
-          <SidePanel />
+          <SidePanelComponent />
         </div>
 
         {/* Mobile Side Panel */}
@@ -74,7 +81,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="lg:hidden fixed left-0 top-0 bottom-0 z-40"
             >
-              <SidePanel onNavigate={() => setIsMobileMenuOpen(false)} />
+              <SidePanelComponent onNavigate={() => setIsMobileMenuOpen(false)} />
             </motion.div>
           )}
         </AnimatePresence>

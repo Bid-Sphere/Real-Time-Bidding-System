@@ -1,9 +1,7 @@
 package com.biddingsystem.authservice.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 //import javax.validation.constraints.Email;
 //import javax.validation.constraints.NotBlank;
@@ -11,8 +9,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+//@NoArgsConstructor
+//@AllArgsConstructor
 public class RegisterRequest {
     //@NotBlank(message = "Email is required")
     //@Email(message = "Email should be valid")
@@ -36,4 +34,19 @@ public class RegisterRequest {
     private Freelancer freelancerProfile;
     private Client clientProfile;
     private Organization organizationProfile;
+
+    public RegisterRequest() {
+    }
+
+    public RegisterRequest(String email, String password, String fullName, String role, String phone, String location, Freelancer freelancerProfile, Client clientProfile, Organization organizationProfile) {
+        this.email = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.role = role;
+        this.phone = phone;
+        this.location = location;
+        this.freelancerProfile = freelancerProfile;
+        this.clientProfile = clientProfile;
+        this.organizationProfile = organizationProfile;
+    }
 }

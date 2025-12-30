@@ -1,5 +1,9 @@
 package com.biddingsystem.authservice.service.impl;
 
+import com.biddingsystem.authservice.dto.request.GoogleRegisterRequest;
+import com.biddingsystem.authservice.dto.request.Phase1RegisterRequest;
+import com.biddingsystem.authservice.dto.request.Phase2RegisterRequest;
+import com.biddingsystem.authservice.dto.response.RegistrationResponse;
 import com.biddingsystem.authservice.model.*;
 import com.biddingsystem.authservice.repository.interfaces.ClientRepository;
 import com.biddingsystem.authservice.repository.interfaces.FreelancerRepository;
@@ -14,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService
@@ -123,6 +127,169 @@ public class AuthServiceImpl implements AuthService
                 .expiresIn(86400L) // 24 hours in seconds
                 .build();
     }
+
+
+    // Phase 1: Initial Registration
+    @Override
+    @Transactional
+    public RegistrationResponse registerInitial(Phase1RegisterRequest request) {
+        logger.info("Checking for the user before initial registration: {}", request.getEmail());
+
+        int userCount = userRepository.emailExists(request.getEmail());
+        logger.info("User count for email {} is {}", request.getEmail(), userCount);
+
+        if (userCount > 0) {
+            UserEntity existingUser = userRepository.findByEmail(request.getEmail());
+            if (existingUser != null && "PROFILE_COMPLETE".equals(existingUser.getRegistrationStatus())) {
+                throw new IllegalArgumentException("Email already registered with complete profile!");
+            }
+            // User exists but profile not complete, allow them to continue
+        }
+
+        logger.info("Proceeding with initial registration for: {}", request.getEmail());
+
+        // Validate role
+        if (!isValidRole(request.getRole())) {
+            logger.warn("Invalid role provided: {}", request.getRole());
+            throw new IllegalArgumentException("Invalid user role. Must be CLIENT, ORGANISATION, or FREELANCER");
+        }
+
+        // Create basic user entity
+        UserEntity userEntity = UserEntity.builder()
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(request.getRole())
+                .registrationStatus("PENDING")
+                .registrationStep(1)
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        // Save or update user
+        Long userId;
+        if (userCount > 0) {
+            // Update existing user
+            userId = userRepository.updateUserForInitialRegistration(userEntity);
+        } else {
+            // Save new user
+            userId = userRepository.saveUser(userEntity);
+        }
+
+        // Generate JWT token for phase 2
+        String token = jwtUtil.generateToken(request.getEmail(), userId.toString());
+
+        logger.info("Initial registration successful for: {}", request.getEmail());
+
+        return RegistrationResponse.builder()
+                .message("Initial registration successful. Please complete your profile.")
+                .registrationStatus("PENDING")
+                .registrationStep(1)
+                .token(token)
+                .email(request.getEmail())
+                .userId(userId.toString())
+                .build();
+    }
+
+    // Phase 2: Complete Registration
+    @Override
+    @Transactional
+    public UserResponse registerComplete(String email, Phase2RegisterRequest request) {
+        logger.info("Completing registration for: {}", email);
+
+        // Find user by email
+        UserEntity userEntity = userRepository.findByEmail(email);
+        if (userEntity == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        // Check if already completed
+        if ("PROFILE_COMPLETE".equals(userEntity.getRegistrationStatus())) {
+            throw new IllegalArgumentException("Registration already completed");
+        }
+
+        // Validate role-specific required fields
+        RegisterRequest validationRequest = RegisterRequest.builder()
+                .role(userEntity.getRole())
+                .freelancerProfile(request.getFreelancerProfile())
+                .clientProfile(request.getClientProfile())
+                .organizationProfile(request.getOrganizationProfile())
+                .build();
+
+        validateRoleSpecificFields(validationRequest);
+
+        // Update user with additional info
+        userEntity.setFullName(request.getFullName());
+        userEntity.setPhone(request.getPhone());
+        userEntity.setLocation(request.getLocation());
+        userEntity.setRegistrationStatus("PROFILE_COMPLETE");
+        userEntity.setRegistrationStep(2);
+        userEntity.setUpdatedAt(LocalDateTime.now());
+
+        userRepository.updateUser(userEntity);
+
+        // Save role-specific profile
+        saveRoleSpecificProfile(userEntity.getId(), validationRequest);
+
+        // Fetch complete user with profile
+        UserEntity savedUser = userRepository.findById(userEntity.getId());
+        if (savedUser == null) {
+            throw new RuntimeException("Failed to retrieve saved user");
+        }
+
+        // Load role-specific profile
+        loadRoleSpecificProfile(savedUser);
+
+        logger.info("Registration completed successfully for: {}", email);
+
+        return buildUserResponse(savedUser);
+    }
+
+    // Google Registration
+    @Override
+    @Transactional
+    public RegistrationResponse registerWithGoogle(GoogleRegisterRequest request) {
+        logger.info("Processing Google registration for: {}", request.getEmail());
+
+        // Check if user exists
+        int userCount = userRepository.emailExists(request.getEmail());
+
+        UserEntity userEntity = UserEntity.builder()
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(generateRandomPassword())) // Generate random password
+                .role(request.getRole())
+                .registrationStatus("PENDING")
+                .registrationStep(1)
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        Long userId;
+        if (userCount > 0) {
+            userId = userRepository.updateUserForInitialRegistration(userEntity);
+        } else {
+            userId = userRepository.saveUser(userEntity);
+        }
+
+        // Generate token
+        String token = jwtUtil.generateToken(request.getEmail(), userId.toString());
+
+        return RegistrationResponse.builder()
+                .message("Google registration successful. Please complete your profile.")
+                .registrationStatus("PENDING")
+                .registrationStep(1)
+                .token(token)
+                .email(request.getEmail())
+                .userId(userId.toString())
+                .build();
+    }
+
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString().substring(0, 12);
+    }
+
+
 
     @Override
     public boolean checkPassword(String rawPassword, String encodedPassword) {

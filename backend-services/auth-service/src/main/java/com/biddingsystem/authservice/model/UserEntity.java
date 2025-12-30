@@ -23,6 +23,8 @@ public class UserEntity implements UserDetails {
     private String fullName; // Changed from firstName/lastName
     private String role;
     private Boolean isActive;
+    private String registrationStatus; // PENDING, BASIC_INFO_COMPLETE, PROFILE_COMPLETE
+    private Integer registrationStep; // 1, 2
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

@@ -1,7 +1,6 @@
 package com.biddingsystem.authservice.config;
 
 import com.biddingsystem.authservice.service.impl.UserServiceImpl;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,19 +19,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Slf4j
-public class SecurityConfig {
-
+public class SecurityConfig
+{
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserServiceImpl userService;
 
     @Value("${frontend.url:https://spherebid.vercel.app}")
     private String frontEndUrl;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserServiceImpl userService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userService = userService;
+    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

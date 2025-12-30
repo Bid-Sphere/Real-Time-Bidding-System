@@ -47,6 +47,40 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Generate registration token (longer expiration for profile completion)
+    public String generateRegistrationToken(String email, String userId) {
+        logger.info("Generating registration token for user: {}", email);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("tokenType", "REGISTRATION");
+        claims.put("registrationStep", 1);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuer(issuer)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + (expiration * 24))) // 24 hours
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    // Validate registration token
+    public Boolean validateRegistrationToken(String token, String email) {
+        try {
+            final String extractedUsername = extractUsername(token);
+            final Claims claims = extractAllClaims(token);
+            String tokenType = (String) claims.get("tokenType");
+
+            return (extractedUsername.equals(email) &&
+                    !isTokenExpired(token) &&
+                    "REGISTRATION".equals(tokenType));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     // Extract username from token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

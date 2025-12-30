@@ -13,11 +13,11 @@ interface PostProjectModalProps {
   onSubmit: (data: CreateProjectData) => void;
 }
 
-interface AttachedUrl {
-  id: string;
-  url: string;
-  title: string;
-}
+// interface AttachedUrl {
+//   id: string;
+//   url: string;
+//   title: string;
+// }
 
 const skillOptions = [
   'React', 'Node.js', 'Python', 'Java', 'JavaScript', 'TypeScript',

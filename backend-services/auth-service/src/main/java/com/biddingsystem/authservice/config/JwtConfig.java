@@ -1,10 +1,10 @@
 package com.biddingsystem.authservice.config;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import jakarta.annotation.PostConstruct;
 
 //import javax.annotation.PostConstruct;
 
@@ -22,5 +22,17 @@ public class JwtConfig {
     public void init() {
         log.info("JWT Configuration loaded - Secret: {}, Expiration: {} ms, Issuer: {}",
                 secret != null ? "***" : "NULL", expiration, issuer);
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public long getExpiration() {
+        return expiration;
+    }
+
+    public String getIssuer() {
+        return issuer;
     }
 }

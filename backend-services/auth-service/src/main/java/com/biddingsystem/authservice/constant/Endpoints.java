@@ -10,6 +10,12 @@ public class Endpoints
 
     // Authentication endpoints
     public static final String REGISTER = "/register";
+
+    // Registration endpoints
+    public static final String REGISTER_INITIAL = "/register-initial";
+    public static final String REGISTER_COMPLETE = "/register-complete";
+
+
     public static final String LOGIN = "/login";
     public static final String LOGOUT = "/logout";
     public static final String REFRESH_TOKEN = "/refresh-token";
@@ -32,6 +38,8 @@ public class Endpoints
 
     // Full endpoint paths
     public static final String REGISTER_ENDPOINT = AUTH_BASE + REGISTER;
+    public static final String REGISTER_INITIAL_ENDPOINT = AUTH_BASE + REGISTER_INITIAL;
+    public static final String REGISTER_COMPLETE_ENDPOINT = AUTH_BASE + REGISTER_COMPLETE;
     public static final String LOGIN_ENDPOINT = AUTH_BASE + LOGIN;
     public static final String PROFILE_ENDPOINT = USER_BASE + PROFILE;
     public static final String HEALTH_ENDPOINT = AUTH_BASE + HEALTH;

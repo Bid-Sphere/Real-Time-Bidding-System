@@ -7,5 +7,7 @@ public interface UserRepository {
     Long saveUser(UserEntity userEntity);
     UserEntity findByEmail(String email);
     UserEntity findById(Long userId);
+    Long updateUserForInitialRegistration(UserEntity userEntity);
+    void updateUser(UserEntity userEntity);
     String formatSqlWithValues(String sql, Object... values);
 }
