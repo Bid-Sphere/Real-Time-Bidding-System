@@ -60,7 +60,6 @@ public class SecurityConfig
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
                         .requestMatchers("/api/organisation/**").hasRole("ORGANISATION")
-                        .requestMatchers("/api/freelancer/**").hasRole("FREELANCER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -8,6 +8,7 @@ import com.biddingsystem.authservice.dto.request.Phase2RegisterRequest;
 import com.biddingsystem.authservice.dto.response.RegistrationResponse;
 import com.biddingsystem.authservice.model.*;
 import com.biddingsystem.authservice.service.impl.AuthServiceImpl;
+import com.biddingsystem.authservice.service.EmailService;
 import com.biddingsystem.authservice.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -30,11 +31,13 @@ public class AuthController {
     private final AuthServiceImpl authService;
     private final JdbcTemplate jdbcTemplate;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
-    public AuthController(AuthServiceImpl authService, JdbcTemplate jdbcTemplate, JwtUtil jwtUtil) {
+    public AuthController(AuthServiceImpl authService, JdbcTemplate jdbcTemplate, JwtUtil jwtUtil, EmailService emailService) {
         this.authService = authService;
         this.jdbcTemplate = jdbcTemplate;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @PostMapping(Endpoints.REGISTER)
@@ -300,7 +303,239 @@ public class AuthController {
 
     // Additional endpoints for future use
 
-    @PostMapping(Endpoints.LOGOUT)
+    @PostMapping("/send-verification-code")
+    public ResponseEntity<?> sendVerificationCode(@RequestHeader("Authorization") String authHeader,
+                                                  HttpServletRequest servletRequest) {
+        try {
+            // Extract token and validate
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractUsername(token);
+
+            if (email == null || !jwtUtil.validateToken(token, email)) {
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            log.info("Sending verification code for: {}", email);
+
+            // Check if user exists and is in Phase 1
+            UserEntity user = authService.findUserByEmail(email);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            // Validation: Only Phase 1 users can request verification
+            if (!"PENDING".equals(user.getRegistrationStatus()) || user.getRegistrationStep() != 1) {
+                throw new IllegalArgumentException("Email verification only available for Phase 1 users");
+            }
+
+            // Check if already verified
+            if (user.getEmailVerified() != null && user.getEmailVerified()) {
+                throw new IllegalArgumentException("Email is already verified");
+            }
+
+            // Send verification code
+            String code = emailService.sendVerificationCode(email);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Verification code sent successfully");
+            response.put("expiresAt", LocalDateTime.now().plusMinutes(10).toString()); // 10 minutes expiry
+            response.put("timestamp", LocalDateTime.now());
+            
+            // FOR TESTING ONLY - Include code in response (remove in production)
+            response.put("testingCode", code);
+            response.put("note", "Code is also printed in server console logs");
+
+            log.info("Verification code sent successfully for: {}", email);
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to send verification code: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("VERIFICATION_CODE_SEND_FAILED")
+                    .message("Failed to send verification code")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    @PostMapping("/verify-email-code")
+    public ResponseEntity<?> verifyEmailCode(@RequestHeader("Authorization") String authHeader,
+                                             @RequestParam String code,
+                                             HttpServletRequest servletRequest) {
+        try {
+            // Extract token and validate
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractUsername(token);
+
+            if (email == null || !jwtUtil.validateToken(token, email)) {
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            log.info("Verifying email code for: {}", email);
+
+            // Check if user exists
+            UserEntity user = authService.findUserByEmail(email);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            // Validation: Only Phase 1 users can verify
+            if (!"PENDING".equals(user.getRegistrationStatus()) || user.getRegistrationStep() != 1) {
+                throw new IllegalArgumentException("Email verification only available for Phase 1 users");
+            }
+
+            // Check if already verified
+            if (user.getEmailVerified() != null && user.getEmailVerified()) {
+                throw new IllegalArgumentException("Email is already verified");
+            }
+
+            // Verify the code
+            boolean isValid = emailService.verifyCode(email, code);
+            
+            if (!isValid) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("verified", false);
+                response.put("message", "Invalid or expired verification code");
+                response.put("timestamp", LocalDateTime.now());
+                
+                return ResponseEntity.ok(response);
+            }
+
+            // Update user's email verification status
+            authService.markEmailAsVerified(email);
+
+            // Check if user should be promoted to Phase 2
+            UserEntity updatedUser = authService.findUserByEmail(email);
+            boolean shouldPromoteToPhase2 = checkPhase2Eligibility(updatedUser);
+            
+            if (shouldPromoteToPhase2) {
+                authService.promoteToPhase2(email);
+                log.info("User promoted to Phase 2: {}", email);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("verified", true);
+            response.put("message", "Email verified successfully");
+            response.put("phase2Eligible", shouldPromoteToPhase2);
+            response.put("timestamp", LocalDateTime.now());
+
+            log.info("Email verification successful for: {}", email);
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to verify email code: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("EMAIL_VERIFICATION_FAILED")
+                    .message("Failed to verify email code")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    /**
+     * Check if user is eligible for Phase 2 promotion
+     * Criteria: Email verified + Profile completion >= 100%
+     */
+    private boolean checkPhase2Eligibility(UserEntity user) {
+        // Must have verified email
+        if (user.getEmailVerified() == null || !user.getEmailVerified()) {
+            return false;
+        }
+
+        // Must have required profile fields completed
+        boolean hasRequiredFields = user.getFullName() != null && !user.getFullName().trim().isEmpty();
+        
+        // For organizations, check if organization profile exists and is complete
+        if ("ORGANISATION".equals(user.getRole())) {
+            // This would check organization profile completeness
+            // For now, we'll assume it's complete if basic fields are filled
+            return hasRequiredFields;
+        }
+        
+        // For clients, check if client profile exists and is complete
+        if ("CLIENT".equals(user.getRole())) {
+            return hasRequiredFields && user.getPhone() != null && !user.getPhone().trim().isEmpty();
+        }
+
+        return hasRequiredFields;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader,
+                                            HttpServletRequest servletRequest) {
+        try {
+            // Extract token and validate
+            String token = authHeader.substring(7);
+            String email = jwtUtil.extractUsername(token);
+
+            if (email == null || !jwtUtil.validateToken(token, email)) {
+                throw new IllegalArgumentException("Invalid or expired token");
+            }
+
+            log.info("Getting current user info for: {}", email);
+
+            // Get user by email
+            UserEntity user = authService.findUserByEmail(email);
+            if (user == null) {
+                throw new IllegalArgumentException("User not found");
+            }
+
+            // Load role-specific profile data
+            authService.loadUserProfile(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId());
+            response.put("email", user.getEmail());
+            response.put("fullName", user.getFullName());
+            response.put("role", user.getRole());
+            response.put("isActive", user.getIsActive());
+            response.put("registrationStatus", user.getRegistrationStatus());
+            response.put("registrationStep", user.getRegistrationStep());
+            response.put("emailVerified", user.getEmailVerified());
+            
+            // Add profile data based on role
+            if ("ORGANISATION".equals(user.getRole()) && user.getOrganizationProfile() != null) {
+                response.put("organizationProfile", user.getOrganizationProfile());
+            } else if ("CLIENT".equals(user.getRole()) && user.getClientProfile() != null) {
+                response.put("clientProfile", user.getClientProfile());
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to get current user: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("GET_USER_FAILED")
+                    .message("Failed to get user information")
+                    .errorCode(ErrorCodeEnum.GENERIC_ERROR.getErrorCode())
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
     public ResponseEntity<?> logout(HttpServletRequest servletRequest) {
         log.info("Logout request received");
 

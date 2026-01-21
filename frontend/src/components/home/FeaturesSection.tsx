@@ -126,7 +126,7 @@ export const FeaturesSection = () => {
             </motion.div>
           </motion.div>
 
-          {/* Organization/Freelancer Benefits */}
+          {/* Organization Benefits */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -134,7 +134,7 @@ export const FeaturesSection = () => {
             transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
           >
             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center lg:text-left">
-              For Organizations & Freelancers
+              For Organizations
             </h3>
             <motion.div
               variants={containerVariants}

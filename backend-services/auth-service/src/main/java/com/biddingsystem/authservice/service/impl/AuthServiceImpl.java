@@ -6,7 +6,6 @@ import com.biddingsystem.authservice.dto.request.Phase2RegisterRequest;
 import com.biddingsystem.authservice.dto.response.RegistrationResponse;
 import com.biddingsystem.authservice.model.*;
 import com.biddingsystem.authservice.repository.interfaces.ClientRepository;
-import com.biddingsystem.authservice.repository.interfaces.FreelancerRepository;
 import com.biddingsystem.authservice.repository.interfaces.OrganizationRepository;
 import com.biddingsystem.authservice.repository.interfaces.UserRepository;
 import com.biddingsystem.authservice.service.interfaces.AuthService;
@@ -26,20 +25,17 @@ public class AuthServiceImpl implements AuthService
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final UserRepository userRepository;
-    private final FreelancerRepository freelancerRepository;
     private final ClientRepository clientRepository;
     private final OrganizationRepository organizationRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
 
     public AuthServiceImpl(UserRepository userRepository,
-                           FreelancerRepository freelancerRepository,
                            ClientRepository clientRepository,
                            OrganizationRepository organizationRepository,
                            JwtUtil jwtUtil,
                            BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.freelancerRepository = freelancerRepository;
         this.clientRepository = clientRepository;
         this.organizationRepository = organizationRepository;
         this.jwtUtil = jwtUtil;
@@ -64,7 +60,7 @@ public class AuthServiceImpl implements AuthService
         // Validate role
         if (!isValidRole(request.getRole())) {
             logger.warn("Invalid role provided: {}", request.getRole());
-            throw new IllegalArgumentException("Invalid user role. Must be CLIENT, ORGANISATION, or FREELANCER");
+            throw new IllegalArgumentException("Invalid user role. Must be CLIENT or ORGANISATION");
         }
 
         // Validate role-specific required fields
@@ -151,7 +147,7 @@ public class AuthServiceImpl implements AuthService
         // Validate role
         if (!isValidRole(request.getRole())) {
             logger.warn("Invalid role provided: {}", request.getRole());
-            throw new IllegalArgumentException("Invalid user role. Must be CLIENT, ORGANISATION, or FREELANCER");
+            throw new IllegalArgumentException("Invalid user role. Must be CLIENT or ORGANISATION");
         }
 
         // Create basic user entity
@@ -211,7 +207,6 @@ public class AuthServiceImpl implements AuthService
         // Validate role-specific required fields
         RegisterRequest validationRequest = RegisterRequest.builder()
                 .role(userEntity.getRole())
-                .freelancerProfile(request.getFreelancerProfile())
                 .clientProfile(request.getClientProfile())
                 .organizationProfile(request.getOrganizationProfile())
                 .build();
@@ -302,7 +297,6 @@ public class AuthServiceImpl implements AuthService
         String upperRole = role.toUpperCase();
         return upperRole.equals("CLIENT") ||
                 upperRole.equals("ORGANISATION") ||
-                upperRole.equals("FREELANCER") ||
                 upperRole.equals("ADMIN");
     }
 
@@ -310,25 +304,6 @@ public class AuthServiceImpl implements AuthService
         String role = request.getRole().toUpperCase();
 
         switch (role) {
-            case "FREELANCER":
-                if (request.getFreelancerProfile() == null) {
-                    throw new IllegalArgumentException("Freelancer profile is required");
-                }
-                Freelancer freelancerProfile = request.getFreelancerProfile();
-                if (freelancerProfile.getProfessionalTitle() == null ||
-                        freelancerProfile.getProfessionalTitle().trim().isEmpty()) {
-                    throw new IllegalArgumentException("Professional title is required for freelancers");
-                }
-                if (freelancerProfile.getSkills() == null ||
-                        freelancerProfile.getSkills().isEmpty()) {
-                    throw new IllegalArgumentException("At least one skill is required for freelancers");
-                }
-                if (freelancerProfile.getHourlyRate() == null ||
-                        freelancerProfile.getHourlyRate() <= 0) {
-                    throw new IllegalArgumentException("Valid hourly rate is required for freelancers");
-                }
-                break;
-
             case "CLIENT":
                 // For clients, phone is required
                 if (request.getPhone() == null || request.getPhone().trim().isEmpty()) {
@@ -379,13 +354,6 @@ public class AuthServiceImpl implements AuthService
         String role = request.getRole().toUpperCase();
 
         switch (role) {
-            case "FREELANCER":
-                Freelancer freelancerProfile = request.getFreelancerProfile();
-                freelancerProfile.setUserId(userId);
-                freelancerRepository.saveFreelancerProfile(freelancerProfile);
-                logger.info("Freelancer profile saved for user ID: {}", userId);
-                break;
-
             case "CLIENT":
                 Client clientProfile = request.getClientProfile();
                 if (clientProfile != null) {
@@ -415,17 +383,16 @@ public class AuthServiceImpl implements AuthService
         }
     }
 
+    @Override
+    public void loadUserProfile(UserEntity user) {
+        loadRoleSpecificProfile(user);
+    }
+
     private void loadRoleSpecificProfile(UserEntity user) {
         String role = user.getRole().toUpperCase();
         Long userId = user.getId();
 
         switch (role) {
-            case "FREELANCER":
-                Freelancer freelancerProfile = freelancerRepository.findByUserId(userId);
-                user.setFreelancerProfile(freelancerProfile);
-                logger.debug("Loaded freelancer profile for user ID: {}", userId);
-                break;
-
             case "CLIENT":
                 Client clientProfile = clientRepository.findByUserId(userId);
                 user.setClientProfile(clientProfile);
@@ -458,9 +425,6 @@ public class AuthServiceImpl implements AuthService
         // Add role-specific profiles to response
         String role = user.getRole().toUpperCase();
         switch (role) {
-            case "FREELANCER":
-                responseBuilder.freelancerProfile(user.getFreelancerProfile());
-                break;
             case "CLIENT":
                 responseBuilder.clientProfile(user.getClientProfile());
                 break;
@@ -472,7 +436,30 @@ public class AuthServiceImpl implements AuthService
         return responseBuilder.build();
     }
 
-    // Helper method to get user profile (for profile updates)
+    /**
+     * Find user by email (helper method)
+     */
+    public UserEntity findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
+     * Mark user's email as verified
+     */
+    @Transactional
+    public void markEmailAsVerified(String email) {
+        logger.info("Marking email as verified for: {}", email);
+        userRepository.markEmailAsVerified(email);
+    }
+
+    /**
+     * Promote user to Phase 2 (complete registration)
+     */
+    @Transactional
+    public void promoteToPhase2(String email) {
+        logger.info("Promoting user to Phase 2: {}", email);
+        userRepository.promoteToPhase2(email);
+    }
     public UserResponse getUserProfile(Long userId) {
         logger.info("Fetching user profile for ID: {}", userId);
 
@@ -527,14 +514,6 @@ public class AuthServiceImpl implements AuthService
         String role = updateRequest.getRole().toUpperCase();
 
         switch (role) {
-            case "FREELANCER":
-                if (updateRequest.getFreelancerProfile() != null) {
-                    Freelancer freelancerProfile = updateRequest.getFreelancerProfile();
-                    freelancerProfile.setUserId(userId);
-                    freelancerRepository.updateFreelancerProfile(freelancerProfile);
-                }
-                break;
-
             case "CLIENT":
                 if (updateRequest.getClientProfile() != null) {
                     Client clientProfile = updateRequest.getClientProfile();

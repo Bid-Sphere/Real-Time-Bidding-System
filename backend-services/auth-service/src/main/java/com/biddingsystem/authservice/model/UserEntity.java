@@ -25,6 +25,7 @@ public class UserEntity implements UserDetails {
     private Boolean isActive;
     private String registrationStatus; // PENDING, BASIC_INFO_COMPLETE, PROFILE_COMPLETE
     private Integer registrationStep; // 1, 2
+    private Boolean emailVerified; // Email verification status
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -33,7 +34,6 @@ public class UserEntity implements UserDetails {
     private String location;
 
     // Composition with role-specific entities
-    private Freelancer freelancerProfile;
     private Client clientProfile;
     private Organization organizationProfile;
 

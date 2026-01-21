@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Notification } from '@/types/organization';
-import { mockApiService } from '@/mocks/mockApiService';
+
 
 interface NotificationState {
   notifications: Notification[];
@@ -21,13 +21,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchNotifications: async (orgId: string, unreadOnly: boolean = false, limit?: number) => {
+  fetchNotifications: async (_orgId: string, _unreadOnly: boolean = false, _limit?: number) => {
     set({ isLoading: true, error: null });
     try {
-      const notifications = await mockApiService.notifications.getNotifications(orgId, unreadOnly, limit);
+      // Mock data for now - replace with actual API call
+      const notifications: Notification[] = [];
       
       // Calculate unread count
-      const unreadCount = notifications.filter(n => !n.read).length;
+      const unreadCount = notifications.filter((n: Notification) => !n.read).length;
       
       set({ 
         notifications,
@@ -44,15 +45,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   markAsRead: async (notificationId: string) => {
     try {
-      await mockApiService.notifications.markAsRead(notificationId);
+      // Mock implementation - replace with actual API call
+      // await api.markNotificationAsRead(notificationId);
       
       // Update the notification in local state
-      const notifications = get().notifications.map(n => 
+      const notifications = get().notifications.map((n: Notification) => 
         n.id === notificationId ? { ...n, read: true } : n
       );
       
       // Recalculate unread count
-      const unreadCount = notifications.filter(n => !n.read).length;
+      const unreadCount = notifications.filter((n: Notification) => !n.read).length;
       
       set({ notifications, unreadCount });
     } catch (error) {
@@ -63,13 +65,14 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     }
   },
 
-  markAllAsRead: async (orgId: string) => {
+  markAllAsRead: async (_orgId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await mockApiService.notifications.markAllAsRead(orgId);
+      // Mock implementation - replace with actual API call
+      // await api.markAllNotificationsAsRead(orgId);
       
       // Update all notifications in local state
-      const notifications = get().notifications.map(n => ({ ...n, read: true }));
+      const notifications = get().notifications.map((n: Notification) => ({ ...n, read: true }));
       
       set({ 
         notifications,
@@ -87,11 +90,16 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
 
   createNotification: async (notification: Omit<Notification, 'id' | 'createdAt'>) => {
     try {
-      const newNotification = await mockApiService.notifications.createNotification(notification);
+      // Mock data for now - replace with actual API call
+      const newNotification: Notification = {
+        ...notification,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString()
+      };
       
       // Add to local state
       const notifications = [newNotification, ...get().notifications];
-      const unreadCount = notifications.filter(n => !n.read).length;
+      const unreadCount = notifications.filter((n: Notification) => !n.read).length;
       
       set({ notifications, unreadCount });
     } catch (error) {

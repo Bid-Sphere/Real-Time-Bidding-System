@@ -7,7 +7,6 @@ import { RecommendedProjects } from '@/components/analytics/RecommendedProjects'
 import { MyBidsSummary } from '@/components/analytics/MyBidsSummary';
 import { RecentActivity } from '@/components/analytics/RecentActivity';
 import { EditBidModal } from '@/components/bids/EditBidModal';
-import { mockApiService } from '@/mocks/mockApiService';
 import type { Project, Activity, BidSummary, Bid } from '@/types/organization';
 import { 
   TrendingUp, 
@@ -49,7 +48,9 @@ const AnalyticsHome = () => {
   const fetchRecommendedProjectsData = async () => {
     setIsLoadingRecommended(true);
     try {
-      const projects = await mockApiService.analytics.getRecommendedProjects(orgId, 6);
+      // TODO: Connect to real API
+      // Mock data for now
+      const projects: Project[] = [];
       setRecommendedProjects(projects);
     } catch (error) {
       console.error('Failed to fetch recommended projects:', error);
@@ -61,7 +62,9 @@ const AnalyticsHome = () => {
   const fetchRecentActivitiesData = async () => {
     setIsLoadingActivities(true);
     try {
-      const activities = await mockApiService.analytics.getRecentActivities(orgId, 10);
+      // TODO: Connect to real API
+      // Mock data for now
+      const activities: Activity[] = [];
       setRecentActivities(activities);
     } catch (error) {
       console.error('Failed to fetch recent activities:', error);

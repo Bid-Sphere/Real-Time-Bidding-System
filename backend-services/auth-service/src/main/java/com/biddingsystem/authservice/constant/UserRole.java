@@ -3,7 +3,6 @@ package com.biddingsystem.authservice.constant;
 public enum UserRole
 {
     CLIENT("CLIENT", "Client user who posts projects"),
-    FREELANCER("FREELANCER", "Freelancer who bids on projects"),
     ORGANISATION("ORGANISATION", "Organization user"),
     ADMIN("ADMIN", "System administrator");
 

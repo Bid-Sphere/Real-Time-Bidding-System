@@ -1,22 +1,24 @@
-// Axios imports kept for future backend reconnection
-// @ts-expect-error - Keeping axios import for future backend reconnection
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import axios, { type AxiosInstance, type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-// ============================================
-// BACKEND DISCONNECTED - API CLIENT DISABLED
-// ============================================
-// This file has been temporarily disconnected from the backend
-// All API calls are commented out while changes are being made
-// ============================================
-
-// @ts-expect-error - Keeping for future backend reconnection
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8081';
 
+// Token storage - will be managed by AuthService
+let authToken: string | null = null;
+
+// Helper functions for token management
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+};
+
+export const getAuthToken = (): string | null => {
+  return authToken;
+};
+
+export const clearAuthToken = () => {
+  authToken = null;
+};
+
 // Create axios instance with default config
-// COMMENTED OUT - Backend disconnected
-/*
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
@@ -29,10 +31,9 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     console.log('API Request:', config.method?.toUpperCase(), config.url);
-    console.log('API Request data:', config.data);
     
-    const token = localStorage.getItem('accessToken');
-    
+    // Add auth token if available
+    const token = getAuthToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('API Request - Auth token added');
@@ -50,13 +51,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     console.log('API Response:', response.status, response.config.url);
-    console.log('API Response data:', response.data);
     return response;
   },
   (error: AxiosError) => {
     console.error('=== API ERROR ===');
     console.error('Error:', error.message);
-    console.error('Error response:', error.response);
     
     if (error.response) {
       // Server responded with error status
@@ -66,11 +65,13 @@ apiClient.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Unauthorized - clear auth data and redirect to login
-          console.error('Unauthorized - clearing auth data');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('user');
-          if (window.location.pathname !== '/login') {
+          // Unauthorized - clear token and redirect to login
+          console.error('Unauthorized - clearing auth token');
+          clearAuthToken();
+          
+          // Only redirect if not already on login/signup pages
+          const currentPath = window.location.pathname;
+          if (!['/login', '/signup', '/'].includes(currentPath)) {
             window.location.href = '/login';
           }
           break;
@@ -89,7 +90,6 @@ apiClient.interceptors.response.use(
     } else if (error.request) {
       // Request made but no response received
       console.error('Network error - no response from server');
-      console.error('Request:', error.request);
     } else {
       // Error in request configuration
       console.error('Request configuration error:', error.message);
@@ -98,23 +98,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-*/
-
-// Mock API client for disconnected mode
-interface MockApiClient {
-  get: () => Promise<never>;
-  post: () => Promise<never>;
-  put: () => Promise<never>;
-  delete: () => Promise<never>;
-  patch: () => Promise<never>;
-}
-
-const apiClient: MockApiClient = {
-  get: () => Promise.reject(new Error('Backend disconnected')),
-  post: () => Promise.reject(new Error('Backend disconnected')),
-  put: () => Promise.reject(new Error('Backend disconnected')),
-  delete: () => Promise.reject(new Error('Backend disconnected')),
-  patch: () => Promise.reject(new Error('Backend disconnected')),
-};
 
 export default apiClient;

@@ -36,6 +36,7 @@ public class UserRepositoryImpl implements UserRepository {
                     .isActive(rs.getBoolean("is_active"))
                     .registrationStatus(rs.getString("registration_status"))
                     .registrationStep(rs.getInt("registration_step"))
+                    .emailVerified(rs.getBoolean("email_verified"))
                     .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                     .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
                     .phone(rs.getString("phone"))
@@ -224,6 +225,42 @@ public class UserRepositoryImpl implements UserRepository {
         } catch (Exception e) {
             log.info("User not found with ID: {}", userId);
             return null;
+        }
+    }
+
+    @Override
+    public void markEmailAsVerified(String email) {
+        String sql = "UPDATE users SET email_verified = true, updated_at = CURRENT_TIMESTAMP WHERE email = ?";
+        
+        log.info("Marking email as verified for: {}", email);
+        
+        try {
+            int rowsAffected = jdbcTemplate.update(sql, email);
+            if (rowsAffected == 0) {
+                throw new RuntimeException("User not found with email: " + email);
+            }
+            log.info("Email marked as verified for: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to mark email as verified: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to mark email as verified: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void promoteToPhase2(String email) {
+        String sql = "UPDATE users SET registration_status = 'PROFILE_COMPLETE', registration_step = 2, updated_at = CURRENT_TIMESTAMP WHERE email = ?";
+        
+        log.info("Promoting user to Phase 2: {}", email);
+        
+        try {
+            int rowsAffected = jdbcTemplate.update(sql, email);
+            if (rowsAffected == 0) {
+                throw new RuntimeException("User not found with email: " + email);
+            }
+            log.info("User promoted to Phase 2: {}", email);
+        } catch (Exception e) {
+            log.error("Failed to promote user to Phase 2: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to promote user to Phase 2: " + e.getMessage(), e);
         }
     }
 

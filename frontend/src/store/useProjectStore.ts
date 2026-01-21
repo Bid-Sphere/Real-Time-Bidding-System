@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { Project, FilterState, Bid } from '@/types/organization';
-import { mockApiService } from '@/mocks/mockApiService';
 
 interface ProjectState {
   projects: Project[];
@@ -28,18 +27,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   page: 1,
   totalPages: 0,
 
-  fetchProjects: async (filters?: FilterState, page: number = 1) => {
+  fetchProjects: async (_filters?: FilterState, _page: number = 1) => {
     set({ isLoading: true, error: null });
     try {
-      const filtersToUse = filters || get().filters;
-      const result = await mockApiService.projects.getProjects(filtersToUse, page);
-      set({ 
-        projects: result.projects,
-        total: result.total,
-        page: result.page,
-        totalPages: result.totalPages,
-        isLoading: false 
-      });
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch projects', 
@@ -54,17 +46,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     get().fetchProjects(filters, 1);
   },
 
-  markAsInterested: async (projectId: string, organizationId: string) => {
+  markAsInterested: async (_projectId: string, _organizationId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await mockApiService.projects.markAsInterested(projectId, organizationId);
-      
-      // Update the project in the local state
-      const projects = get().projects.map(p => 
-        p.id === projectId ? { ...p, isInterested: true } : p
-      );
-      
-      set({ projects, isLoading: false });
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to mark project as interested', 
@@ -74,19 +60,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  submitBid: async (bid: Omit<Bid, 'id' | 'submittedAt' | 'updatedAt' | 'status' | 'ranking'>) => {
+  submitBid: async (_bid: Omit<Bid, 'id' | 'submittedAt' | 'updatedAt' | 'status' | 'ranking'>) => {
     set({ isLoading: true, error: null });
     try {
-      await mockApiService.bids.submitBid(bid);
-      
-      // Update the project in the local state to increment bid count and set hasBid flag
-      const projects = get().projects.map(p => 
-        p.id === bid.projectId 
-          ? { ...p, bidCount: p.bidCount + 1, hasBid: true } 
-          : p
-      );
-      
-      set({ projects, isLoading: false });
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit bid';
       set({ 
@@ -97,12 +75,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  getProject: async (projectId: string) => {
+  getProject: async (_projectId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const project = await mockApiService.projects.getProject(projectId);
-      set({ isLoading: false });
-      return project;
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch project', 

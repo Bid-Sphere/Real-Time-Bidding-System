@@ -15,7 +15,7 @@ public class GoogleRegisterRequest
     private String googleId;
 
     //@NotBlank(message = "Role is required")
-    private String role; // CLIENT, ORGANISATION, FREELANCER
+    private String role; // CLIENT, ORGANISATION
 
     // Optional: You can add more fields from Google profile
     private String displayName;

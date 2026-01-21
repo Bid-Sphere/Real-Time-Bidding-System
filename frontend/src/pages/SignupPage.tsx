@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { SignupForm } from '@/components/auth/SignupForm';
+import { useAuth } from '@/hooks/useAuth';
 import { Sparkles, Zap, Shield, Globe } from 'lucide-react';
 
 const pageVariants = {
@@ -27,6 +30,19 @@ const brandVariants = {
 };
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dashboardPath = user.role === 'organization' 
+        ? '/organization-dashboard' 
+        : '/client-dashboard';
+      navigate(dashboardPath, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
   return (
     <Layout>
       <motion.div

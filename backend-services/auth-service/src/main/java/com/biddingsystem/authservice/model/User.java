@@ -22,7 +22,7 @@ public class User implements UserDetails {
     private String passwordHash;
     private String firstName;
     private String lastName;
-    private String role; // CLIENT, VENDOR, ORGANISATION, FREELANCER, ADMIN
+    private String role; // CLIENT, VENDOR, ORGANISATION, ADMIN
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

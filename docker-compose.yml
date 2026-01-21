@@ -1,0 +1,103 @@
+services:
+  # ================================
+  # PostgreSQL Database
+  # ================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: bidsphere-postgres
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./shared/database/auth_db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bidsphere-network
+
+  # ================================
+  # Auth API Service
+  # ================================
+  auth-service:
+    build: 
+      context: ./backend-services/auth-service
+      dockerfile: Dockerfile
+    container_name: bidsphere-auth-api
+    ports:
+      - "8081:8081"
+    environment:
+      # Spring Configuration
+      SPRING_APPLICATION_NAME: bidsphere-auth-service
+      SPRING_PROFILES_ACTIVE: docker
+      
+      # Database Configuration (localhost for local development)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_EXPIRATION: 86400000
+      JWT_ISSUER: bidsphere-auth
+      
+      # CORS Configuration
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      
+      # Server Configuration
+      SERVER_PORT: 8081
+      SERVER_SERVLET_CONTEXT_PATH: /
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/api/auth/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bidsphere-network
+
+  # ================================
+  # Frontend Service
+  # ================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Environment variables for build
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8081}
+        VITE_APP_NAME: BidSphere
+    container_name: bidsphere-frontend
+    ports:
+      - "3000:80"
+    environment:
+      # Runtime environment variables (if needed)
+      API_URL: ${VITE_API_URL:-http://localhost:8081}
+    # Note: Frontend is NOT connected to backend in docker-compose
+    # This allows independent deployment and testing
+    networks:
+      - bidsphere-network
+
+# ================================
+# Networks
+# ================================
+networks:
+  bidsphere-network:
+    driver: bridge
+
+# ================================
+# Volumes
+# ================================
+volumes:
+  postgres_data:
+    driver: local

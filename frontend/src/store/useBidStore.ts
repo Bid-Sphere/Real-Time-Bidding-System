@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { Bid } from '@/types/organization';
-import { mockApiService } from '@/mocks/mockApiService';
+
 
 interface BidState {
   bids: Bid[];
@@ -21,10 +21,11 @@ export const useBidStore = create<BidState>((set, get) => ({
   error: null,
   total: 0,
 
-  fetchBids: async (orgId: string, status?: string) => {
+  fetchBids: async (_orgId: string, _status?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await mockApiService.bids.getBids(orgId, status);
+      // Mock data for now - replace with actual API call
+      const result = { bids: [], total: 0 };
       set({ 
         bids: result.bids,
         total: result.total,
@@ -41,7 +42,8 @@ export const useBidStore = create<BidState>((set, get) => ({
   getBid: async (bidId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const bid = await mockApiService.bids.getBid(bidId);
+      // Mock data for now - replace with actual API call
+      const bid = { id: bidId } as Bid;
       set({ isLoading: false });
       return bid;
     } catch (error) {
@@ -56,7 +58,8 @@ export const useBidStore = create<BidState>((set, get) => ({
   updateBid: async (bidId: string, data: Partial<Pick<Bid, 'proposedPrice' | 'estimatedTimeline' | 'coverLetter'>>) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedBid = await mockApiService.bids.updateBid(bidId, data);
+      // Mock data for now - replace with actual API call
+      const updatedBid = { id: bidId, ...data } as Bid;
       
       // Update the bid in the local state
       const bids = get().bids.map(b => 
@@ -76,7 +79,8 @@ export const useBidStore = create<BidState>((set, get) => ({
   withdrawBid: async (bidId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await mockApiService.bids.withdrawBid(bidId);
+      // Mock implementation - replace with actual API call
+      // await api.withdrawBid(bidId);
       
       // Remove the bid from the local state
       const bids = get().bids.filter(b => b.id !== bidId);

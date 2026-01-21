@@ -6,16 +6,6 @@ export interface LoginCredentials {
 }
 
 // Profile interfaces matching backend structure
-export interface FreelancerProfile {
-  professionalTitle: string;
-  skills: string[];
-  experienceLevel: 'beginner' | 'intermediate' | 'expert';
-  hourlyRate: number;
-  portfolioUrl?: string;
-  bio?: string;
-  resumeUrl?: string;
-}
-
 export interface ClientProfile {
   companyName?: string;
   industry?: string;
@@ -52,8 +42,11 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  token: string | null;
+  registrationStep: number | null;
   login: (credentials: LoginCredentials) => Promise<User>;
-  signup: (data: SignupData) => Promise<void>;
+  signup: (data: SignupData) => Promise<any>;
   logout: () => void;
   checkAuth: () => void;
+  setToken: (token: string | null) => void;
 }

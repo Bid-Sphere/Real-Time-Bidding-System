@@ -5,7 +5,7 @@ export default function ClientChat() {
     <>
       <DashboardHeader
         title="Messages"
-        subtitle="Communicate with freelancers and manage conversations"
+        subtitle="Communicate with organizations and manage conversations"
       />
       
       <div className="bg-background-card/60 backdrop-blur-xl border border-white/10 rounded-lg p-6">

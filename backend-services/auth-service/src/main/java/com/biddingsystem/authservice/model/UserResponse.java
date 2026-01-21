@@ -24,7 +24,6 @@ public class UserResponse {
     private String location;
 
     // Role-specific profiles
-    private Freelancer freelancerProfile;
     private Client clientProfile;
     private Organization organizationProfile;
 }

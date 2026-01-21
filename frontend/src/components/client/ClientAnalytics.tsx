@@ -7,8 +7,6 @@ import {
   PostProjectModal,
   ViewBidsPanel
 } from '@/components/client';
-import { useProjectFilters } from '@/hooks/useProjectFilters';
-import { mockStats, mockProjects } from '@/data/mockData';
 import type { Project, CreateProjectData, ProjectFilter } from '../../types/project';
 
 export default function ClientAnalytics() {
@@ -18,7 +16,7 @@ export default function ClientAnalytics() {
   const [projectFilter, setProjectFilter] = useState<ProjectFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProjects = useProjectFilters(mockProjects, projectFilter, searchQuery);
+  const filteredProjects: Project[] = []; // TODO: Connect to real API
 
   const handlePostProject = (data: CreateProjectData) => {
     console.log('Posting project:', data);
@@ -57,7 +55,7 @@ export default function ClientAnalytics() {
         subtitle="Manage your projects and track bidding progress"
       />
 
-      <DashboardStats stats={mockStats} />
+      <DashboardStats stats={{ totalProjects: 0, activeBids: 0, completedProjects: 0 }} />
 
       <QuickActionsBar
         onPostProject={() => setShowPostProjectModal(true)}

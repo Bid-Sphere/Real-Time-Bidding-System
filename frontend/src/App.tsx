@@ -176,12 +176,12 @@ function AnimatedRoutes() {
 // ... imports
 
 function App() {
-  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
 
-  // Check authentication on mount
+  // Initialize authentication on mount
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
     <ErrorBoundary>

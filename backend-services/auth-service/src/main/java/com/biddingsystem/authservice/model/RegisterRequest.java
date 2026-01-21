@@ -24,28 +24,26 @@ public class RegisterRequest {
     private String fullName;
 
     //@NotBlank(message = "Role is required")
-    private String role; // CLIENT, ORGANISATION, FREELANCER
+    private String role; // CLIENT, ORGANISATION
 
     // Common optional fields
     private String phone;
     private String location;
 
     // Role-specific data
-    private Freelancer freelancerProfile;
     private Client clientProfile;
     private Organization organizationProfile;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String email, String password, String fullName, String role, String phone, String location, Freelancer freelancerProfile, Client clientProfile, Organization organizationProfile) {
+    public RegisterRequest(String email, String password, String fullName, String role, String phone, String location, Client clientProfile, Organization organizationProfile) {
         this.email = email;
         this.password = password;
         this.fullName = fullName;
         this.role = role;
         this.phone = phone;
         this.location = location;
-        this.freelancerProfile = freelancerProfile;
         this.clientProfile = clientProfile;
         this.organizationProfile = organizationProfile;
     }

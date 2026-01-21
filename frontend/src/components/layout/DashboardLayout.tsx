@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import SidePanel from './SidePanel';
 import ClientSidePanel from '@/components/client/ClientSidePanel';
 import Navbar from './Navbar';
+import ProfileCompletionBanner from '@/components/shared/ProfileCompletionBanner';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -89,6 +90,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Main Content Area */}
         <main className="flex-1 lg:ml-0 pt-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            <ProfileCompletionBanner />
             {children}
           </div>
         </main>

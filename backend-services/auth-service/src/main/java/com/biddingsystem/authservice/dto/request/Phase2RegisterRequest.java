@@ -2,7 +2,6 @@ package com.biddingsystem.authservice.dto.request;
 
 //import javax.validation.constraints.NotBlank;
 import com.biddingsystem.authservice.model.Client;
-import com.biddingsystem.authservice.model.Freelancer;
 import com.biddingsystem.authservice.model.Organization;
 import lombok.Data;
 
@@ -16,7 +15,6 @@ public class Phase2RegisterRequest
     private String location;
 
     // Role-specific data
-    private Freelancer freelancerProfile;
     private Client clientProfile;
     private Organization organizationProfile;
 
@@ -42,14 +40,6 @@ public class Phase2RegisterRequest
 
     public void setLocation(String location) {
         this.location = location;
-    }
-
-    public Freelancer getFreelancerProfile() {
-        return freelancerProfile;
-    }
-
-    public void setFreelancerProfile(Freelancer freelancerProfile) {
-        this.freelancerProfile = freelancerProfile;
     }
 
     public Client getClientProfile() {

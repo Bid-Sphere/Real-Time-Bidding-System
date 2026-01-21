@@ -127,7 +127,7 @@ const sidebarItems: SidebarItem[] = [
 
 const quickActions = [
   { id: 'post-project', label: 'Post New Project', icon: <Plus className="h-4 w-4" />, primary: true },
-  { id: 'search-freelancers', label: 'Search Freelancers', icon: <Search className="h-4 w-4" /> },
+  { id: 'search-organizations', label: 'Search Organizations', icon: <Search className="h-4 w-4" /> },
   { id: 'browse-categories', label: 'Browse Categories', icon: <Filter className="h-4 w-4" /> },
   { id: 'schedule-meeting', label: 'Schedule Meeting', icon: <Calendar className="h-4 w-4" /> },
 ];

@@ -32,9 +32,6 @@ public enum ErrorCodeEnum
     INVALID_NAME_FORMAT("10304", "Name contains invalid characters"),
 
     // Role-specific Validation Errors (10400-10499)
-    FREELANCER_SKILLS_REQUIRED("10400", "Freelancer must have at least one skill"),
-    FREELANCER_TITLE_REQUIRED("10401", "Professional title is required for freelancers"),
-    FREELANCER_HOURLY_RATE_REQUIRED("10402", "Hourly rate is required for freelancers"),
     ORGANIZATION_COMPANY_REQUIRED("10403", "Company name is required for organizations"),
     ORGANIZATION_INDUSTRY_REQUIRED("10404", "Industry is required for organizations"),
     CLIENT_PHONE_REQUIRED("10405", "Phone number is required for clients"),

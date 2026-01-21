@@ -16,4 +16,8 @@ public interface AuthService {
     RegistrationResponse registerInitial(Phase1RegisterRequest request);
     UserResponse registerComplete(String email, Phase2RegisterRequest request);
     RegistrationResponse registerWithGoogle(GoogleRegisterRequest request);
+    void loadUserProfile(com.biddingsystem.authservice.model.UserEntity user);
+    com.biddingsystem.authservice.model.UserEntity findUserByEmail(String email);
+    void markEmailAsVerified(String email);
+    void promoteToPhase2(String email);
 }

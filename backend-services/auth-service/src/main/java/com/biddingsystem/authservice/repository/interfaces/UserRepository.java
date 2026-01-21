@@ -9,5 +9,7 @@ public interface UserRepository {
     UserEntity findById(Long userId);
     Long updateUserForInitialRegistration(UserEntity userEntity);
     void updateUser(UserEntity userEntity);
+    void markEmailAsVerified(String email);
+    void promoteToPhase2(String email);
     String formatSqlWithValues(String sql, Object... values);
 }

@@ -32,7 +32,6 @@ public class Endpoints
     public static final String USER_BY_ID = "/{id}";
 
     // Role-specific endpoints
-    public static final String FREELANCER_BASE = API_BASE + "/freelancer";
     public static final String CLIENT_BASE = API_BASE + "/client";
     public static final String ORGANIZATION_BASE = API_BASE + "/organisation";
 

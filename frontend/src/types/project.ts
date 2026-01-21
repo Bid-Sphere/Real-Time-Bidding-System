@@ -12,7 +12,6 @@ export interface Project {
   deadline: Date;
   status: ProjectStatus;
   biddingType: BiddingType;
-  visibility: ProjectVisibility;
   location?: string;
   requiredSkills: string[];
   attachments: ProjectAttachment[];
@@ -37,7 +36,7 @@ export interface Bid {
   projectId: string;
   bidderId: string;
   bidderName: string;
-  bidderType: 'organization' | 'freelancer';
+  bidderType: 'organization';
   bidderRating: number;
   completedProjects: number;
   proposedPrice: number;
@@ -74,11 +73,6 @@ export type ProjectStatus =
 
 export type BiddingType = 'live_auction' | 'standard_bidding';
 
-export type ProjectVisibility = 
-  | 'organizations_only'
-  | 'freelancers_only'
-  | 'both';
-
 export type BidStatus = 'pending' | 'accepted' | 'rejected';
 
 export type ProjectFilter = 'all' | 'active' | 'in_discussion' | 'closed';
@@ -100,6 +94,5 @@ export interface CreateProjectData {
   biddingType: BiddingType;
   budget: number;
   biddingDuration: number; // hours for live auction, days for standard
-  visibility: ProjectVisibility;
   attachments: File[];
 }

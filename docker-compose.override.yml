@@ -1,0 +1,39 @@
+# ================================
+# Docker Compose Override for Development
+# ================================
+# This file is automatically loaded by docker-compose
+# and provides development-specific configurations
+
+services:
+  # ================================
+  # Development Overrides
+  # ================================
+  
+  auth-service:
+    # Enable development features
+    environment:
+      # Enable debug logging
+      LOGGING_LEVEL_COM_BIDDINGSYSTEM_AUTHSERVICE: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+      
+    # Mount source code for hot reload (if using spring-boot-devtools)
+    volumes:
+      - ./backend-services/auth-service/src:/app/src:ro
+    
+    # Restart policy for development
+    restart: unless-stopped
+
+  postgres:
+    # Enable query logging for development
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_destination=stderr
+      -c log_min_duration_statement=0
+    
+    # Restart policy for development
+    restart: unless-stopped
+
+  frontend:
+    # Restart policy for development
+    restart: unless-stopped

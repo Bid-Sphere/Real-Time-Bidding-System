@@ -41,14 +41,14 @@ const mockBids: Bid[] = [
   {
     id: '2',
     projectId: '1',
-    bidderId: 'freelancer1',
-    bidderName: 'Alex Rodriguez',
-    bidderType: 'freelancer',
+    bidderId: 'org1',
+    bidderName: 'Tech Solutions Inc',
+    bidderType: 'organization',
     bidderRating: 4.9,
     completedProjects: 28,
     proposedPrice: 3800,
     estimatedDuration: 35,
-    proposal: 'Full-stack developer with 6+ years experience. I specialize in React/Node.js e-commerce platforms. I can provide a complete solution including responsive design, secure payment processing, and SEO optimization.',
+    proposal: 'Full-stack development team with 6+ years experience. We specialize in React/Node.js e-commerce platforms. We can provide a complete solution including responsive design, secure payment processing, and SEO optimization.',
     attachments: [],
     submittedAt: new Date('2024-01-13'),
     status: 'pending'
@@ -197,7 +197,7 @@ export default function ViewBidsPanel({
                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' 
                             : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         }`}>
-                          {bid.bidderType === 'organization' ? '🏢 Organization' : '👤 Freelancer'}
+                          {bid.bidderType === 'organization' ? '🏢 Organization' : '👤 Organization'}
                         </span>
                         {bid.proposedPrice === lowestBid && (
                           <span className="px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-xs font-medium">

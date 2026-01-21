@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { TeamMember } from '@/types/organization';
-import { mockApiService } from '@/mocks/mockApiService';
 
 interface TeamState {
   members: TeamMember[];
@@ -19,11 +18,11 @@ export const useTeamStore = create<TeamState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchTeamMembers: async (orgId: string) => {
+  fetchTeamMembers: async (_orgId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const members = await mockApiService.teams.getTeamMembers(orgId);
-      set({ members, isLoading: false });
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch team members', 
@@ -32,14 +31,11 @@ export const useTeamStore = create<TeamState>((set) => ({
     }
   },
 
-  addTeamMember: async (orgId: string, data: Omit<TeamMember, 'id' | 'organizationId' | 'createdAt'>) => {
+  addTeamMember: async (_orgId: string, _data: Omit<TeamMember, 'id' | 'organizationId' | 'createdAt'>) => {
     set({ isLoading: true, error: null });
     try {
-      const newMember = await mockApiService.teams.addTeamMember(orgId, data);
-      set((state) => ({ 
-        members: [...state.members, newMember], 
-        isLoading: false 
-      }));
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to add team member', 
@@ -49,14 +45,11 @@ export const useTeamStore = create<TeamState>((set) => ({
     }
   },
 
-  updateTeamMember: async (orgId: string, memberId: string, data: Partial<TeamMember>) => {
+  updateTeamMember: async (_orgId: string, _memberId: string, _data: Partial<TeamMember>) => {
     set({ isLoading: true, error: null });
     try {
-      const updatedMember = await mockApiService.teams.updateTeamMember(orgId, memberId, data);
-      set((state) => ({
-        members: state.members.map(m => m.id === memberId ? updatedMember : m),
-        isLoading: false
-      }));
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to update team member', 
@@ -66,14 +59,11 @@ export const useTeamStore = create<TeamState>((set) => ({
     }
   },
 
-  deleteTeamMember: async (orgId: string, memberId: string) => {
+  deleteTeamMember: async (_orgId: string, _memberId: string) => {
     set({ isLoading: true, error: null });
     try {
-      await mockApiService.teams.deleteTeamMember(orgId, memberId);
-      set((state) => ({
-        members: state.members.filter(m => m.id !== memberId),
-        isLoading: false
-      }));
+      // TODO: Implement API call
+      throw new Error('Backend API not connected yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to delete team member', 

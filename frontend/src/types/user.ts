@@ -1,4 +1,5 @@
 export type UserRole = 'client' | 'organization';
+export type UserStatus = 'PENDING' | 'PROFILE_COMPLETE';
 
 export interface ClientProfile {
   id?: number;
@@ -34,6 +35,9 @@ export interface User {
   phone?: string;
   location?: string;
   isActive?: boolean;
+  status?: UserStatus;
+  registrationStep?: number;
+  emailVerified?: boolean;
   // Role-specific profiles
   clientProfile?: ClientProfile;
   organizationProfile?: OrganizationProfile;

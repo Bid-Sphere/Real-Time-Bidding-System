@@ -17,10 +17,13 @@ export default function ProtectedRoute({ children, role }: ProtectedRouteProps) 
     userRole: user?.role,
     isAuthenticated,
     isLoading,
+    hasUser: !!user,
+    hasToken: !!useAuthStore.getState().token,
   });
 
   // Show loading state while checking authentication
   if (isLoading) {
+    console.log('ProtectedRoute - Still loading auth state');
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-blue)]"></div>
@@ -29,7 +32,7 @@ export default function ProtectedRoute({ children, role }: ProtectedRouteProps) 
   }
 
   // Check if user is authenticated
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     console.log('ProtectedRoute - Not authenticated, redirecting to login');
     // Redirect to login with return URL
     return <Navigate to="/login" state={{ from: location.pathname }} replace />;

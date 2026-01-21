@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { useAuthStore } from '@/store/authStore';
 import { ProfileCompletionBar } from '@/components/profile/ProfileCompletionBar';
 import { EmailVerification } from '@/components/profile/EmailVerification';
 import { ProfileForm } from '@/components/profile/ProfileForm';
@@ -9,6 +10,7 @@ import type { OrganizationProfile } from '@/types/organization';
 export default function ProfileSection() {
   const { profile, isLoading, fetchProfile, updateProfile, sendVerificationCode, verifyCode } =
     useOrganizationStore();
+  const { user, refreshUser } = useAuthStore();
 
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [missingFields, setMissingFields] = useState<string[]>([]);
@@ -23,22 +25,28 @@ export default function ProfileSection() {
 
   // Calculate completion percentage and missing fields when profile changes
   useEffect(() => {
-    if (profile) {
-      const percentage = calculateProfileCompletion(profile);
-      const missing = getMissingFields(profile);
+    if (profile && user) {
+      // Use emailVerified from auth store (more reliable than profile state)
+      const profileWithEmailStatus = {
+        ...profile,
+        emailVerified: user.emailVerified || false
+      };
+      
+      const percentage = calculateProfileCompletion(profileWithEmailStatus);
+      const missing = getMissingFields(profileWithEmailStatus);
       setCompletionPercentage(percentage);
       setMissingFields(missing);
 
-      // Determine verification status
-      if (profile.emailVerified) {
+      // Determine verification status from auth store
+      if (user.emailVerified) {
         setVerificationStatus('verified');
       } else {
         // Check localStorage for pending verification state
-        const pendingVerification = localStorage.getItem(`verification-pending-${profile.id}`);
+        const pendingVerification = localStorage.getItem(`verification-pending-${user.email}`);
         setVerificationStatus(pendingVerification ? 'pending' : 'unverified');
       }
     }
-  }, [profile]);
+  }, [profile, user]);
 
   const handleSaveProfile = async (data: Partial<OrganizationProfile>) => {
     if (!profile) return;
@@ -47,26 +55,29 @@ export default function ProfileSection() {
   };
 
   const handleSendVerificationCode = async () => {
-    if (!profile) throw new Error('Profile not loaded');
+    if (!user) throw new Error('User not authenticated');
 
-    const result = await sendVerificationCode(profile.id);
+    const result = await sendVerificationCode(user.id);
     
-    // Mark as pending in localStorage
-    localStorage.setItem(`verification-pending-${profile.id}`, 'true');
+    // Mark as pending in localStorage using email as key
+    localStorage.setItem(`verification-pending-${user.email}`, 'true');
     setVerificationStatus('pending');
     
     return result;
   };
 
   const handleVerifyCode = async (code: string) => {
-    if (!profile) throw new Error('Profile not loaded');
+    if (!user) throw new Error('User not authenticated');
 
-    const result = await verifyCode(profile.id, code);
+    const result = await verifyCode(user.id, code);
     
     if (result.verified) {
       // Clear pending state
-      localStorage.removeItem(`verification-pending-${profile.id}`);
+      localStorage.removeItem(`verification-pending-${user.email}`);
       setVerificationStatus('verified');
+      
+      // Refresh user data to get updated emailVerified status
+      await refreshUser();
     }
     
     return result;
@@ -109,7 +120,7 @@ export default function ProfileSection() {
 
       {/* Email Verification */}
       <EmailVerification
-        email={profile.userId} // Using userId as email for mock data
+        email={user?.email || 'No email'}
         status={verificationStatus}
         onSendCode={handleSendVerificationCode}
         onVerifyCode={handleVerifyCode}

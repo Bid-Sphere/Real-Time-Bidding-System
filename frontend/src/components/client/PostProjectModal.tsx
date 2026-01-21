@@ -5,7 +5,7 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import MultiSelect from '@/components/ui/MultiSelect';
-import type { CreateProjectData, ProjectCategory, BiddingType, ProjectVisibility } from '../../types/project';
+import type { CreateProjectData, ProjectCategory, BiddingType } from '../../types/project';
 
 interface PostProjectModalProps {
   isOpen: boolean;
@@ -37,7 +37,6 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     biddingType: 'standard_bidding',
     budget: 0,
     biddingDuration: 7,
-    visibility: 'both',
     attachments: []
   });
 
@@ -419,36 +418,6 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                 leftIcon={<Clock className="h-4 w-4" />}
                 required
               />
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-3">
-                  Visibility <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-3">
-                  {[
-                    { value: 'organizations_only', label: '🏢 Organizations Only', desc: 'Only organizations can bid' },
-                    { value: 'freelancers_only', label: '👤 Open to Freelancers', desc: 'Only freelancers can bid' },
-                    { value: 'both', label: '🌐 Both Organizations and Freelancers', desc: 'Open to everyone' }
-                  ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-3 p-3 border border-[var(--border-light)] rounded-lg cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors">
-                      <input
-                        type="radio"
-                        name="visibility"
-                        value={option.value}
-                        checked={formData.visibility === option.value}
-                        onChange={(e) => updateFormData('visibility', e.target.value as ProjectVisibility)}
-                        className="w-4 h-4 text-[var(--accent-blue)]"
-                      />
-                      <div>
-                        <div className="font-medium text-[var(--text-primary)]">{option.label}</div>
-                        <div className="text-sm text-[var(--text-secondary)]">
-                          {option.desc}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 

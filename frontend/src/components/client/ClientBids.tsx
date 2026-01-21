@@ -5,7 +5,7 @@ export default function ClientBids() {
     <>
       <DashboardHeader
         title="Bids & Proposals"
-        subtitle="Review and manage bids from freelancers"
+        subtitle="Review and manage bids from organizations"
       />
       
       <div className="bg-background-card/60 backdrop-blur-xl border border-white/10 rounded-lg p-6">

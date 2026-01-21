@@ -16,7 +16,7 @@ public class Phase1RegisterRequest {
     private String password;
 
     //@NotBlank(message = "Role is required")
-    private String role; // CLIENT, ORGANISATION, FREELANCER
+    private String role; // CLIENT, ORGANISATION
 
     public String getEmail() {
         return email;

@@ -11,7 +11,7 @@ vi.mock('@/store/useOrganizationStore');
 vi.mock('@/store/useBidStore');
 
 describe('Bid Submission Flow Integration Tests', () => {
-  const mockProjects = [
+  const [] = [
     {
       id: '1',
       title: 'Test Project 1',
@@ -43,7 +43,7 @@ describe('Bid Submission Flow Integration Tests', () => {
     });
 
     (useProjectStore as any).mockReturnValue({
-      projects: mockProjects,
+      projects: [],
       filters: {},
       isLoading: false,
       fetchProjects: vi.fn(),
@@ -72,7 +72,7 @@ describe('Bid Submission Flow Integration Tests', () => {
   it('should allow verified users to submit bids', async () => {
     const mockSubmitBid = vi.fn();
     (useProjectStore as any).mockReturnValue({
-      projects: mockProjects,
+      projects: [],
       filters: {},
       isLoading: false,
       fetchProjects: vi.fn(),
@@ -123,7 +123,7 @@ describe('Bid Submission Flow Integration Tests', () => {
   it('should allow marking projects as interested', async () => {
     const mockMarkAsInterested = vi.fn();
     (useProjectStore as any).mockReturnValue({
-      projects: mockProjects,
+      projects: [],
       filters: {},
       isLoading: false,
       fetchProjects: vi.fn(),
@@ -150,7 +150,7 @@ describe('Bid Submission Flow Integration Tests', () => {
   it('should filter projects based on criteria', async () => {
     const mockFetchProjects = vi.fn();
     (useProjectStore as any).mockReturnValue({
-      projects: mockProjects,
+      projects: [],
       filters: {},
       isLoading: false,
       fetchProjects: mockFetchProjects,
