@@ -5,6 +5,8 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import MultiSelect from '@/components/ui/MultiSelect';
+import { useClientProfileCompletion } from '../../hooks/useClientProfileCompletion';
+import { ProfileCompletionModal } from './ProfileCompletionModal';
 import type { CreateProjectData, ProjectCategory, BiddingType, ProjectVisibility } from '../../types/project';
 
 interface PostProjectModalProps {
@@ -26,6 +28,9 @@ const skillOptions = [
 ];
 
 export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProjectModalProps) {
+  const { isComplete, profile } = useClientProfileCompletion();
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  
   const [formData, setFormData] = useState<Partial<CreateProjectData>>({
     title: '',
     category: 'IT',
@@ -90,6 +95,12 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
   };
 
   const handleSubmit = () => {
+    // Check profile completion before allowing project submission
+    if (!isComplete) {
+      setShowProfileModal(true);
+      return;
+    }
+    
     if (validateStep(3)) {
       onSubmit(formData as CreateProjectData);
       onClose();
@@ -482,6 +493,14 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
           </div>
         </div>
       </Card>
+      
+      {/* Profile Completion Modal */}
+      <ProfileCompletionModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        profile={profile}
+        actionAttempted="post a project"
+      />
     </div>
   );
 }

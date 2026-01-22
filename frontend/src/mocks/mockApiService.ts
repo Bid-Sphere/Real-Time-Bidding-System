@@ -12,6 +12,11 @@ import type {
   Attachment
 } from '@/types/organization';
 
+import type {
+  ClientProfile,
+  ClientAnalyticsData
+} from '@/types/client';
+
 import { currentOrganization } from './organizationData';
 import { mockAnalyticsData } from './analyticsData';
 import { mockProjects } from './projectsData';
@@ -21,6 +26,7 @@ import { mockConversations } from './conversationsData';
 import { mockMessages } from './messagesData';
 import { mockNotifications } from './notificationsData';
 import { mockActivities } from './activitiesData';
+import { mockClientProfile, mockClientAnalytics } from './clientData';
 
 // Utility function to simulate network latency
 const delay = (ms: number = Math.random() * 300 + 200) => 
@@ -35,7 +41,11 @@ const STORAGE_KEYS = {
   CONVERSATIONS: 'org_conversations',
   MESSAGES: 'org_messages',
   NOTIFICATIONS: 'org_notifications',
-  VERIFICATION_STATUS: 'org_verification_status'
+  VERIFICATION_STATUS: 'org_verification_status',
+  // Client keys
+  CLIENT_PROFILE: 'client_profile',
+  CLIENT_ANALYTICS: 'client_analytics',
+  CLIENT_VERIFICATION_STATUS: 'client_verification_status'
 };
 
 // Initialize localStorage with mock data if not present
@@ -61,6 +71,14 @@ const initializeStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS)) {
     localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(mockNotifications));
+  }
+  
+  // Initialize client data
+  if (!localStorage.getItem(STORAGE_KEYS.CLIENT_PROFILE)) {
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROFILE, JSON.stringify(mockClientProfile));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CLIENT_ANALYTICS)) {
+    localStorage.setItem(STORAGE_KEYS.CLIENT_ANALYTICS, JSON.stringify(mockClientAnalytics));
   }
 };
 
@@ -668,6 +686,96 @@ export const notificationsApi = {
   }
 };
 
+// Client Endpoints
+export const clientApi = {
+  getProfile: async (_clientId: string): Promise<ClientProfile> => {
+    await delay();
+    const profile = localStorage.getItem(STORAGE_KEYS.CLIENT_PROFILE);
+    return profile ? JSON.parse(profile) : mockClientProfile;
+  },
+
+  updateProfile: async (_clientId: string, data: Partial<ClientProfile>): Promise<ClientProfile> => {
+    await delay();
+    const profile = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROFILE) || '{}') as ClientProfile;
+    
+    // Calculate completion percentage
+    const updatedProfile = { ...profile, ...data, updatedAt: new Date().toISOString() };
+    const requiredFields = [
+      updatedProfile.fullName,
+      updatedProfile.companyName,
+      updatedProfile.industry,
+      updatedProfile.contactPersonRole,
+      updatedProfile.phoneNumber,
+      updatedProfile.country,
+      updatedProfile.emailVerified ? 'verified' : undefined,
+      updatedProfile.phoneVerified ? 'verified' : undefined,
+    ];
+    
+    const filledCount = requiredFields.filter(field => 
+      field !== undefined && field !== null && field !== ''
+    ).length;
+    
+    updatedProfile.completionPercentage = Math.round((filledCount / 8) * 100);
+    
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROFILE, JSON.stringify(updatedProfile));
+    return updatedProfile;
+  },
+
+  getAnalytics: async (_clientId: string): Promise<ClientAnalyticsData> => {
+    await delay();
+    const analytics = localStorage.getItem(STORAGE_KEYS.CLIENT_ANALYTICS);
+    return analytics ? JSON.parse(analytics) : mockClientAnalytics;
+  },
+
+  sendVerificationCode: async (_clientId: string): Promise<{ message: string; expiresAt: string }> => {
+    await delay();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+    localStorage.setItem(STORAGE_KEYS.CLIENT_VERIFICATION_STATUS, JSON.stringify({
+      status: 'pending',
+      code: '123456', // Mock code
+      expiresAt
+    }));
+    return {
+      message: 'Verification code sent to your email',
+      expiresAt
+    };
+  },
+
+  verifyCode: async (_clientId: string, code: string): Promise<{ verified: boolean; message: string }> => {
+    await delay();
+    const verificationData = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_VERIFICATION_STATUS) || '{}');
+    
+    if (code === verificationData.code || code === '123456') {
+      // Update profile
+      const profile = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROFILE) || '{}') as ClientProfile;
+      profile.emailVerified = true;
+      
+      // Recalculate completion percentage
+      const requiredFields = [
+        profile.fullName,
+        profile.companyName,
+        profile.industry,
+        profile.contactPersonRole,
+        profile.phoneNumber,
+        profile.country,
+        'verified', // email is now verified
+        profile.phoneVerified ? 'verified' : undefined,
+      ];
+      const filledCount = requiredFields.filter(field => 
+        field !== undefined && field !== null && field !== ''
+      ).length;
+      profile.completionPercentage = Math.round((filledCount / 8) * 100);
+      
+      localStorage.setItem(STORAGE_KEYS.CLIENT_PROFILE, JSON.stringify(profile));
+      localStorage.setItem(STORAGE_KEYS.CLIENT_VERIFICATION_STATUS, JSON.stringify({ status: 'verified' }));
+      
+      return { verified: true, message: 'Email verified successfully' };
+    }
+    
+    return { verified: false, message: 'Invalid verification code' };
+  }
+};
+
 // Export all APIs
 export const mockApiService = {
   analytics: analyticsApi,
@@ -677,7 +785,8 @@ export const mockApiService = {
   projects: projectsApi,
   bids: bidsApi,
   chat: chatApi,
-  notifications: notificationsApi
+  notifications: notificationsApi,
+  client: clientApi
 };
 
 export default mockApiService;
