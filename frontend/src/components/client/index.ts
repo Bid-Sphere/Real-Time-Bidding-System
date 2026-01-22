@@ -13,3 +13,7 @@ export { default as ClientProfile } from './ClientProfile';
 export { default as ClientProjects } from './ClientProjects';
 export { default as ClientBids } from './ClientBids';
 export { default as ClientChat } from './ClientChat';
+export { ClientProfileCompletionBar } from './ClientProfileCompletionBar';
+export { ClientEmailVerification } from './ClientEmailVerification';
+export { ClientProfileForm } from './ClientProfileForm';
+export { ProfileCompletionModal } from './ProfileCompletionModal';
