@@ -579,22 +579,3 @@ Or manually create tables using schema.sql
 
 ---
 
-
-## 👥 Authors
-
-
----
-
-
-
----
-
-## 📊 Statistics
-
-![GitHub stars](https://img.shields.io/github/stars/yourusername/project-service?style=social)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/project-service?style=social)
-![GitHub issues](https://img.shields.io/github/issues/yourusername/project-service)
-
----
-
-
