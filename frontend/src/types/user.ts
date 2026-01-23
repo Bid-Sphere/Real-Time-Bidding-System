@@ -6,7 +6,6 @@ export interface ClientProfile {
   userId?: number;
   companyName?: string;
   industry?: string;
-  companySize?: string;
   website?: string;
   billingAddress?: string;
   taxId?: string;
@@ -17,7 +16,6 @@ export interface OrganizationProfile {
   userId?: number;
   companyName: string;
   industry: string;
-  companySize?: string;
   website?: string;
   taxId?: string;
   businessRegistrationNumber?: string;

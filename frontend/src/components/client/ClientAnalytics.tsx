@@ -68,7 +68,6 @@ export default function ClientAnalytics() {
       <ProjectsGrid
         projects={filteredProjects}
         onViewBids={handleViewBids}
-        onPostProject={() => setShowPostProjectModal(true)}
       />
 
       {/* Modals */}

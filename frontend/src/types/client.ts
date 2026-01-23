@@ -1,39 +1,22 @@
 // Client Dashboard Type Definitions
 
-// Client Profile
+// Client Profile based on auth service Client model
 export interface ClientProfile {
-  id: string;
-  userId: string;
-  fullName: string;
-  companyName: string;
-  industry: string;
-  companySize?: string;
+  id?: number;
+  userId?: number;
+  companyName?: string; // Optional for individual clients
+  industry?: string;
   website?: string;
+  billingAddress?: string;
   taxId?: string;
-  businessRegistrationNumber?: string;
-  contactPersonRole: string;
-  phoneNumber: string;
-  businessAddress?: string;
-  country: string;
-  timeZone?: string;
-  logo?: string;
-  coverImage?: string;
-  companyDescription?: string;
-  projectDescription?: string;
-  projectDocuments?: Attachment[];
-  yearsInBusiness?: number;
-  annualRevenue?: string;
-  linkedInProfile?: string;
-  preferredCategories?: string[];
-  typicalBudgetRange?: string;
-  projectFrequency?: string;
-  communicationMethod?: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  businessVerified: boolean;
-  completionPercentage: number;
-  createdAt: string;
-  updatedAt: string;
+  // Additional fields from User model
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  emailVerified?: boolean;
+  completionPercentage?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Client Analytics Data

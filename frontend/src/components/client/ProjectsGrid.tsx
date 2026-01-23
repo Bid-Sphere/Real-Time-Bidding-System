@@ -1,25 +1,22 @@
-import { Plus } from 'lucide-react';
-import Button from '@/components/ui/Button';
 import ProjectCard from './ProjectCard';
 import type { Project } from '../../types/project';
 
 interface ProjectsGridProps {
   projects: Project[];
   onViewBids: (project: Project) => void;
-  onPostProject: () => void;
 }
 
-export default function ProjectsGrid({ projects, onViewBids, onPostProject }: ProjectsGridProps) {
+export default function ProjectsGrid({ projects, onViewBids }: ProjectsGridProps) {
   if (projects.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="text-[var(--text-secondary)] mb-4">
-          No projects found matching your criteria
+      <div className="text-center py-16">
+        <div className="text-gray-400 mb-6 text-lg">
+          No projects found
         </div>
-        <Button onClick={onPostProject}>
-          <Plus className="h-4 w-4 mr-2" />
-          Post Your First Project
-        </Button>
+        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+          You haven't posted any projects yet. Use the "Post New Project" button above to get started and connect with talented service providers.
+        </p>
+        {/* Removed the duplicate button - users should use the one in QuickActionsBar */}
       </div>
     );
   }

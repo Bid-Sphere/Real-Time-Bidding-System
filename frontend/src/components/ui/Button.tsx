@@ -49,6 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       transition-all duration-[var(--transition-fast)]
       focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]
       disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none
+      text-center
     `.trim().replace(/\s+/g, ' ');
 
     // Variant styles with dark theme (Requirements 1.5, 1.6, 15.1, 15.5)
@@ -138,16 +139,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         role={props.onClick && !props.type ? 'button' : undefined}
       >
         {loading ? (
-          <>
+          <div className="flex items-center justify-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
             <span>Loading...</span>
-          </>
+          </div>
         ) : (
-          <>
-            {resolvedLeftIcon && <span className="inline-flex items-center" aria-hidden="true">{resolvedLeftIcon}</span>}
-            <span>{children}</span>
-            {rightIcon && <span className="inline-flex items-center" aria-hidden="true">{rightIcon}</span>}
-          </>
+          <div className="flex items-center justify-center gap-2">
+            {resolvedLeftIcon && <span className="flex items-center justify-center" aria-hidden="true">{resolvedLeftIcon}</span>}
+            <span className="flex items-center justify-center">{children}</span>
+            {rightIcon && <span className="flex items-center justify-center" aria-hidden="true">{rightIcon}</span>}
+          </div>
         )}
       </MotionButton>
     );

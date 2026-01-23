@@ -338,7 +338,7 @@ public class AuthController {
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Verification code sent successfully");
-            response.put("expiresAt", LocalDateTime.now().plusMinutes(10).toString()); // 10 minutes expiry
+            response.put("expiresAt", java.time.Instant.now().plusSeconds(600).toString()); // 10 minutes expiry in proper ISO format
             response.put("timestamp", LocalDateTime.now());
             
             // FOR TESTING ONLY - Include code in response (remove in production)

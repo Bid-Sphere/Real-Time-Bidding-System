@@ -98,6 +98,31 @@ public class UserController {
                 return ResponseEntity.notFound().build();
             }
 
+            // Check if we need to update the User entity (fullName, phone, location)
+            boolean needsUserUpdate = false;
+            
+            if (profileData.containsKey("fullName")) {
+                user.setFullName((String) profileData.get("fullName"));
+                needsUserUpdate = true;
+            }
+            
+            if (profileData.containsKey("phone")) {
+                user.setPhone((String) profileData.get("phone"));
+                needsUserUpdate = true;
+            }
+            
+            if (profileData.containsKey("location")) {
+                user.setLocation((String) profileData.get("location"));
+                needsUserUpdate = true;
+            }
+            
+            // Update User entity if needed
+            if (needsUserUpdate) {
+                user.setUpdatedAt(java.time.LocalDateTime.now());
+                userRepository.updateUser(user);
+                logger.info("User entity updated for: {}", email);
+            }
+
             String role = user.getRole().toUpperCase();
             
             if ("ORGANISATION".equals(role)) {
@@ -131,6 +156,7 @@ public class UserController {
                 }
                 if (profileData.containsKey("contactPerson")) {
                     orgProfile.setContactPerson((String) profileData.get("contactPerson"));
+                    // Note: Database trigger will automatically sync this to users.full_name
                 }
                 if (profileData.containsKey("contactPersonRole")) {
                     orgProfile.setContactPersonRole((String) profileData.get("contactPersonRole"));
@@ -159,9 +185,6 @@ public class UserController {
                 }
                 if (profileData.containsKey("industry")) {
                     clientProfile.setIndustry((String) profileData.get("industry"));
-                }
-                if (profileData.containsKey("companySize")) {
-                    clientProfile.setCompanySize((String) profileData.get("companySize"));
                 }
                 if (profileData.containsKey("website")) {
                     clientProfile.setWebsite((String) profileData.get("website"));

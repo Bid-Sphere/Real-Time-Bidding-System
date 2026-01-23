@@ -29,7 +29,6 @@ public class ClientRepositoryImpl implements ClientRepository {
                     .userId(rs.getLong("user_id"))
                     .companyName(rs.getString("company_name"))
                     .industry(rs.getString("industry"))
-                    .companySize(rs.getString("company_size"))
                     .website(rs.getString("website"))
                     .billingAddress(rs.getString("billing_address"))
                     .taxId(rs.getString("tax_id"))
@@ -39,8 +38,8 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public Long saveClientProfile(Client profile) {
-        String sql = "INSERT INTO client (user_id, company_name, industry, company_size, website, billing_address, tax_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO client (user_id, company_name, industry, website, billing_address, tax_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
 
         log.info("Saving client profile for user ID: {}", profile.getUserId());
 
@@ -49,7 +48,6 @@ public class ClientRepositoryImpl implements ClientRepository {
                     profile.getUserId(),
                     profile.getCompanyName(),
                     profile.getIndustry(),
-                    profile.getCompanySize(),
                     profile.getWebsite(),
                     profile.getBillingAddress(),
                     profile.getTaxId()
@@ -80,7 +78,7 @@ public class ClientRepositoryImpl implements ClientRepository {
 
     @Override
     public void updateClientProfile(Client profile) {
-        String sql = "UPDATE client SET company_name = ?, industry = ?, company_size = ?, " +
+        String sql = "UPDATE client SET company_name = ?, industry = ?, " +
                 "website = ?, billing_address = ?, tax_id = ? " +
                 "WHERE user_id = ?";
 
@@ -90,7 +88,6 @@ public class ClientRepositoryImpl implements ClientRepository {
             int rowsUpdated = jdbcTemplate.update(sql,
                     profile.getCompanyName(),
                     profile.getIndustry(),
-                    profile.getCompanySize(),
                     profile.getWebsite(),
                     profile.getBillingAddress(),
                     profile.getTaxId(),

@@ -26,6 +26,7 @@ export interface LoginResponse {
   fullName: string;
   role: string;
   expiresIn: number;
+  emailVerified: boolean;
 }
 
 class AuthService {
@@ -81,7 +82,7 @@ class AuthService {
         credentials
       );
 
-      const { accessToken, userId, email, fullName, role } = response.data;
+      const { accessToken, userId, email, fullName, role, emailVerified } = response.data;
       
       // Store token
       this.token = accessToken;
@@ -100,6 +101,7 @@ class AuthService {
         role: roleMap[role as keyof typeof roleMap] || 'client',
         createdAt: new Date().toISOString(),
         isActive: true,
+        emailVerified: emailVerified || false,
       };
 
       return { user, token: accessToken };

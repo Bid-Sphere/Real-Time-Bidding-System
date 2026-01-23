@@ -135,7 +135,7 @@ export const useAuthStore = create<ExtendedAuthState>()(
         try {
           const user = await authService.getCurrentUser();
           set({ user });
-          console.log('User data refreshed');
+          console.log('User data refreshed:', user);
         } catch (error) {
           console.error('Failed to refresh user data:', error);
         }

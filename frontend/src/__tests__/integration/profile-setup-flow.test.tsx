@@ -12,7 +12,6 @@ describe('Profile Setup Flow Integration Tests', () => {
     userId: 'user1',
     companyName: 'Test Company',
     industry: 'Technology',
-    companySize: '10-50',
     website: 'https://test.com',
     taxId: 'TAX123',
     businessRegistrationNumber: 'REG123',

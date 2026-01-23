@@ -15,7 +15,6 @@ public class Client
     private Long userId;
     private String companyName; // Optional for individual clients
     private String industry;
-    private String companySize;
     private String website;
     private String billingAddress;
     private String taxId;
@@ -50,14 +49,6 @@ public class Client
 
     public void setIndustry(String industry) {
         this.industry = industry;
-    }
-
-    public String getCompanySize() {
-        return companySize;
-    }
-
-    public void setCompanySize(String companySize) {
-        this.companySize = companySize;
     }
 
     public String getWebsite() {

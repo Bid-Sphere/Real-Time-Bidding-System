@@ -18,6 +18,7 @@ public class LoginResponse
     private String fullName;
     private String role;
     private Long expiresIn;
+    private Boolean emailVerified;
 
     // If you want to keep your constructor, you can add it like this:
     public LoginResponse(String accessToken, Long userId, String email, String firstName, String lastName, String role, Long expiresIn) {

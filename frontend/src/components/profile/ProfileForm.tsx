@@ -150,7 +150,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form onSubmit={handleSubmit} className="space-y-8 w-full">
       {/* Company Information Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -368,7 +368,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
       </motion.div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-center">
         <Button
           type="submit"
           disabled={isSaving || isLoading}

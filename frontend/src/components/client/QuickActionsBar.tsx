@@ -36,22 +36,22 @@ export default function QuickActionsBar({
   return (
     <>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
           <Button
             onClick={handlePostProject}
-            className="bg-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/90"
+            className="bg-[var(--accent-blue)] hover:bg-[var(--accent-blue)]/90 flex-shrink-0"
           >
             <Plus className="h-4 w-4 mr-2" />
             Post New Project
           </Button>
           
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 flex-1">
             <Input
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               leftIcon={<Search className="h-4 w-4" />}
-              className="w-64"
+              className="w-full sm:w-64"
             />
             
             <Select
@@ -63,6 +63,7 @@ export default function QuickActionsBar({
               ]}
               value={projectFilter}
               onChange={(e) => onFilterChange(e.target.value as ProjectFilter)}
+              className="w-full sm:w-auto"
             />
           </div>
         </div>

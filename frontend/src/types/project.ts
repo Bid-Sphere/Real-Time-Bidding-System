@@ -83,6 +83,8 @@ export type SortOption =
   | 'most_recent'
   | 'fastest_completion';
 
+export type ProjectVisibility = 'organizations_only' | 'freelancers_only' | 'both';
+
 export interface CreateProjectData {
   title: string;
   category: ProjectCategory;
@@ -94,5 +96,6 @@ export interface CreateProjectData {
   biddingType: BiddingType;
   budget: number;
   biddingDuration: number; // hours for live auction, days for standard
+  visibility: ProjectVisibility;
   attachments: File[];
 }

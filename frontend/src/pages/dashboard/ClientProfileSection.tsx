@@ -3,35 +3,24 @@ import { useAuthStore } from '@/store/authStore';
 import { useClientStore } from '@/store/useClientStore';
 import { ProfileCompletionBar } from '@/components/profile/ProfileCompletionBar';
 import { EmailVerification } from '@/components/profile/EmailVerification';
-import { ClientProfileForm } from './ClientProfileForm';
-import { calculateClientProfileCompletion, getMissingClientFields } from '../../utils/clientProfileUtils';
-import type { ClientProfile } from '../../types/client';
+import { ClientProfileForm } from '@/components/client/ClientProfileForm';
+import { EmailVerificationTest } from '@/components/debug/EmailVerificationTest';
+import { AuthStateDebug } from '@/components/debug/AuthStateDebug';
+import { calculateClientProfileCompletion, getMissingClientFields } from '@/utils/clientProfileUtils';
+import type { ClientProfile } from '@/types/client';
 
-export default function ClientProfile() {
+export default function ClientProfileSection() {
   const { user, refreshUser } = useAuthStore();
   const { 
-    profile: storeProfile, 
-    isLoading: storeLoading, 
+    profile, 
+    isLoading, 
+    error, 
     fetchProfile, 
     updateProfile, 
     sendVerificationCode, 
     verifyCode 
   } = useClientStore();
   
-  // Use store profile or create default profile
-  const [profile, setProfile] = useState<ClientProfile>({
-    firstName: user?.fullName?.split(' ')[0] || '',
-    lastName: user?.fullName?.split(' ').slice(1).join(' ') || '',
-    email: user?.email || '',
-    companyName: storeProfile?.companyName || '',
-    industry: storeProfile?.industry || '',
-    website: storeProfile?.website || '',
-    billingAddress: storeProfile?.billingAddress || '',
-    taxId: storeProfile?.taxId || '',
-    emailVerified: user?.emailVerified || false,
-  });
-  
-  const [isLoading, setIsLoading] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [verificationStatus, setVerificationStatus] = useState<'unverified' | 'pending' | 'verified'>('unverified');
@@ -42,20 +31,6 @@ export default function ClientProfile() {
       fetchProfile(user.id);
     }
   }, [user?.id, fetchProfile]);
-
-  // Update local profile when store profile changes
-  useEffect(() => {
-    if (storeProfile) {
-      setProfile(prev => ({
-        ...prev,
-        companyName: storeProfile.companyName || '',
-        industry: storeProfile.industry || '',
-        website: storeProfile.website || '',
-        billingAddress: storeProfile.billingAddress || '',
-        taxId: storeProfile.taxId || '',
-      }));
-    }
-  }, [storeProfile]);
 
   // Calculate completion percentage and missing fields when profile changes
   useEffect(() => {
@@ -80,23 +55,17 @@ export default function ClientProfile() {
         setVerificationStatus(pendingVerification ? 'pending' : 'unverified');
       }
     }
-  }, [profile, user]);
+  }, [profile, user, user?.emailVerified]); // Add user.emailVerified as dependency
 
   const handleSaveProfile = async (data: Partial<ClientProfile>) => {
     if (!user?.id) return;
     
-    setIsLoading(true);
     try {
       await updateProfile(user.id, data);
-      
-      // Update local state
-      setProfile(prev => ({ ...prev, ...data }));
-      
       console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
-    } finally {
-      setIsLoading(false);
+      // Error is already handled by the store
     }
   };
 
@@ -132,10 +101,11 @@ export default function ClientProfile() {
           localStorage.removeItem(`verification-pending-${user.email}`);
         }
         
-        setVerificationStatus('verified');
-        
         // Refresh user data to get updated emailVerified status
         await refreshUser();
+        
+        // Set verification status to verified after refreshing user data
+        setVerificationStatus('verified');
         
         console.log('Email verified successfully');
       }
@@ -152,25 +122,25 @@ export default function ClientProfile() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading profile...</p>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-400">Error: {error}</div>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Profile Management</h1>
-        <p className="text-gray-400">
-          Complete your client profile to unlock all platform features and increase your
-          credibility with service providers.
-        </p>
-      </div>
+      {/* Debug Components - Remove after testing */}
+      <AuthStateDebug />
+      <EmailVerificationTest />
 
       {/* Profile Completion Bar */}
       <ProfileCompletionBar
@@ -187,11 +157,13 @@ export default function ClientProfile() {
       />
 
       {/* Profile Form */}
-      <ClientProfileForm
-        profile={profile}
-        onSave={handleSaveProfile}
-        isLoading={isLoading || storeLoading}
-      />
+      {profile && (
+        <ClientProfileForm
+          profile={profile}
+          onSave={handleSaveProfile}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }

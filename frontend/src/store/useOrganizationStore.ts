@@ -37,11 +37,10 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
           userId: user.organizationProfile.userId?.toString() || user.id,
           companyName: user.organizationProfile.companyName || '',
           industry: user.organizationProfile.industry || '',
-          companySize: user.organizationProfile.companySize || '',
           website: user.organizationProfile.website || '',
           taxId: user.organizationProfile.taxId || '',
           businessRegistrationNumber: user.organizationProfile.businessRegistrationNumber || '',
-          contactPerson: user.organizationProfile.contactPerson || '',
+          contactPerson: user.organizationProfile.contactPerson || user.fullName || '',
           contactPersonRole: user.organizationProfile.contactPersonRole || '',
           logo: '',
           location: user.location || '',
@@ -60,6 +59,12 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
       
       if (storedProfile) {
         const profile: OrganizationProfile = JSON.parse(storedProfile);
+        // Update with latest user data from auth store
+        if (user) {
+          profile.contactPerson = user.fullName || profile.contactPerson || '';
+          profile.emailVerified = user.emailVerified || false;
+          profile.location = user.location || profile.location || '';
+        }
         set({ profile, isLoading: false });
         return;
       }
@@ -70,11 +75,10 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
         userId: user?.id || 'user-1',
         companyName: '',
         industry: '',
-        companySize: '',
         website: '',
         taxId: '',
         businessRegistrationNumber: '',
-        contactPerson: '',
+        contactPerson: user?.fullName || '',
         contactPersonRole: '',
         logo: '',
         location: user?.location || '',
@@ -96,8 +100,20 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   updateProfile: async (orgId: string, data: Partial<OrganizationProfile>) => {
     set({ isLoading: true, error: null });
     try {
+      // Prepare data for backend - map contactPerson to fullName for User table
+      const backendData: Record<string, any> = { ...data };
+      
+      // If contactPerson is being updated, also update fullName in User table
+      if (data.contactPerson !== undefined) {
+        backendData.contactPerson = data.contactPerson;
+        // Don't send fullName separately as it will be handled by backend
+      }
+      
       // Update via API
-      await authService.updateProfile(data);
+      await authService.updateProfile(backendData);
+      
+      // Refresh user data to get updated profile from backend FIRST
+      await useAuthStore.getState().refreshUser();
       
       // Update local state
       const currentProfile = get().profile;
@@ -116,8 +132,10 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
       
       set({ profile: updatedProfile, isLoading: false });
       
-      // Refresh user data to get updated profile from backend
-      await useAuthStore.getState().refreshUser();
+      // Fetch the profile again to ensure we have the latest data from backend
+      setTimeout(() => {
+        get().fetchProfile(orgId);
+      }, 100);
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to update profile', 

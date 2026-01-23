@@ -9,7 +9,6 @@ export interface LoginCredentials {
 export interface ClientProfile {
   companyName?: string;
   industry?: string;
-  companySize?: string;
   website?: string;
   billingAddress?: string;
   taxId?: string;
@@ -18,7 +17,6 @@ export interface ClientProfile {
 export interface OrganizationProfile {
   companyName: string;
   industry: string;
-  companySize?: string;
   website?: string;
   taxId?: string;
   businessRegistrationNumber?: string;

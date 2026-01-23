@@ -120,6 +120,7 @@ public class AuthServiceImpl implements AuthService
                 .email(foundUser.getEmail())
                 .fullName(foundUser.getFullName())
                 .role(foundUser.getRole())
+                .emailVerified(foundUser.getEmailVerified())
                 .expiresIn(86400L) // 24 hours in seconds
                 .build();
     }

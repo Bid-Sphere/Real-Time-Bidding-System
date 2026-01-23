@@ -50,6 +50,7 @@ export const EmailVerification: React.FC<EmailVerificationProps> = ({
   const handleSendCode = async () => {
     setIsLoading(true);
     setMessage('');
+    setTimeRemaining(null); // Clear any existing timer
     
     try {
       const result = await onSendCode();
@@ -198,10 +199,15 @@ export const EmailVerification: React.FC<EmailVerificationProps> = ({
 
       {/* Verified Status */}
       {status === 'verified' && (
-        <p className="text-sm text-green-500 flex items-center gap-2">
-          <CheckCircle className="w-4 h-4" />
-          Your email has been successfully verified. You can now bid on projects!
-        </p>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+            <CheckCircle className="w-6 h-6 text-green-500" />
+            <div>
+              <p className="text-green-500 font-medium">Email is verified</p>
+              <p className="text-sm text-green-400">Your email has been successfully verified. You can now bid on projects!</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Message Display */}

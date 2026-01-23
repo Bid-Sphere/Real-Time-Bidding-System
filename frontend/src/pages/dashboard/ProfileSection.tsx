@@ -18,10 +18,10 @@ export default function ProfileSection() {
 
   // Fetch profile on mount
   useEffect(() => {
-    // Using mock orgId for development
-    const orgId = 'org-1';
-    fetchProfile(orgId);
-  }, [fetchProfile]);
+    if (user?.id) {
+      fetchProfile(user.id);
+    }
+  }, [user?.id, fetchProfile]);
 
   // Calculate completion percentage and missing fields when profile changes
   useEffect(() => {
@@ -49,9 +49,9 @@ export default function ProfileSection() {
   }, [profile, user]);
 
   const handleSaveProfile = async (data: Partial<OrganizationProfile>) => {
-    if (!profile) return;
+    if (!user?.id) return;
 
-    await updateProfile(profile.id, data);
+    await updateProfile(user.id, data);
   };
 
   const handleSendVerificationCode = async () => {
@@ -105,7 +105,7 @@ export default function ProfileSection() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-8 pb-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white mb-2">Profile Management</h1>

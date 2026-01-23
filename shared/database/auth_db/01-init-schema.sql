@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS client (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     company_name VARCHAR(255),
     industry VARCHAR(100),
-    company_size VARCHAR(50),
     website VARCHAR(255),
     billing_address TEXT,
     tax_id VARCHAR(100),
