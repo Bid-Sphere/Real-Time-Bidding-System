@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DashboardHeader,
   DashboardStats,
@@ -8,21 +8,91 @@ import {
   ViewBidsPanel
 } from '@/components/client';
 import { useProjectFilters } from '@/hooks/useProjectFilters';
-import { mockStats, mockProjects } from '@/data/mockData';
+import { useClientStore } from '../../store/useClientStore';
 import type { Project, CreateProjectData, ProjectFilter } from '../../types/project';
 
 export default function ClientAnalytics() {
+  const { 
+    projects, 
+    analytics, 
+    isLoading, 
+    error,
+    fetchProjects, 
+    fetchAnalytics, 
+    createProject 
+  } = useClientStore();
+  
   const [showPostProjectModal, setShowPostProjectModal] = useState(false);
   const [showViewBidsPanel, setShowViewBidsPanel] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectFilter, setProjectFilter] = useState<ProjectFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProjects = useProjectFilters(mockProjects, projectFilter, searchQuery);
+  // Convert ClientProject[] to Project[] for compatibility with existing components
+  const convertedProjects: Project[] = projects?.map(p => ({
+    id: p.id,
+    title: p.title,
+    category: p.category as any,
+    description: p.description,
+    budget: p.budget,
+    deadline: new Date(p.deadline),
+    status: p.status as any,
+    biddingType: p.biddingType,
+    visibility: p.visibility,
+    location: p.location,
+    requiredSkills: p.requiredSkills,
+    attachments: (p.attachments || []).map(att => ({
+      id: att.id,
+      filename: att.filename,
+      url: att.url,
+      size: att.size,
+      type: att.mimeType
+    })),
+    bidCount: p.bidCount,
+    createdAt: new Date(p.postedAt),
+    updatedAt: new Date(p.updatedAt),
+    clientId: p.clientId,
+    isStrictDeadline: p.isStrictDeadline,
+    biddingEndDate: new Date(p.biddingEndDate)
+  })) || [];
 
-  const handlePostProject = (data: CreateProjectData) => {
-    console.log('Posting project:', data);
-    // TODO: Implement API call
+  const filteredProjects = useProjectFilters(convertedProjects, projectFilter, searchQuery);
+
+  // Convert analytics to dashboard stats format
+  const dashboardStats = analytics ? {
+    totalProjects: analytics.totalProjects,
+    activeBids: analytics.activeProjects,
+    completedProjects: analytics.completedProjects,
+    averageBidAmount: analytics.averageBidAmount
+  } : {
+    totalProjects: 0,
+    activeBids: 0,
+    completedProjects: 0,
+    averageBidAmount: 0
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    const clientId = 'client-1'; // Using mock client ID
+    try {
+      fetchProjects(clientId);
+      fetchAnalytics(clientId);
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+    }
+  }, [fetchProjects, fetchAnalytics]);
+
+  const handlePostProject = async (data: CreateProjectData) => {
+    try {
+      const clientId = 'client-1'; // Using mock client ID
+      const newProject = await createProject(clientId, data);
+      
+      // Show success message
+      alert(`Project "${newProject.title}" created successfully!`);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      alert(`Failed to create project: ${error.message}`);
+    }
   };
 
   const handleViewBids = (project: Project) => {
@@ -50,6 +120,33 @@ export default function ClientAnalytics() {
     // TODO: Implement profile view
   };
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <DashboardHeader
@@ -57,7 +154,7 @@ export default function ClientAnalytics() {
         subtitle="Manage your projects and track bidding progress"
       />
 
-      <DashboardStats stats={mockStats} />
+      <DashboardStats stats={dashboardStats} />
 
       <QuickActionsBar
         onPostProject={() => setShowPostProjectModal(true)}

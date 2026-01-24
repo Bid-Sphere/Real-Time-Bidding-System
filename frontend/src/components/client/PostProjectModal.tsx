@@ -48,6 +48,7 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -94,7 +95,7 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Check profile completion before allowing project submission
     if (!isComplete) {
       setShowProfileModal(true);
@@ -102,8 +103,56 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     }
     
     if (validateStep(3)) {
-      onSubmit(formData as CreateProjectData);
-      onClose();
+      setIsSubmitting(true);
+      try {
+        // Convert form data to the format expected by the API
+        const projectData = {
+          title: formData.title!,
+          description: formData.description!,
+          category: formData.category!,
+          tags: [], // You can add tags if needed
+          budget: formData.budget!,
+          deadline: formData.deadline!.toISOString(),
+          requirements: [], // You can extract from description or add separate field
+          attachments: formData.attachments || [],
+          status: 'open_for_bidding' as const,
+          location: formData.location,
+          requiredSkills: formData.requiredSkills!,
+          biddingType: formData.biddingType!,
+          visibility: formData.visibility!,
+          isStrictDeadline: formData.isStrictDeadline!,
+          biddingEndDate: new Date(Date.now() + (formData.biddingDuration! * 24 * 60 * 60 * 1000)).toISOString(),
+        };
+
+        await onSubmit(projectData);
+        
+        // Show success message
+        alert(`🎉 Project "${projectData.title}" created successfully!\n\nBudget: $${projectData.budget.toLocaleString()}\nDeadline: ${new Date(projectData.deadline).toLocaleDateString()}\nSkills: ${projectData.requiredSkills.join(', ')}`);
+        
+        // Reset form
+        setFormData({
+          title: '',
+          category: 'IT',
+          description: '',
+          requiredSkills: [],
+          location: '',
+          deadline: new Date(),
+          isStrictDeadline: false,
+          biddingType: 'standard_bidding',
+          budget: 0,
+          biddingDuration: 7,
+          visibility: 'both',
+          attachments: []
+        });
+        setCurrentStep(1);
+        
+        onClose();
+      } catch (error) {
+        console.error('Failed to submit project:', error);
+        alert(`❌ Failed to create project: ${error.message || 'Unknown error'}\n\nPlease try again or contact support.`);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -485,8 +534,19 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                   Next
                 </Button>
               ) : (
-                <Button onClick={handleSubmit}>
-                  Post Project
+                <Button 
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className={isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Creating Project...
+                    </>
+                  ) : (
+                    'Post Project'
+                  )}
                 </Button>
               )}
             </div>

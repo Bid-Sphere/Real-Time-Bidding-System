@@ -8,8 +8,8 @@ export const mockClientProfile: ClientProfile = {
   industry: 'Technology',
   companySize: 'Small (11-50 employees)',
   website: 'https://techstartsolutions.com',
-  taxId: '',
-  businessRegistrationNumber: '',
+  taxId: 'TX123456789',
+  businessRegistrationNumber: 'REG987654321',
   contactPersonRole: 'CEO & Founder',
   phoneNumber: '+1 (555) 123-4567',
   businessAddress: '123 Innovation Drive, San Francisco, CA 94105',
@@ -27,10 +27,10 @@ export const mockClientProfile: ClientProfile = {
   typicalBudgetRange: '$5,000 - $10,000',
   projectFrequency: 'Regular (monthly)',
   communicationMethod: 'Email and Video calls',
-  emailVerified: false,
-  phoneVerified: false,
+  emailVerified: true,  // Set to true so profile is complete
+  phoneVerified: true,  // Set to true so profile is complete
   businessVerified: false,
-  completionPercentage: 62, // Will be calculated based on filled fields
+  completionPercentage: 100, // Set to 100% so user can create projects
   createdAt: '2024-01-15T10:00:00Z',
   updatedAt: '2024-01-20T14:30:00Z',
 };

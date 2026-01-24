@@ -14,7 +14,9 @@ import type {
 
 import type {
   ClientProfile,
-  ClientAnalyticsData
+  ClientAnalyticsData,
+  ClientProject,
+  ReceivedBid
 } from '@/types/client';
 
 import { currentOrganization } from './organizationData';
@@ -27,6 +29,7 @@ import { mockMessages } from './messagesData';
 import { mockNotifications } from './notificationsData';
 import { mockActivities } from './activitiesData';
 import { mockClientProfile, mockClientAnalytics } from './clientData';
+import { mockClientProjects } from './clientProjectsData';
 
 // Utility function to simulate network latency
 const delay = (ms: number = Math.random() * 300 + 200) => 
@@ -45,7 +48,9 @@ const STORAGE_KEYS = {
   // Client keys
   CLIENT_PROFILE: 'client_profile',
   CLIENT_ANALYTICS: 'client_analytics',
-  CLIENT_VERIFICATION_STATUS: 'client_verification_status'
+  CLIENT_VERIFICATION_STATUS: 'client_verification_status',
+  CLIENT_PROJECTS: 'client_projects',
+  CLIENT_PROJECT_BIDS: 'client_project_bids'
 };
 
 // Initialize localStorage with mock data if not present
@@ -79,6 +84,12 @@ const initializeStorage = () => {
   }
   if (!localStorage.getItem(STORAGE_KEYS.CLIENT_ANALYTICS)) {
     localStorage.setItem(STORAGE_KEYS.CLIENT_ANALYTICS, JSON.stringify(mockClientAnalytics));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECTS)) {
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROJECTS, JSON.stringify(mockClientProjects));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECT_BIDS)) {
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROJECT_BIDS, JSON.stringify([]));
   }
 };
 
@@ -773,6 +784,65 @@ export const clientApi = {
     }
     
     return { verified: false, message: 'Invalid verification code' };
+  },
+
+  // Client Projects API
+  getProjects: async (clientId: string, _filters?: any): Promise<ClientProject[]> => {
+    await delay();
+    const projects = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECTS) || '[]') as ClientProject[];
+    return projects.filter(p => p.clientId === clientId);
+  },
+
+  createProject: async (clientId: string, projectData: Omit<ClientProject, 'id' | 'clientId' | 'postedAt' | 'updatedAt' | 'bidCount'>): Promise<ClientProject> => {
+    await delay();
+    const projects = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECTS) || '[]') as ClientProject[];
+    
+    const newProject: ClientProject = {
+      ...projectData,
+      id: `project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      clientId,
+      bidCount: 0,
+      postedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    projects.push(newProject);
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROJECTS, JSON.stringify(projects));
+    
+    return newProject;
+  },
+
+  updateProject: async (projectId: string, updates: Partial<ClientProject>): Promise<ClientProject> => {
+    await delay();
+    const projects = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECTS) || '[]') as ClientProject[];
+    const index = projects.findIndex(p => p.id === projectId);
+    
+    if (index === -1) {
+      throw new Error('Project not found');
+    }
+    
+    projects[index] = {
+      ...projects[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROJECTS, JSON.stringify(projects));
+    return projects[index];
+  },
+
+  deleteProject: async (projectId: string): Promise<{ success: boolean }> => {
+    await delay();
+    const projects = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECTS) || '[]') as ClientProject[];
+    const filtered = projects.filter(p => p.id !== projectId);
+    localStorage.setItem(STORAGE_KEYS.CLIENT_PROJECTS, JSON.stringify(filtered));
+    return { success: true };
+  },
+
+  getProjectBids: async (projectId: string): Promise<ReceivedBid[]> => {
+    await delay();
+    const bids = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_PROJECT_BIDS) || '[]') as ReceivedBid[];
+    return bids.filter(b => b.projectId === projectId);
   }
 };
 
