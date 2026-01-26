@@ -7,9 +7,15 @@ import {
   PostProjectModal,
   ViewBidsPanel
 } from '@/components/client';
+import { useClientStore } from '../../store/useClientStore';
 import type { Project, CreateProjectData, ProjectFilter } from '../../types/project';
 
 export default function ClientAnalytics() {
+  const { 
+    isLoading, 
+    error
+  } = useClientStore();
+  
   const [showPostProjectModal, setShowPostProjectModal] = useState(false);
   const [showViewBidsPanel, setShowViewBidsPanel] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -18,9 +24,19 @@ export default function ClientAnalytics() {
 
   const filteredProjects: Project[] = []; // TODO: Connect to real API
 
-  const handlePostProject = (data: CreateProjectData) => {
-    console.log('Posting project:', data);
+  // Convert analytics to dashboard stats format
+  const dashboardStats = {
+    totalProjects: 0,
+    activeBids: 0,
+    completedProjects: 0,
+    averageBidAmount: 0
+  };
+
+  // TODO: Fetch data on component mount when real API is ready
+
+  const handlePostProject = async (data: CreateProjectData) => {
     // TODO: Implement API call
+    console.log('Posting project:', data);
   };
 
   const handleViewBids = (project: Project) => {
@@ -48,6 +64,34 @@ export default function ClientAnalytics() {
     // TODO: Implement profile view
   };
 
+  // TODO: Remove loading/error states when not using mock API
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Error: {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <DashboardHeader
@@ -55,7 +99,7 @@ export default function ClientAnalytics() {
         subtitle="Manage your projects and track bidding progress"
       />
 
-      <DashboardStats stats={{ totalProjects: 0, activeBids: 0, completedProjects: 0 }} />
+      <DashboardStats stats={dashboardStats} />
 
       <QuickActionsBar
         onPostProject={() => setShowPostProjectModal(true)}
