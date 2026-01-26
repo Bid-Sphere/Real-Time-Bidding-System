@@ -4,8 +4,7 @@ import { useClientStore } from '@/store/useClientStore';
 import { ProfileCompletionBar } from '@/components/profile/ProfileCompletionBar';
 import { EmailVerification } from '@/components/profile/EmailVerification';
 import { ClientProfileForm } from '@/components/client/ClientProfileForm';
-import { EmailVerificationTest } from '@/components/debug/EmailVerificationTest';
-import { AuthStateDebug } from '@/components/debug/AuthStateDebug';
+
 import { calculateClientProfileCompletion, getMissingClientFields } from '@/utils/clientProfileUtils';
 import type { ClientProfile } from '@/types/client';
 
@@ -62,7 +61,6 @@ export default function ClientProfileSection() {
     
     try {
       await updateProfile(user.id, data);
-      console.log('Profile saved successfully');
     } catch (error) {
       console.error('Failed to save profile:', error);
       // Error is already handled by the store
@@ -81,7 +79,6 @@ export default function ClientProfileSection() {
         setVerificationStatus('pending');
       }
       
-      console.log('Verification code sent');
       return result;
     } catch (error) {
       console.error('Failed to send verification code:', error);
@@ -106,8 +103,6 @@ export default function ClientProfileSection() {
         
         // Set verification status to verified after refreshing user data
         setVerificationStatus('verified');
-        
-        console.log('Email verified successfully');
       }
       
       return result;
@@ -138,10 +133,6 @@ export default function ClientProfileSection() {
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Debug Components - Remove after testing */}
-      <AuthStateDebug />
-      <EmailVerificationTest />
-
       {/* Profile Completion Bar */}
       <ProfileCompletionBar
         percentage={completionPercentage}
