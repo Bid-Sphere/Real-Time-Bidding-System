@@ -20,7 +20,6 @@ public class ProjectResponse {
     private List<String> requiredSkills;
     private Boolean strictDeadline;
     private BiddingType biddingType;
-    private ProjectVisibility visibility;
     private ProjectStatus status;
     private LocalDateTime auctionEndTime;
     private List<AttachmentResponse> attachments;
@@ -71,9 +70,6 @@ public class ProjectResponse {
     
     public BiddingType getBiddingType() { return biddingType; }
     public void setBiddingType(BiddingType biddingType) { this.biddingType = biddingType; }
-    
-    public ProjectVisibility getVisibility() { return visibility; }
-    public void setVisibility(ProjectVisibility visibility) { this.visibility = visibility; }
     
     public ProjectStatus getStatus() { return status; }
     public void setStatus(ProjectStatus status) { this.status = status; }

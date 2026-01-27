@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Upload, Calendar, DollarSign, MapPin, Clock, FileText } from 'lucide-react';
+import { X, Upload, Calendar, DollarSign, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
@@ -7,7 +7,7 @@ import Select from '@/components/ui/Select';
 import MultiSelect from '@/components/ui/MultiSelect';
 import { useClientProfileCompletion } from '../../hooks/useClientProfileCompletion';
 import { ProfileCompletionModal } from './ProfileCompletionModal';
-import type { CreateProjectData, ProjectCategory, BiddingType, ProjectVisibility } from '../../types/project';
+import type { CreateProjectData, ProjectCategory, BiddingType } from '../../types/project';
 
 interface PostProjectModalProps {
   isOpen: boolean;
@@ -38,12 +38,10 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     requiredSkills: [],
     location: '',
     deadline: new Date(),
-    isStrictDeadline: false,
-    biddingType: 'standard_bidding',
+    strictDeadline: false,
+    biddingType: 'STANDARD',
     budget: 0,
-    biddingDuration: 7,
-    visibility: 'both',
-    attachments: []
+    isDraft: false
   });
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -80,9 +78,6 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
       if (!formData.budget || formData.budget <= 0) {
         newErrors.budget = 'Budget must be greater than 0';
       }
-      if (!formData.biddingDuration || formData.biddingDuration <= 0) {
-        newErrors.biddingDuration = 'Bidding duration must be greater than 0';
-      }
     }
 
     setErrors(newErrors);
@@ -115,10 +110,9 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
           location: formData.location,
           requiredSkills: formData.requiredSkills!,
           biddingType: formData.biddingType!,
-          visibility: formData.visibility!,
-          isStrictDeadline: formData.isStrictDeadline!,
-          biddingDuration: formData.biddingDuration!,
-          attachments: formData.attachments || [],
+          strictDeadline: formData.strictDeadline!,
+          auctionEndTime: formData.auctionEndTime,
+          isDraft: formData.isDraft
         };
 
         await onSubmit(projectData);
@@ -134,19 +128,16 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
           requiredSkills: [],
           location: '',
           deadline: new Date(),
-          isStrictDeadline: false,
-          biddingType: 'standard_bidding',
+          strictDeadline: false,
+          biddingType: 'STANDARD',
           budget: 0,
-          biddingDuration: 7,
-          visibility: 'both',
-          attachments: []
+          isDraft: false
         });
         setCurrentStep(1);
         
         onClose();
       } catch (error) {
         console.error('Failed to submit project:', error);
-        alert(`❌ Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again or contact support.`);
       } finally {
         setIsSubmitting(false);
       }
@@ -188,18 +179,10 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     });
 
     if (validFiles.length > 0) {
-      setFormData(prev => ({
-        ...prev,
-        attachments: [...(prev.attachments || []), ...validFiles]
-      }));
+      // TODO: Implement file upload when cloud storage is ready
+      console.log('Files ready for upload:', validFiles);
+      alert('File upload will be implemented when cloud storage is configured.');
     }
-  };
-
-  const removeFile = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      attachments: prev.attachments?.filter((_, i) => i !== index) || []
-    }));
   };
 
   return (
@@ -264,8 +247,8 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                 label="Category"
                 options={[
                   { value: 'IT', label: 'IT' },
-                  { value: 'Construction', label: 'Construction' },
-                  { value: 'Supply', label: 'Supply' }
+                  { value: 'CONSTRUCTION', label: 'Construction' },
+                  { value: 'SUPPLY', label: 'Supply' }
                 ]}
                 value={formData.category || 'IT'}
                 onChange={(e) => updateFormData('category', e.target.value as ProjectCategory)}
@@ -334,8 +317,8 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                   />
                 </div>
                 
-                {/* Display uploaded files */}
-                {formData.attachments && formData.attachments.length > 0 && (
+                {/* Display uploaded files - Disabled until cloud storage is ready */}
+                {/* {formData.attachments && formData.attachments.length > 0 && (
                   <div className="mt-3 space-y-2">
                     {formData.attachments.map((file, index) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded-lg">
@@ -356,7 +339,7 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                       </div>
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           )}
@@ -398,8 +381,8 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                 <input
                   type="checkbox"
                   id="strictDeadline"
-                  checked={formData.isStrictDeadline || false}
-                  onChange={(e) => updateFormData('isStrictDeadline', e.target.checked)}
+                  checked={formData.strictDeadline || false}
+                  onChange={(e) => updateFormData('strictDeadline', e.target.checked)}
                   className="w-4 h-4 text-[var(--accent-blue)] bg-[var(--bg-input)] border-[var(--border-light)] rounded focus:ring-[var(--accent-blue)]"
                 />
                 <label htmlFor="strictDeadline" className="text-sm text-[var(--text-primary)]">
@@ -424,8 +407,8 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                     <input
                       type="radio"
                       name="biddingType"
-                      value="live_auction"
-                      checked={formData.biddingType === 'live_auction'}
+                      value="LIVE_AUCTION"
+                      checked={formData.biddingType === 'LIVE_AUCTION'}
                       onChange={(e) => updateFormData('biddingType', e.target.value as BiddingType)}
                       className="w-4 h-4 text-[var(--accent-blue)]"
                     />
@@ -440,8 +423,8 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                     <input
                       type="radio"
                       name="biddingType"
-                      value="standard_bidding"
-                      checked={formData.biddingType === 'standard_bidding'}
+                      value="STANDARD"
+                      checked={formData.biddingType === 'STANDARD'}
                       onChange={(e) => updateFormData('biddingType', e.target.value as BiddingType)}
                       className="w-4 h-4 text-[var(--accent-blue)]"
                     />
@@ -465,47 +448,6 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
                 leftIcon={<DollarSign className="h-4 w-4" />}
                 required
               />
-
-              <Input
-                label={`Bidding Duration (${formData.biddingType === 'live_auction' ? 'hours' : 'days'})`}
-                type="number"
-                placeholder={`Enter duration in ${formData.biddingType === 'live_auction' ? 'hours' : 'days'}`}
-                value={formData.biddingDuration || ''}
-                onChange={(e) => updateFormData('biddingDuration', parseInt(e.target.value) || 0)}
-                error={errors.biddingDuration}
-                leftIcon={<Clock className="h-4 w-4" />}
-                required
-              />
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-3">
-                  Visibility <span className="text-red-500">*</span>
-                </label>
-                <div className="space-y-3">
-                  {[
-                    { value: 'organizations_only', label: '🏢 Organizations Only', desc: 'Only organizations can bid' },
-                    { value: 'freelancers_only', label: '👤 Open to Freelancers', desc: 'Only freelancers can bid' },
-                    { value: 'both', label: '🌐 Both Organizations and Freelancers', desc: 'Open to everyone' }
-                  ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-3 p-3 border border-[var(--border-light)] rounded-lg cursor-pointer hover:bg-[var(--bg-secondary)] transition-colors">
-                      <input
-                        type="radio"
-                        name="visibility"
-                        value={option.value}
-                        checked={formData.visibility === option.value}
-                        onChange={(e) => updateFormData('visibility', e.target.value as ProjectVisibility)}
-                        className="w-4 h-4 text-[var(--accent-blue)]"
-                      />
-                      <div>
-                        <div className="font-medium text-[var(--text-primary)]">{option.label}</div>
-                        <div className="text-sm text-[var(--text-secondary)]">
-                          {option.desc}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 

@@ -16,11 +16,16 @@ export interface Project {
   requiredSkills: string[];
   attachments: ProjectAttachment[];
   bidCount: number;
+  viewCount: number;
   createdAt: Date;
   updatedAt: Date;
   clientId: string;
-  isStrictDeadline: boolean;
-  biddingEndDate: Date;
+  clientName: string;
+  strictDeadline: boolean;
+  auctionEndTime?: Date;
+  isDraft: boolean;
+  isBookmarked?: boolean;
+  averageBidAmount?: number;
 }
 
 export interface ProjectAttachment {
@@ -61,17 +66,18 @@ export interface DashboardStats {
   averageBidAmount?: number;
 }
 
-export type ProjectCategory = 'IT' | 'Construction' | 'Supply';
+export type ProjectCategory = 'IT' | 'CONSTRUCTION' | 'SUPPLY';
 
 export type ProjectStatus = 
-  | 'open_for_bidding'
-  | 'accepting_bids'
-  | 'in_discussion'
-  | 'closed_for_bidding'
-  | 'awarded'
-  | 'completed';
+  | 'DRAFT'
+  | 'OPEN'
+  | 'ACCEPTING_BIDS'
+  | 'IN_DISCUSSION'
+  | 'CLOSED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED';
 
-export type BiddingType = 'live_auction' | 'standard_bidding';
+export type BiddingType = 'LIVE_AUCTION' | 'STANDARD';
 
 export type BidStatus = 'pending' | 'accepted' | 'rejected';
 
@@ -83,8 +89,6 @@ export type SortOption =
   | 'most_recent'
   | 'fastest_completion';
 
-export type ProjectVisibility = 'organizations_only' | 'freelancers_only' | 'both';
-
 export interface CreateProjectData {
   title: string;
   category: ProjectCategory;
@@ -92,10 +96,9 @@ export interface CreateProjectData {
   requiredSkills: string[];
   location?: string;
   deadline: Date;
-  isStrictDeadline: boolean;
+  strictDeadline: boolean;
   biddingType: BiddingType;
   budget: number;
-  biddingDuration: number; // hours for live auction, days for standard
-  visibility: ProjectVisibility;
-  attachments: File[];
+  auctionEndTime?: Date; // Only for LIVE_AUCTION
+  isDraft?: boolean;
 }

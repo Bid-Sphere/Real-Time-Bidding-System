@@ -1,6 +1,83 @@
 import { create } from 'zustand';
 import type { Project, FilterState, Bid } from '@/types/organization';
 
+const API_BASE_URL = import.meta.env.VITE_PROJECT_API_URL || 'http://localhost:8082';
+
+// Helper: Map backend status to frontend status
+const mapBackendStatusToFrontend = (backendStatus: string): Project['status'] => {
+  const statusMap: Record<string, Project['status']> = {
+    'OPEN': 'open',
+    'ACCEPTING_BIDS': 'in_bidding',
+    'IN_DISCUSSION': 'in_bidding',
+    'IN_PROGRESS': 'awarded',
+    'COMPLETED': 'completed',
+    'CLOSED': 'cancelled',
+    'DRAFT': 'cancelled'
+  };
+  return statusMap[backendStatus] || 'open';
+};
+
+// Helper: Map backend project to organization Project type
+const mapBackendProjectToOrganizationProject = (backendProject: any): Project => {
+  return {
+    id: backendProject.id,
+    title: backendProject.title,
+    description: backendProject.description,
+    category: backendProject.category,
+    tags: [], // Not provided by backend, set empty array
+    budgetMin: backendProject.budget,
+    budgetMax: backendProject.budget,
+    deadline: backendProject.deadline,
+    clientId: backendProject.clientId,
+    clientName: backendProject.clientName,
+    clientAvatar: undefined,
+    requirements: backendProject.requiredSkills || [],
+    attachments: backendProject.attachments || [],
+    bidCount: backendProject.bidCount || 0,
+    status: mapBackendStatusToFrontend(backendProject.status),
+    location: backendProject.location,
+    postedAt: backendProject.createdAt,
+    isInterested: false,
+    hasBid: false
+  };
+};
+
+// Helper: Map FilterState to query parameters
+const mapFiltersToQueryParams = (filters: FilterState, page: number): URLSearchParams => {
+  const params = new URLSearchParams();
+  
+  // Convert frontend page (1-based) to backend page (0-based)
+  params.append('page', (page - 1).toString());
+  params.append('limit', '20');
+  
+  if (filters.category) {
+    params.append('category', filters.category);
+  }
+  
+  if (filters.budgetMin !== undefined) {
+    params.append('minBudget', filters.budgetMin.toString());
+  }
+  
+  if (filters.budgetMax !== undefined) {
+    params.append('maxBudget', filters.budgetMax.toString());
+  }
+  
+  if (filters.location) {
+    params.append('location', filters.location);
+  }
+  
+  if (filters.searchQuery) {
+    params.append('search', filters.searchQuery);
+  }
+  
+  // Map deadline filter to sort parameter
+  if (filters.deadline === 'urgent') {
+    params.append('sort', 'deadline_urgent');
+  }
+  
+  return params;
+};
+
 interface ProjectState {
   projects: Project[];
   filters: FilterState;
@@ -27,15 +104,40 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   page: 1,
   totalPages: 0,
 
-  fetchProjects: async (_filters?: FilterState, _page: number = 1) => {
+  fetchProjects: async (filters?: FilterState, page: number = 1) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Implement API call
-      throw new Error('Backend API not connected yet');
+      const currentFilters = filters || get().filters;
+      const queryParams = mapFiltersToQueryParams(currentFilters, page);
+      
+      const response = await fetch(`${API_BASE_URL}/api/projects?${queryParams.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch projects: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success || !result.data) {
+        throw new Error(result.message || 'Failed to fetch projects');
+      }
+      
+      const projects = result.data.content.map(mapBackendProjectToOrganizationProject);
+      
+      set({ 
+        projects,
+        total: result.data.totalElements || 0,
+        totalPages: result.data.totalPages || 0,
+        page,
+        isLoading: false 
+      });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch projects', 
-        isLoading: false 
+        isLoading: false,
+        projects: [],
+        total: 0,
+        totalPages: 0
       });
     }
   },
@@ -49,8 +151,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   markAsInterested: async (_projectId: string, _organizationId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Implement API call
-      throw new Error('Backend API not connected yet');
+      // TODO: Implement when bidding service is available
+      throw new Error('Bidding service not implemented yet');
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to mark project as interested', 
@@ -63,8 +165,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   submitBid: async (_bid: Omit<Bid, 'id' | 'submittedAt' | 'updatedAt' | 'status' | 'ranking'>) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Implement API call
-      throw new Error('Backend API not connected yet');
+      // TODO: Implement when bidding service is available
+      throw new Error('Bidding service not implemented yet');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit bid';
       set({ 
@@ -75,11 +177,33 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
 
-  getProject: async (_projectId: string) => {
+  getProject: async (projectId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // TODO: Implement API call
-      throw new Error('Backend API not connected yet');
+      const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch project: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success || !result.data) {
+        throw new Error(result.message || 'Failed to fetch project');
+      }
+      
+      const project = mapBackendProjectToOrganizationProject(result.data);
+      
+      // Track the view (fire and forget, no auth required)
+      fetch(`${API_BASE_URL}/api/projects/${projectId}/view`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      }).catch(() => {
+        // Silently fail if view tracking fails
+      });
+      
+      set({ isLoading: false });
+      return project;
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch project', 

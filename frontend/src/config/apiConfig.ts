@@ -1,12 +1,12 @@
-// API Configuration - Real API only
-import { realApiService } from '@/services/realApiService';
+// API Configuration - Project API Service
+import { projectApiService } from '@/services/projectApiService';
 
-// Export the real API service
-export const apiService = realApiService;
+// Export the project API service
+export const apiService = projectApiService;
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8082/api',
   TIMEOUT: 10000, // 10 seconds
 };
 

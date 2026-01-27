@@ -25,7 +25,9 @@ const ChatSection = lazy(() => import('@/pages/dashboard/ChatSection'));
 // Client Dashboard sections
 const ClientAnalytics = lazy(() => import('@/components/client/ClientAnalytics'));
 const ClientProfile = lazy(() => import('@/components/client/ClientProfile'));
-const ClientProjects = lazy(() => import('@/components/client/ClientProjects'));
+// Temporarily import directly instead of lazy to debug
+import ClientProjectsComponent from '@/components/client/ClientProjects';
+const ClientProjects = () => <ClientProjectsComponent />;
 const ClientBids = lazy(() => import('@/components/client/ClientBids'));
 const ClientChat = lazy(() => import('@/components/client/ClientChat'));
 

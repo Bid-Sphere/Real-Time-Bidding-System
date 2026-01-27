@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DashboardHeader,
   DashboardStats,
@@ -8,13 +8,24 @@ import {
   ViewBidsPanel
 } from '@/components/client';
 import { useClientStore } from '../../store/useClientStore';
+import { useClientProjectStore } from '../../store/useClientProjectStore';
 import type { Project, CreateProjectData, ProjectFilter } from '../../types/project';
 
 export default function ClientAnalytics() {
   const { 
-    isLoading, 
-    error
+    isLoading: profileLoading, 
+    error: profileError
   } = useClientStore();
+  
+  const {
+    projects,
+    stats,
+    isLoading: projectsLoading,
+    error: projectsError,
+    createProject,
+    fetchMyProjects,
+    fetchClientStats
+  } = useClientProjectStore();
   
   const [showPostProjectModal, setShowPostProjectModal] = useState(false);
   const [showViewBidsPanel, setShowViewBidsPanel] = useState(false);
@@ -22,21 +33,29 @@ export default function ClientAnalytics() {
   const [projectFilter, setProjectFilter] = useState<ProjectFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredProjects: Project[] = []; // TODO: Connect to real API
+  // Fetch projects and stats on mount
+  useEffect(() => {
+    fetchMyProjects();
+    fetchClientStats();
+  }, [fetchMyProjects, fetchClientStats]);
 
-  // Convert analytics to dashboard stats format
+  const filteredProjects = projects; // TODO: Add client-side filtering if needed
+
+  // Convert analytics to dashboard stats format (always show template with zero values if no data)
   const dashboardStats = {
-    totalProjects: 0,
-    activeBids: 0,
-    completedProjects: 0,
+    totalProjects: stats?.totalProjects ?? 0,
+    activeBids: stats?.activeProjects ?? 0,
+    completedProjects: stats?.completedProjects ?? 0,
     averageBidAmount: 0
   };
 
-  // TODO: Fetch data on component mount when real API is ready
-
   const handlePostProject = async (data: CreateProjectData) => {
-    // TODO: Implement API call
-    console.log('Posting project:', data);
+    try {
+      await createProject(data);
+      setShowPostProjectModal(false);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+    }
   };
 
   const handleViewBids = (project: Project) => {
@@ -64,33 +83,8 @@ export default function ClientAnalytics() {
     // TODO: Implement profile view
   };
 
-  // TODO: Remove loading/error states when not using mock API
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">Error: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Reload Page
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const isLoading = profileLoading || projectsLoading;
+  const error = profileError || projectsError;
 
   return (
     <>
@@ -98,6 +92,21 @@ export default function ClientAnalytics() {
         title="Client Dashboard"
         subtitle="Manage your projects and track bidding progress"
       />
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <p className="text-red-400 text-sm">{error}</p>
+          <button 
+            onClick={() => {
+              fetchMyProjects();
+              fetchClientStats();
+            }}
+            className="mt-2 text-sm text-blue-400 hover:text-blue-300 underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <DashboardStats stats={dashboardStats} />
 
@@ -109,10 +118,19 @@ export default function ClientAnalytics() {
         onFilterChange={setProjectFilter}
       />
 
-      <ProjectsGrid
-        projects={filteredProjects}
-        onViewBids={handleViewBids}
-      />
+      {isLoading && projects.length === 0 ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading projects...</p>
+          </div>
+        </div>
+      ) : (
+        <ProjectsGrid
+          projects={filteredProjects}
+          onViewBids={handleViewBids}
+        />
+      )}
 
       {/* Modals */}
       <PostProjectModal

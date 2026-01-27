@@ -52,7 +52,7 @@ public class Project {
     @Column(length = 200)
     private String location;
     
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "project_skills", joinColumns = @JoinColumn(name = "project_id"))
     @Column(name = "skill", length = 50)
     private List<String> requiredSkills = new ArrayList<>();
@@ -66,16 +66,12 @@ public class Project {
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private ProjectVisibility visibility;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
     private ProjectStatus status = ProjectStatus.DRAFT;
     
     @Column(name = "auction_end_time")
     private LocalDateTime auctionEndTime;
     
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProjectAttachment> attachments = new ArrayList<>();
     
     @Column(name = "is_draft", nullable = false)
@@ -141,9 +137,6 @@ public class Project {
     
     public BiddingType getBiddingType() { return biddingType; }
     public void setBiddingType(BiddingType biddingType) { this.biddingType = biddingType; }
-    
-    public ProjectVisibility getVisibility() { return visibility; }
-    public void setVisibility(ProjectVisibility visibility) { this.visibility = visibility; }
     
     public ProjectStatus getStatus() { return status; }
     public void setStatus(ProjectStatus status) { this.status = status; }

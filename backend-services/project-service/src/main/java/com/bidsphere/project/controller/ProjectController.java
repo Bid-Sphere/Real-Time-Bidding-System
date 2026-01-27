@@ -27,9 +27,12 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<ApiResponse<ProjectResponse>> createProject(
             @Valid @RequestBody CreateProjectRequest request,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Name", required = true) String clientName,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token (set by JwtAuthenticationFilter)
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String clientName = (String) httpRequest.getAttribute("userEmail");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Creating project: " + request.getTitle() + " by client: " + clientId);
         
@@ -64,7 +67,6 @@ public class ProjectController {
             @RequestParam(required = false) BigDecimal maxBudget,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) BiddingType biddingType,
-            @RequestParam(required = false) ProjectVisibility visibility,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "newest") String sort,
             @RequestParam(defaultValue = "0") int page,
@@ -79,7 +81,7 @@ public class ProjectController {
         
         Page<ProjectResponse> projects = projectService.listProjects(
             category, status, minBudget, maxBudget, location,
-            biddingType, visibility, search, sort, pageable, userId
+            biddingType, search, sort, pageable, userId
         );
         
         return ResponseEntity.ok(ApiResponse.success(projects));
@@ -89,8 +91,11 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectResponse>> updateProject(
             @PathVariable String projectId,
             @Valid @RequestBody CreateProjectRequest request,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Updating project: " + projectId + " by client: " + clientId);
         
@@ -109,8 +114,11 @@ public class ProjectController {
     @DeleteMapping("/{projectId}")
     public ResponseEntity<ApiResponse<Void>> deleteProject(
             @PathVariable String projectId,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Deleting project: " + projectId + " by client: " + clientId);
         
@@ -130,8 +138,11 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectResponse>> updateProjectStatus(
             @PathVariable String projectId,
             @RequestBody UpdateStatusRequest request,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Updating status of project: " + projectId + " to: " + request.getStatus());
         
@@ -152,8 +163,11 @@ public class ProjectController {
     @PostMapping("/{projectId}/publish")
     public ResponseEntity<ApiResponse<ProjectResponse>> publishProject(
             @PathVariable String projectId,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Publishing project: " + projectId);
         
@@ -174,8 +188,11 @@ public class ProjectController {
             @RequestParam(required = false) ProjectStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Fetching my projects for client: " + clientId);
         
@@ -192,8 +209,11 @@ public class ProjectController {
     
     @GetMapping("/client/stats")
     public ResponseEntity<ApiResponse<ClientStatsResponse>> getClientStats(
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Fetching dashboard stats for client: " + clientId);
         
@@ -211,8 +231,11 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectResponse.AttachmentResponse>> uploadAttachment(
             @PathVariable String projectId,
             @RequestParam("file") MultipartFile file,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Uploading attachment for project: " + projectId);
         
@@ -232,8 +255,11 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<Void>> deleteAttachment(
             @PathVariable String projectId,
             @PathVariable String attachmentId,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Deleting attachment: " + attachmentId + " from project: " + projectId);
         
@@ -268,8 +294,11 @@ public class ProjectController {
     @GetMapping("/{projectId}/analytics")
     public ResponseEntity<ApiResponse<ProjectAnalyticsResponse>> getProjectAnalytics(
             @PathVariable String projectId,
-            @RequestHeader(value = "X-User-Id", required = true) String clientId,
-            @RequestHeader(value = "X-User-Role", required = true) String role) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+        
+        // Extract user info from JWT token
+        String clientId = (String) httpRequest.getAttribute("userId");
+        String role = (String) httpRequest.getAttribute("userRole");
         
         System.out.println("Fetching analytics for project: " + projectId);
         

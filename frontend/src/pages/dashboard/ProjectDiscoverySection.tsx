@@ -11,7 +11,7 @@ import type { Project, FilterState } from '@/types/organization';
 // import { createNewProjectNotification, createBidStatusNotification } from '@/utils/notificationHelpers';
 
 function ProjectDiscoverySection() {
-  const { projects, filters, isLoading, fetchProjects, setFilters, markAsInterested, submitBid } = useProjectStore();
+  const { projects, filters, isLoading, total, page, totalPages, fetchProjects, setFilters, markAsInterested, submitBid } = useProjectStore();
   const { profile } = useOrganizationStore();
   
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -75,6 +75,11 @@ function ProjectDiscoverySection() {
     setShowBidModal(true);
   };
 
+  const handlePageChange = (newPage: number) => {
+    fetchProjects(filters, newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -121,7 +126,7 @@ function ProjectDiscoverySection() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <p className="text-gray-400">
-              Showing {projects.length} project{projects.length !== 1 ? 's' : ''}
+              Showing {projects.length} of {total} project{total !== 1 ? 's' : ''}
             </p>
           </div>
 
@@ -137,6 +142,56 @@ function ProjectDiscoverySection() {
               />
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        page === pageNum
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white/5 text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+                className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 

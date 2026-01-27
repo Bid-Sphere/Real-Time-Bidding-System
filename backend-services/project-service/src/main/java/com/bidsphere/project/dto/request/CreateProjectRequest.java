@@ -43,9 +43,6 @@ public class CreateProjectRequest {
     @NotNull(message = "Bidding type is required")
     private BiddingType biddingType;
     
-    @NotNull(message = "Visibility is required")
-    private ProjectVisibility visibility;
-    
     private LocalDateTime auctionEndTime;
     private List<AttachmentRequest> attachments;
     private Boolean isDraft = false;
@@ -85,9 +82,6 @@ public class CreateProjectRequest {
     
     public BiddingType getBiddingType() { return biddingType; }
     public void setBiddingType(BiddingType biddingType) { this.biddingType = biddingType; }
-    
-    public ProjectVisibility getVisibility() { return visibility; }
-    public void setVisibility(ProjectVisibility visibility) { this.visibility = visibility; }
     
     public LocalDateTime getAuctionEndTime() { return auctionEndTime; }
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }

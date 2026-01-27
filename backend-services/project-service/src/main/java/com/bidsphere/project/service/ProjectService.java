@@ -29,7 +29,6 @@ public interface ProjectService {
         BigDecimal maxBudget,
         String location,
         BiddingType biddingType,
-        ProjectVisibility visibility,
         String search,
         String sort,
         Pageable pageable,

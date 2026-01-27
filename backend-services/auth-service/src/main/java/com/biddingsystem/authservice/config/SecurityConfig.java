@@ -29,8 +29,8 @@ public class SecurityConfig
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserServiceImpl userService;
 
-    @Value("${frontend.url:https://spherebid.vercel.app}")
-    private String frontEndUrl;
+    @Value("${cors.allowed.origins:*}")
+    private String corsAllowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserServiceImpl userService) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -50,13 +50,23 @@ public class SecurityConfig
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.info("Configuring security filter chain");
-        log.info("Frontend URL for CORS: {}", frontEndUrl);
+        log.info("CORS Allowed Origins: {}", corsAllowedOrigins);
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/health", "/error").permitAll()
+                        // Public endpoints - note: context path /auth is already stripped by Spring
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/db-health").permitAll()
+                        .requestMatchers("/cors-test").permitAll()
+                        .requestMatchers("/headers-test").permitAll()
+                        .requestMatchers("/db-config").permitAll()
+                        .requestMatchers("/status").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        // Role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
                         .requestMatchers("/api/organisation/**").hasRole("ORGANISATION")
@@ -75,54 +85,42 @@ public class SecurityConfig
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
 
-        // Allow your Vercel frontend URL and common development URLs
-        corsConfig.setAllowedOrigins(Arrays.asList(
-                frontEndUrl,
-                "https://spherebid.vercel.app",
-                "http://localhost:3000"  // Local development
-        ));
+        // Parse allowed origins from environment variable
+        if ("*".equals(corsAllowedOrigins)) {
+            // Allow all origins for local development
+            corsConfig.setAllowedOriginPatterns(Arrays.asList("*"));
+            corsConfig.setAllowCredentials(false); // Cannot use credentials with wildcard
+            log.info("CORS: Allowing all origins (local development mode)");
+        } else {
+            // Production mode - use specific origins
+            String[] origins = corsAllowedOrigins.split(",");
+            corsConfig.setAllowedOrigins(Arrays.asList(origins));
+            corsConfig.setAllowCredentials(true);
+            log.info("CORS: Allowing specific origins: {}", Arrays.toString(origins));
+        }
 
         // Allowed HTTP methods
         corsConfig.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
         ));
 
-        // Allowed headers
-        corsConfig.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "Accept",
-                "X-Requested-With",
-                "Cache-Control",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers",
-                "userId",  // Your custom header
-                "X-Forwarded-For",
-                "X-Forwarded-Proto",
-                "X-Forwarded-Port"
-        ));
+        // Allow all headers - this is important for preflight requests
+        corsConfig.setAllowedHeaders(Arrays.asList("*"));
 
         // Exposed headers (headers that browsers are allowed to access)
         corsConfig.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Disposition",
                 "Content-Length",
-                "Content-Type",
-                "Date",
-                "Server"
+                "Content-Type"
         ));
 
-        corsConfig.setAllowCredentials(true);
         corsConfig.setMaxAge(3600L); // Cache preflight request for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);  // Apply CORS configuration globally
 
         log.info("CORS Configuration loaded successfully");
-        log.info("Allowed Origins: {}", corsConfig.getAllowedOrigins());
-        log.info("Allowed Methods: {}", corsConfig.getAllowedMethods());
-        log.info("Allowed Headers: {}", corsConfig.getAllowedHeaders());
 
         return source;
     }

@@ -50,7 +50,9 @@ start_services() {
     print_success "Services started successfully!"
     print_info "Frontend: http://localhost:3000"
     print_info "Auth API: http://localhost:8081/api/auth/health"
-    print_info "Database: localhost:5432"
+    print_info "Project API: http://localhost:8082/api/projects/health"
+    print_info "Auth Database: localhost:5432"
+    print_info "Project Database: localhost:5433"
 }
 
 # Stop all services
@@ -78,13 +80,13 @@ build_and_start() {
         print_info "Building and starting service: $1"
         # Validate service name
         case "$1" in
-            frontend|auth-service|postgres)
+            frontend|auth-service|project-service|postgres-auth|postgres-project)
                 docker-compose up -d --build "$1"
                 print_success "Service '$1' built and started successfully!"
                 ;;
             *)
                 print_error "Invalid service name: $1"
-                print_info "Available services: frontend, auth-service, postgres"
+                print_info "Available services: frontend, auth-service, project-service, postgres-auth, postgres-project"
                 exit 1
                 ;;
         esac
@@ -129,7 +131,9 @@ refresh_services() {
     print_success "Services refreshed successfully with latest code!"
     print_info "Frontend: http://localhost:3000"
     print_info "Auth API: http://localhost:8081/api/auth/health"
-    print_info "Database: localhost:5432"
+    print_info "Project API: http://localhost:8082/api/projects/health"
+    print_info "Auth Database: localhost:5432"
+    print_info "Project Database: localhost:5433"
 }
 
 # Reset database (removes all data)
@@ -150,11 +154,18 @@ reset_database() {
 check_health() {
     print_info "Checking service health..."
     
-    # Check database
-    if docker-compose exec -T postgres pg_isready -U postgres -d auth_db > /dev/null 2>&1; then
-        print_success "Database: Healthy"
+    # Check auth database
+    if docker-compose exec -T postgres-auth pg_isready -U postgres -d auth_db > /dev/null 2>&1; then
+        print_success "Auth Database: Healthy"
     else
-        print_error "Database: Unhealthy"
+        print_error "Auth Database: Unhealthy"
+    fi
+    
+    # Check project database
+    if docker-compose exec -T postgres-project pg_isready -U postgres -d project_db > /dev/null 2>&1; then
+        print_success "Project Database: Healthy"
+    else
+        print_error "Project Database: Unhealthy"
     fi
     
     # Check auth service
@@ -162,6 +173,13 @@ check_health() {
         print_success "Auth Service: Healthy"
     else
         print_error "Auth Service: Unhealthy"
+    fi
+    
+    # Check project service
+    if curl -f http://localhost:8082/api/projects/health > /dev/null 2>&1; then
+        print_success "Project Service: Healthy"
+    else
+        print_error "Project Service: Unhealthy"
     fi
     
     # Check frontend
@@ -183,10 +201,10 @@ show_help() {
     echo "  stop        Stop all services"
     echo "  restart     Restart all services"
     echo "  build       Build and start all services"
-    echo "  build <svc> Build and start specific service (frontend, auth-service, postgres)"
+    echo "  build <svc> Build and start specific service (frontend, auth-service, project-service, postgres-auth, postgres-project)"
     echo "  refresh     Rebuild with latest code and restart (clears cache)"
     echo "  logs        View logs for all services"
-    echo "  logs <svc>  View logs for specific service (postgres, auth-service, frontend)"
+    echo "  logs <svc>  View logs for specific service (postgres-auth, postgres-project, auth-service, project-service, frontend)"
     echo "  health      Check health of all services"
     echo "  reset-db    Reset database (WARNING: deletes all data)"
     echo "  help        Show this help message"
@@ -194,8 +212,10 @@ show_help() {
     echo "Examples:"
     echo "  $0 start"
     echo "  $0 build frontend"
+    echo "  $0 build project-service"
     echo "  $0 refresh"
     echo "  $0 logs auth-service"
+    echo "  $0 logs project-service"
     echo "  $0 health"
 }
 

@@ -45,12 +45,11 @@ export interface ClientProject {
   requirements: string[];
   attachments?: Attachment[];
   bidCount: number;
-  status: 'open_for_bidding' | 'accepting_bids' | 'in_discussion' | 'closed_for_bidding' | 'awarded' | 'completed';
+  status: 'DRAFT' | 'OPEN' | 'ACCEPTING_BIDS' | 'IN_DISCUSSION' | 'CLOSED' | 'IN_PROGRESS' | 'COMPLETED';
   location?: string;
   requiredSkills: string[];
-  biddingType: 'live_auction' | 'standard_bidding';
-  visibility: 'organizations_only' | 'freelancers_only' | 'both';
-  isStrictDeadline: boolean;
+  biddingType: 'LIVE_AUCTION' | 'STANDARD';
+  strictDeadline: boolean;
   biddingEndDate: string;
   postedAt: string;
   updatedAt: string;

@@ -108,8 +108,8 @@ public class AuthServiceImpl implements AuthService
         // Load role-specific profile for the logged-in user
         loadRoleSpecificProfile(foundUser);
 
-        // Generate JWT token
-        String token = jwtUtil.generateToken(foundUser.getEmail(), foundUser.getId().toString());
+        // Generate JWT token with role
+        String token = jwtUtil.generateToken(foundUser.getEmail(), foundUser.getId().toString(), foundUser.getRole());
 
         logger.info("Login successful for user: {}", request.getEmail());
 
@@ -173,8 +173,8 @@ public class AuthServiceImpl implements AuthService
             userId = userRepository.saveUser(userEntity);
         }
 
-        // Generate JWT token for phase 2
-        String token = jwtUtil.generateToken(request.getEmail(), userId.toString());
+        // Generate JWT token for phase 2 with role
+        String token = jwtUtil.generateToken(request.getEmail(), userId.toString(), request.getRole());
 
         logger.info("Initial registration successful for: {}", request.getEmail());
 
@@ -268,8 +268,8 @@ public class AuthServiceImpl implements AuthService
             userId = userRepository.saveUser(userEntity);
         }
 
-        // Generate token
-        String token = jwtUtil.generateToken(request.getEmail(), userId.toString());
+        // Generate token with role
+        String token = jwtUtil.generateToken(request.getEmail(), userId.toString(), request.getRole());
 
         return RegistrationResponse.builder()
                 .message("Google registration successful. Please complete your profile.")

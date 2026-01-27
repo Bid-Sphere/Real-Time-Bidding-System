@@ -5,9 +5,9 @@ export function useProjectFilters(projects: Project[], filter: ProjectFilter, se
   return useMemo(() => {
     return projects.filter(project => {
       const matchesFilter = filter === 'all' || 
-        (filter === 'active' && ['open_for_bidding', 'accepting_bids'].includes(project.status)) ||
-        (filter === 'in_discussion' && project.status === 'in_discussion') ||
-        (filter === 'closed' && ['closed_for_bidding', 'awarded', 'completed'].includes(project.status));
+        (filter === 'active' && ['OPEN', 'ACCEPTING_BIDS'].includes(project.status)) ||
+        (filter === 'in_discussion' && project.status === 'IN_DISCUSSION') ||
+        (filter === 'closed' && ['CLOSED', 'IN_PROGRESS', 'COMPLETED'].includes(project.status));
       
       const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.description.toLowerCase().includes(searchQuery.toLowerCase());

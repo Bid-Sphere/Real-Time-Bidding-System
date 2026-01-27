@@ -11,8 +11,8 @@ interface ProjectFiltersProps {
 const categoryOptions = [
   { value: '', label: 'All Categories' },
   { value: 'IT', label: 'IT' },
-  { value: 'Construction', label: 'Construction' },
-  { value: 'Supplies', label: 'Supplies' },
+  { value: 'CONSTRUCTION', label: 'Construction' },
+  { value: 'SUPPLY', label: 'Supplies' },
 ];
 
 const deadlineOptions = [

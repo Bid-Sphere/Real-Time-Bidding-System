@@ -30,12 +30,12 @@ public class JwtUtil {
     private String issuer;
 
     // Generate JWT token
-    public String generateToken(String email, String userId) {
-        logger.info("Generating JWT token for user: {}", email);
+    public String generateToken(String email, String userId, String role) {
+        logger.info("Generating JWT token for user: {} with role: {}", email, role);
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
-        claims.put("role", "USER"); // You can customize this based on user role
+        claims.put("role", role); // Use actual user role
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -45,6 +45,11 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+    
+    // Overload for backward compatibility
+    public String generateToken(String email, String userId) {
+        return generateToken(email, userId, "USER");
     }
 
     // Generate registration token (longer expiration for profile completion)

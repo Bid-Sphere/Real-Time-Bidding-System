@@ -1,0 +1,88 @@
+-- ================================
+-- Project Database Seed Data
+-- ================================
+
+-- Sample projects for testing
+INSERT INTO projects (
+    id, title, description, category, client_id, client_name,
+    budget, deadline, location, strict_deadline, bidding_type,
+    status, is_draft, is_deleted, created_at, updated_at
+) VALUES
+(
+    'proj-001',
+    'E-commerce Platform Development',
+    'Full-stack e-commerce platform with React and Node.js. Need experienced developers for 3-month project.',
+    'IT',
+    'client_001',
+    'John Smith',
+    25000.00,
+    CURRENT_TIMESTAMP + INTERVAL '90 days',
+    'Remote',
+    FALSE,
+    'STANDARD',
+    'OPEN',
+    FALSE,
+    FALSE,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+),
+(
+    'proj-002',
+    'Office Building Construction',
+    'Construction of 5-story office building in downtown area. Requires licensed contractor.',
+    'CONSTRUCTION',
+    'client_002',
+    'Jane Doe',
+    500000.00,
+    CURRENT_TIMESTAMP + INTERVAL '180 days',
+    'New York, NY',
+    TRUE,
+    'STANDARD',
+    'ACCEPTING_BIDS',
+    FALSE,
+    FALSE,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+),
+(
+    'proj-003',
+    'Office Supplies Procurement',
+    'Bulk procurement of office supplies for corporate headquarters. Monthly recurring order.',
+    'SUPPLY',
+    'client_001',
+    'John Smith',
+    15000.00,
+    CURRENT_TIMESTAMP + INTERVAL '30 days',
+    'Los Angeles, CA',
+    FALSE,
+    'STANDARD',
+    'OPEN',
+    FALSE,
+    FALSE,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+);
+
+-- Sample skills for projects
+INSERT INTO project_skills (project_id, skill) VALUES
+('proj-001', 'React'),
+('proj-001', 'Node.js'),
+('proj-001', 'MySQL'),
+('proj-001', 'REST API'),
+('proj-002', 'Construction Management'),
+('proj-002', 'Civil Engineering'),
+('proj-002', 'Project Planning'),
+('proj-003', 'Procurement'),
+('proj-003', 'Supply Chain');
+
+-- Sample project views
+INSERT INTO project_views (id, project_id, user_id, user_type, session_id, viewed_at) VALUES
+('view-001', 'proj-001', 'org_001', 'ORGANIZATION', 'session-001', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+('view-002', 'proj-001', 'org_002', 'ORGANIZATION', 'session-002', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+('view-003', 'proj-002', 'org_003', 'ORGANIZATION', 'session-003', CURRENT_TIMESTAMP - INTERVAL '3 hours'),
+('view-004', 'proj-003', NULL, NULL, 'session-004', CURRENT_TIMESTAMP - INTERVAL '1 hour');
+
+-- Sample bookmarks
+INSERT INTO project_bookmarks (id, project_id, user_id, bookmarked_at) VALUES
+('bookmark-001', 'proj-001', 'org_001', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+('bookmark-002', 'proj-002', 'org_003', CURRENT_TIMESTAMP - INTERVAL '2 hours');

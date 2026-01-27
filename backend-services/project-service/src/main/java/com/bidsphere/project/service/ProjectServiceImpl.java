@@ -70,7 +70,6 @@ public class ProjectServiceImpl implements ProjectService {
         project.setRequiredSkills(request.getRequiredSkills() != null ? request.getRequiredSkills() : new ArrayList<>());
         project.setStrictDeadline(request.getStrictDeadline());
         project.setBiddingType(request.getBiddingType());
-        project.setVisibility(request.getVisibility());
         project.setAuctionEndTime(request.getAuctionEndTime());
         project.setIsDraft(request.getIsDraft());
         project.setStatus(request.getIsDraft() ? ProjectStatus.DRAFT : ProjectStatus.OPEN);
@@ -113,15 +112,20 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(readOnly = true)
     public Page<ProjectResponse> listProjects(ProjectCategory category, ProjectStatus status,
             BigDecimal minBudget, BigDecimal maxBudget, String location, BiddingType biddingType,
-            ProjectVisibility visibility, String search, String sort, Pageable pageable, String userId) {
+            String search, String sort, Pageable pageable, String userId) {
         
         System.out.println("Listing projects with filters - category: " + category + ", status: " + status);
         
         Pageable sortedPageable = applySorting(pageable, sort);
         
+        // Convert enums to strings for native query
+        String categoryStr = category != null ? category.name() : null;
+        String statusStr = status != null ? status.name() : null;
+        String biddingTypeStr = biddingType != null ? biddingType.name() : null;
+        
         Page<Project> projects = projectRepository.findWithFilters(
-            category, status, minBudget, maxBudget, location, 
-            biddingType, visibility, search, sortedPageable
+            categoryStr, statusStr, minBudget, maxBudget, location, 
+            biddingTypeStr, search, sortedPageable
         );
         
         return projects.map(project -> mapToResponse(project, 
@@ -472,15 +476,15 @@ public class ProjectServiceImpl implements ProjectService {
     private Pageable applySorting(Pageable pageable, String sort) {
         if (sort == null) {
             return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
-                    Sort.by(Sort.Direction.DESC, "createdAt"));
+                    Sort.by(Sort.Direction.DESC, "created_at"));
         }
         
         Sort sortObj = switch (sort) {
-            case "oldest" -> Sort.by(Sort.Direction.ASC, "createdAt");
+            case "oldest" -> Sort.by(Sort.Direction.ASC, "created_at");
             case "budget_high" -> Sort.by(Sort.Direction.DESC, "budget");
             case "budget_low" -> Sort.by(Sort.Direction.ASC, "budget");
             case "deadline_urgent" -> Sort.by(Sort.Direction.ASC, "deadline");
-            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+            default -> Sort.by(Sort.Direction.DESC, "created_at");
         };
         
         return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sortObj);
@@ -500,7 +504,6 @@ public class ProjectServiceImpl implements ProjectService {
         response.setRequiredSkills(project.getRequiredSkills());
         response.setStrictDeadline(project.getStrictDeadline());
         response.setBiddingType(project.getBiddingType());
-        response.setVisibility(project.getVisibility());
         response.setStatus(project.getStatus());
         response.setAuctionEndTime(project.getAuctionEndTime());
         response.setAttachments(project.getAttachments().stream()
