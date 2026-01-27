@@ -9,7 +9,6 @@ target/
 build/
 dist/
 node_modules/
-docs/
 
 # Environment
 .env

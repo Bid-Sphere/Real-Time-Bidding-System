@@ -1,0 +1,657 @@
+openapi: 3.0.3
+info:
+  title: Auction Service API
+  description: |
+    Auction Service manages LIVE_AUCTION type projects with real-time bidding,
+    auction lifecycle management, and automatic auction closure.
+  version: 1.0.0
+  contact:
+    name: BidSphere Team
+
+servers:
+  - url: http://localhost:8084
+    description: Local development
+  - url: http://localhost:8080/api/auctions
+    description: Via NGINX Gateway
+
+tags:
+  - name: Auctions
+    description: Auction management operations
+  - name: Auction Bids
+    description: Auction bidding operations
+  - name: Statistics
+    description: Auction statistics
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/auctions:
+    post:
+      tags:
+        - Auctions
+      summary: Create auction
+      description: Create a new auction (internal use - called by Project Service)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAuctionRequest'
+      responses:
+        '201':
+          description: Auction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auctions/project/{projectId}:
+    get:
+      tags:
+        - Auctions
+      summary: Get auction by project ID
+      description: Retrieve auction details for a specific project
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Auction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/{auctionId}:
+    get:
+      tags:
+        - Auctions
+      summary: Get auction by ID
+      description: Retrieve auction details by auction ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+      responses:
+        '200':
+          description: Auction retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/active:
+    get:
+      tags:
+        - Auctions
+      summary: Get active auctions
+      description: Retrieve all currently active auctions
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Active auctions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActiveAuctionsResponse'
+
+  /api/auctions/{auctionId}/bid:
+    post:
+      tags:
+        - Auction Bids
+      summary: Submit auction bid
+      description: Submit a bid during an active auction
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitAuctionBidRequest'
+      responses:
+        '201':
+          description: Auction bid submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionBidResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/auctions/{auctionId}/bids:
+    get:
+      tags:
+        - Auction Bids
+      summary: Get auction bid history
+      description: Retrieve all bids for a specific auction
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Auction bids retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionBidsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/{auctionId}/close:
+    post:
+      tags:
+        - Auctions
+      summary: Close auction
+      description: Manually close an auction or auto-close via scheduler
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+      responses:
+        '200':
+          description: Auction closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionCloseResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/{auctionId}/cancel:
+    post:
+      tags:
+        - Auctions
+      summary: Cancel auction
+      description: Cancel an auction (only project owner)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelAuctionRequest'
+      responses:
+        '200':
+          description: Auction cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/my-bids:
+    get:
+      tags:
+        - Auction Bids
+      summary: Get my auction bids
+      description: Retrieve all auction bids submitted by authenticated organization
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [ACTIVE, ENDED]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: My auction bids retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyAuctionBidsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/auctions/{auctionId}/stats:
+    get:
+      tags:
+        - Statistics
+      summary: Get auction statistics
+      description: Retrieve statistics for a specific auction
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/AuctionId'
+      responses:
+        '200':
+          description: Statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuctionStatsResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/auctions/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the service is running
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AuctionId:
+      name: auctionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+
+  schemas:
+    CreateAuctionRequest:
+      type: object
+      required:
+        - projectId
+        - startTime
+        - endTime
+        - minimumBidIncrement
+      properties:
+        projectId:
+          type: string
+          format: uuid
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        minimumBidIncrement:
+          type: number
+          format: double
+          default: 100.00
+        reservePrice:
+          type: number
+          format: double
+          nullable: true
+
+    SubmitAuctionBidRequest:
+      type: object
+      required:
+        - bidAmount
+        - proposal
+      properties:
+        bidAmount:
+          type: number
+          format: double
+          minimum: 0.01
+        proposal:
+          type: string
+          minLength: 50
+
+    CancelAuctionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+
+    Auction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        projectId:
+          type: string
+          format: uuid
+        projectTitle:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [SCHEDULED, ACTIVE, ENDED, CANCELLED]
+        currentHighestBid:
+          type: number
+          format: double
+          nullable: true
+        currentHighestBidderName:
+          type: string
+          nullable: true
+        minimumBidIncrement:
+          type: number
+          format: double
+        reservePrice:
+          type: number
+          format: double
+          nullable: true
+        totalBids:
+          type: integer
+        timeRemaining:
+          type: integer
+          description: Seconds until auction ends
+        nextMinimumBid:
+          type: number
+          format: double
+
+    AuctionBid:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bidderName:
+          type: string
+        bidAmount:
+          type: number
+          format: double
+        bidTime:
+          type: string
+          format: date-time
+        isWinning:
+          type: boolean
+
+    AuctionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Auction'
+
+    AuctionDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Auction'
+
+    ActiveAuctionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            content:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  projectId:
+                    type: string
+                  projectTitle:
+                    type: string
+                  projectCategory:
+                    type: string
+                  endTime:
+                    type: string
+                    format: date-time
+                  currentHighestBid:
+                    type: number
+                  totalBids:
+                    type: integer
+                  timeRemaining:
+                    type: integer
+            totalElements:
+              type: integer
+            totalPages:
+              type: integer
+
+    AuctionBidResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            auctionId:
+              type: string
+            bidAmount:
+              type: number
+            bidderName:
+              type: string
+            bidTime:
+              type: string
+              format: date-time
+            isWinning:
+              type: boolean
+            nextMinimumBid:
+              type: number
+
+    AuctionBidsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            content:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuctionBid'
+            totalElements:
+              type: integer
+            totalPages:
+              type: integer
+            currentPage:
+              type: integer
+
+    AuctionCloseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            winnerBidId:
+              type: string
+            winnerBidderId:
+              type: string
+            winnerBidderName:
+              type: string
+            winningBidAmount:
+              type: number
+            closedAt:
+              type: string
+              format: date-time
+
+    MyAuctionBidsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            content:
+              type: array
+              items:
+                type: object
+                properties:
+                  auctionId:
+                    type: string
+                  projectId:
+                    type: string
+                  projectTitle:
+                    type: string
+                  myHighestBid:
+                    type: number
+                  currentHighestBid:
+                    type: number
+                  isWinning:
+                    type: boolean
+                  auctionStatus:
+                    type: string
+                  endTime:
+                    type: string
+                    format: date-time
+                  timeRemaining:
+                    type: integer
+            totalElements:
+              type: integer
+            totalPages:
+              type: integer
+
+    AuctionStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            totalBids:
+              type: integer
+            uniqueBidders:
+              type: integer
+            currentHighestBid:
+              type: number
+            averageBidAmount:
+              type: number
+            bidIncreaseRate:
+              type: number
+            timeRemaining:
+              type: integer
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          nullable: true
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        data:
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized - missing or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
