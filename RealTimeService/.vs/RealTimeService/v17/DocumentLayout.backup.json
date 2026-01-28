@@ -1,0 +1,277 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\DotnetCore\\RealTimeService\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\controllers\\notifycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:controllers\\notifycontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\hubs\\auctionhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:hubs\\auctionhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\hubs\\notificationhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:hubs\\notificationhub.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\controllers\\healthcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:controllers\\healthcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\projectpublishednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\projectpublishednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\bidrejectednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\bidrejectednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\bidacceptednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\bidacceptednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\bidsubmittednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\bidsubmittednotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\auctionendnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\auctionendnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\models\\auctionbidnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:models\\auctionbidnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\dtos\\auctioncancelnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:dtos\\auctioncancelnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\dtos\\auctionendnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:dtos\\auctionendnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|d:\\dotnetcore\\realtimeservice\\dtos\\auctionbidnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CD01EEB0-84B0-4A59-BCC7-A32DAE5C757F}|RealTimeService.csproj|solutionrelative:dtos\\auctionbidnotification.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1705394037:0:{83107a3e-496a-485e-b455-16ddb978e55e}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "HealthController.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Controllers\\HealthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\HealthController.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Controllers\\HealthController.cs",
+              "RelativeToolTip": "Controllers\\HealthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-28T03:43:46.991Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-27T18:08:34.561Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ProjectPublishedNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\ProjectPublishedNotification.cs",
+              "RelativeDocumentMoniker": "Models\\ProjectPublishedNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\ProjectPublishedNotification.cs",
+              "RelativeToolTip": "Models\\ProjectPublishedNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:21:16.809Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "NotifyController.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Controllers\\NotifyController.cs",
+              "RelativeDocumentMoniker": "Controllers\\NotifyController.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Controllers\\NotifyController.cs",
+              "RelativeToolTip": "Controllers\\NotifyController.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAvwCYAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:46:24.375Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:29:18.831Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuctionHub.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Hubs\\AuctionHub.cs",
+              "RelativeDocumentMoniker": "Hubs\\AuctionHub.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Hubs\\AuctionHub.cs",
+              "RelativeToolTip": "Hubs\\AuctionHub.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:33:34.845Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "NotificationHub.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Hubs\\NotificationHub.cs",
+              "RelativeDocumentMoniker": "Hubs\\NotificationHub.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Hubs\\NotificationHub.cs",
+              "RelativeToolTip": "Hubs\\NotificationHub.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:04:14.684Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BidRejectedNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\BidRejectedNotification.cs",
+              "RelativeDocumentMoniker": "Models\\BidRejectedNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\BidRejectedNotification.cs",
+              "RelativeToolTip": "Models\\BidRejectedNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:20:51.495Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BidAcceptedNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\BidAcceptedNotification.cs",
+              "RelativeDocumentMoniker": "Models\\BidAcceptedNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\BidAcceptedNotification.cs",
+              "RelativeToolTip": "Models\\BidAcceptedNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:20:29.219Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "BidSubmittedNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\BidSubmittedNotification.cs",
+              "RelativeDocumentMoniker": "Models\\BidSubmittedNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\BidSubmittedNotification.cs",
+              "RelativeToolTip": "Models\\BidSubmittedNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:20:05.184Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "AuctionEndNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\AuctionEndNotification.cs",
+              "RelativeDocumentMoniker": "Models\\AuctionEndNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\AuctionEndNotification.cs",
+              "RelativeToolTip": "Models\\AuctionEndNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:19:38.041Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AuctionBidNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\Models\\AuctionBidNotification.cs",
+              "RelativeDocumentMoniker": "Models\\AuctionBidNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\Models\\AuctionBidNotification.cs",
+              "RelativeToolTip": "Models\\AuctionBidNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T17:19:08.812Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "AuctionEndNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionEndNotification.cs",
+              "RelativeDocumentMoniker": "DTOs\\AuctionEndNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionEndNotification.cs",
+              "RelativeToolTip": "DTOs\\AuctionEndNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:53:08.726Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AuctionBidNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionBidNotification.cs",
+              "RelativeDocumentMoniker": "DTOs\\AuctionBidNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionBidNotification.cs",
+              "RelativeToolTip": "DTOs\\AuctionBidNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:52:31.856Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "AuctionCancelNotification.cs",
+              "DocumentMoniker": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionCancelNotification.cs",
+              "RelativeDocumentMoniker": "DTOs\\AuctionCancelNotification.cs",
+              "ToolTip": "D:\\DotnetCore\\RealTimeService\\DTOs\\AuctionCancelNotification.cs",
+              "RelativeToolTip": "DTOs\\AuctionCancelNotification.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-27T13:53:44.6Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
