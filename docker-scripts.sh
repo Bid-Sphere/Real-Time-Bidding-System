@@ -51,8 +51,10 @@ start_services() {
     print_info "Frontend: http://localhost:3000"
     print_info "Auth API: http://localhost:8081/api/auth/health"
     print_info "Project API: http://localhost:8082/api/projects/health"
+    print_info "Bidding API: http://localhost:8083/api/bids/health"
     print_info "Auth Database: localhost:5432"
     print_info "Project Database: localhost:5433"
+    print_info "Bidding Database: localhost:5434"
 }
 
 # Stop all services
@@ -80,13 +82,13 @@ build_and_start() {
         print_info "Building and starting service: $1"
         # Validate service name
         case "$1" in
-            frontend|auth-service|project-service|postgres-auth|postgres-project)
+            frontend|auth-service|project-service|bidding-service|postgres-auth|postgres-project|postgres-bidding)
                 docker-compose up -d --build "$1"
                 print_success "Service '$1' built and started successfully!"
                 ;;
             *)
                 print_error "Invalid service name: $1"
-                print_info "Available services: frontend, auth-service, project-service, postgres-auth, postgres-project"
+                print_info "Available services: frontend, auth-service, project-service, bidding-service, postgres-auth, postgres-project, postgres-bidding"
                 exit 1
                 ;;
         esac
@@ -132,8 +134,10 @@ refresh_services() {
     print_info "Frontend: http://localhost:3000"
     print_info "Auth API: http://localhost:8081/api/auth/health"
     print_info "Project API: http://localhost:8082/api/projects/health"
+    print_info "Bidding API: http://localhost:8083/api/bids/health"
     print_info "Auth Database: localhost:5432"
     print_info "Project Database: localhost:5433"
+    print_info "Bidding Database: localhost:5434"
 }
 
 # Reset database (removes all data)
@@ -168,6 +172,13 @@ check_health() {
         print_error "Project Database: Unhealthy"
     fi
     
+    # Check bidding database
+    if docker-compose exec -T postgres-bidding pg_isready -U postgres -d bidding_db > /dev/null 2>&1; then
+        print_success "Bidding Database: Healthy"
+    else
+        print_error "Bidding Database: Unhealthy"
+    fi
+    
     # Check auth service
     if curl -f http://localhost:8081/api/auth/health > /dev/null 2>&1; then
         print_success "Auth Service: Healthy"
@@ -180,6 +191,13 @@ check_health() {
         print_success "Project Service: Healthy"
     else
         print_error "Project Service: Unhealthy"
+    fi
+    
+    # Check bidding service
+    if curl -f http://localhost:8083/api/bids/health > /dev/null 2>&1; then
+        print_success "Bidding Service: Healthy"
+    else
+        print_error "Bidding Service: Unhealthy"
     fi
     
     # Check frontend
@@ -201,10 +219,10 @@ show_help() {
     echo "  stop        Stop all services"
     echo "  restart     Restart all services"
     echo "  build       Build and start all services"
-    echo "  build <svc> Build and start specific service (frontend, auth-service, project-service, postgres-auth, postgres-project)"
+    echo "  build <svc> Build and start specific service (frontend, auth-service, project-service, bidding-service, postgres-auth, postgres-project, postgres-bidding)"
     echo "  refresh     Rebuild with latest code and restart (clears cache)"
     echo "  logs        View logs for all services"
-    echo "  logs <svc>  View logs for specific service (postgres-auth, postgres-project, auth-service, project-service, frontend)"
+    echo "  logs <svc>  View logs for specific service (postgres-auth, postgres-project, postgres-bidding, auth-service, project-service, bidding-service, frontend)"
     echo "  health      Check health of all services"
     echo "  reset-db    Reset database (WARNING: deletes all data)"
     echo "  help        Show this help message"
@@ -213,9 +231,11 @@ show_help() {
     echo "  $0 start"
     echo "  $0 build frontend"
     echo "  $0 build project-service"
+    echo "  $0 build bidding-service"
     echo "  $0 refresh"
     echo "  $0 logs auth-service"
     echo "  $0 logs project-service"
+    echo "  $0 logs bidding-service"
     echo "  $0 health"
 }
 

@@ -46,6 +46,29 @@ services:
       - bidsphere-network
 
   # ================================
+  # PostgreSQL Database - Bidding Service
+  # ================================
+  postgres-bidding:
+    image: postgres:15-alpine
+    container_name: bidsphere-postgres-bidding
+    environment:
+      POSTGRES_DB: bidding_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_bidding_data:/var/lib/postgresql/data
+      - ./shared/database/bidding_db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bidding_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bidsphere-network
+
+  # ================================
   # Auth API Service
   # ================================
   auth-service:
@@ -129,6 +152,54 @@ services:
       - bidsphere-network
 
   # ================================
+  # Bidding API Service
+  # ================================
+  bidding-service:
+    build: 
+      context: ./backend-services/bidding-service
+      dockerfile: Dockerfile
+    container_name: bidsphere-bidding-api
+    ports:
+      - "8083:8083"
+    environment:
+      # Spring Configuration
+      SPRING_APPLICATION_NAME: bidding-service
+      
+      # Database Configuration
+      DB_HOST: postgres-bidding
+      DB_PORT: 5432
+      DB_NAME: bidding_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres123
+      
+      # JWT Configuration (must match auth-service)
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      JWT_EXPIRATION: 86400000
+      JWT_ISSUER: bidsphere-auth
+      
+      # Project Service URL
+      PROJECT_SERVICE_URL: http://project-service:8082
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      
+      # Server Configuration
+      SERVER_PORT: 8083
+    depends_on:
+      postgres-bidding:
+        condition: service_healthy
+      project-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/api/bids/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bidsphere-network
+
+  # ================================
   # Frontend Service
   # ================================
   frontend:
@@ -164,4 +235,6 @@ volumes:
   postgres_auth_data:
     driver: local
   postgres_project_data:
+    driver: local
+  postgres_bidding_data:
     driver: local
