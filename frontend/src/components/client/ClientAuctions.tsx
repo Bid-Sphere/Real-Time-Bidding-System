@@ -154,10 +154,10 @@ export default function ClientAuctions() {
 
   const filteredAuctions = auctions.filter(auction => {
     // Normalize status for filtering: ACTIVE and LIVE both map to 'live' filter
-    const statusLower = auction.status.toLowerCase();
+    const statusLower = auction.status?.toLowerCase() || '';
     const normalizedStatus = (auction.status === 'ACTIVE' || auction.status === 'LIVE') ? 'live' : statusLower;
     const matchesFilter = activeFilter === 'all' || normalizedStatus === activeFilter;
-    const matchesSearch = auction.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = auction.title?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 

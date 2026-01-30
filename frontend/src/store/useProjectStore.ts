@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Project, FilterState, Bid } from '@/types/organization';
 
-const API_BASE_URL = import.meta.env.VITE_PROJECT_API_URL || 'http://localhost:8082';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // Helper: Map backend status to frontend status
 const mapBackendStatusToFrontend = (backendStatus: string): Project['status'] => {

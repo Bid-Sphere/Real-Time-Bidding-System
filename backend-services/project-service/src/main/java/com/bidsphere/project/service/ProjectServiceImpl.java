@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,12 +101,13 @@ public class ProjectServiceImpl implements ProjectService {
         // If this is a LIVE_AUCTION project and not a draft, create an auction
         if (savedProject.getBiddingType() == BiddingType.LIVE_AUCTION && !savedProject.getIsDraft()) {
             try {
-                Long auctionId = createAuctionForProject(savedProject, clientId);
+                String auctionId = createAuctionForProject(savedProject, clientId);
                 savedProject.setAuctionId(auctionId);
                 savedProject = projectRepository.save(savedProject);
                 System.out.println("Auction created successfully with ID: " + auctionId + " for project: " + savedProject.getId());
             } catch (Exception e) {
                 System.err.println("Failed to create auction for project " + savedProject.getId() + ": " + e.getMessage());
+                e.printStackTrace();
                 // Don't fail the project creation, just log the error
                 // The auction can be created later if needed
             }
@@ -459,7 +461,7 @@ public class ProjectServiceImpl implements ProjectService {
     /**
      * Creates an auction in the auction-service for a LIVE_AUCTION project
      */
-    private Long createAuctionForProject(Project project, String clientId) {
+    private String createAuctionForProject(Project project, String clientId) {
         try {
             // Prepare auction creation request
             Map<String, Object> auctionRequest = new HashMap<>();
@@ -467,8 +469,12 @@ public class ProjectServiceImpl implements ProjectService {
             auctionRequest.put("projectTitle", project.getTitle());
             auctionRequest.put("projectOwnerId", clientId);
             auctionRequest.put("projectCategory", project.getCategory().name());
-            auctionRequest.put("startTime", LocalDateTime.now()); // Scheduled for now, will go live manually
-            auctionRequest.put("endTime", project.getAuctionEndTime());
+            
+            // Format dates to match auction-service expected format (yyyy-MM-dd'T'HH:mm:ss)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            auctionRequest.put("startTime", LocalDateTime.now().format(formatter)); // Scheduled for now, will go live manually
+            auctionRequest.put("endTime", project.getAuctionEndTime().format(formatter));
+            
             auctionRequest.put("minimumBidIncrement", BigDecimal.valueOf(100)); // Default increment
             auctionRequest.put("reservePrice", project.getBudget()); // Use project budget as reserve price
             
@@ -489,7 +495,7 @@ public class ProjectServiceImpl implements ProjectService {
                 Map<String, Object> responseBody = response.getBody();
                 Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
                 if (data != null && data.get("id") != null) {
-                    return Long.valueOf(data.get("id").toString());
+                    return data.get("id").toString();
                 }
             }
             
