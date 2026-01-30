@@ -17,3 +17,5 @@ server:
 services:
   auth-service:
     url: http://localhost:8081
+  realtime-service:
+    url: http://localhost:5000

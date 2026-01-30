@@ -10,12 +10,14 @@ import {
   Search,
   Trophy,
   Target,
-  Zap
+  Zap,
+  ArrowLeft
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import { projectApiService } from '@/services/projectApiService';
+import auctionApiService from '@/services/auctionApiService';
 import { showErrorToast } from '@/utils/toast';
+import { OrganizationLiveBidding } from './OrganizationLiveBidding';
 
 interface AuctionListing {
   id: string;
@@ -46,6 +48,9 @@ export default function OrganizationAuctions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [auctions, setAuctions] = useState<AuctionListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAuction, setSelectedAuction] = useState<AuctionListing | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'bidding'>('list');
+  const organizationId = 1; // TODO: Get from auth context
 
   useEffect(() => {
     fetchAuctions();
@@ -54,51 +59,47 @@ export default function OrganizationAuctions() {
   const fetchAuctions = async () => {
     try {
       setIsLoading(true);
-      // Fetch all projects where biddingType is LIVE_AUCTION
-      const response = await projectApiService.getAllProjects({ biddingType: 'LIVE_AUCTION' });
-      const auctionListings = response.projects
-        .filter((project: any) => project.biddingType === 'LIVE_AUCTION')
-        .map((project: any) => ({
-          id: project.id,
-          title: project.title,
-          category: project.category,
-          description: project.description,
-          clientName: project.clientName || 'Anonymous Client',
-          budget: project.budget,
-          auctionStartTime: project.auctionStartTime,
-          auctionEndTime: project.auctionEndTime,
-          status: determineAuctionStatus(project),
-          currentBids: project.bidCount || 0,
-          currentHighestBid: project.highestBid,
-          currentLowestBid: project.lowestBid,
-          viewCount: project.viewCount || 0,
-          requiredSkills: project.requiredSkills || [],
-          myBid: undefined // TODO: Fetch user's bid for this auction
-        }));
+      // Fetch active auctions from auction-service
+      const response = await auctionApiService.getActiveAuctions(0, 100);
+      const auctionListings = response.content.map((auction: any) => ({
+        id: auction.id.toString(),
+        title: auction.projectTitle,
+        category: auction.projectCategory,
+        description: '', // Not available in auction response
+        clientName: 'Client', // Not available in auction response
+        budget: 0, // Not available in auction response
+        auctionStartTime: auction.startTime,
+        auctionEndTime: auction.endTime,
+        status: mapAuctionStatus(auction.status),
+        currentBids: auction.totalBids || 0,
+        currentHighestBid: auction.currentHighestBid,
+        currentLowestBid: auction.currentHighestBid, // Using highest as lowest for now
+        viewCount: 0,
+        requiredSkills: [],
+        myBid: undefined // TODO: Fetch user's bid for this auction
+      }));
       setAuctions(auctionListings);
     } catch (error) {
+      console.error('Failed to fetch auctions:', error);
       showErrorToast('Failed to fetch auctions');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const determineAuctionStatus = (project: any): 'SCHEDULED' | 'LIVE' | 'ENDED' => {
-    const now = new Date();
-    const endTime = new Date(project.auctionEndTime);
-    
-    // Check if auction has ended
-    if (now > endTime) {
-      return 'ENDED';
+  const mapAuctionStatus = (status: string): 'SCHEDULED' | 'LIVE' | 'ENDED' => {
+    // Map auction-service status to component status
+    switch (status) {
+      case 'ACTIVE':
+        return 'LIVE';
+      case 'CLOSED':
+      case 'ENDED':
+      case 'CANCELLED':
+        return 'ENDED';
+      case 'SCHEDULED':
+      default:
+        return 'SCHEDULED';
     }
-    
-    // Check if auction is live (project status is ACCEPTING_BIDS or IN_DISCUSSION)
-    if (project.status === 'ACCEPTING_BIDS' || project.status === 'IN_DISCUSSION') {
-      return 'LIVE';
-    }
-    
-    // Otherwise it's scheduled
-    return 'SCHEDULED';
   };
 
   const getStatusColor = (status: string) => {
@@ -186,6 +187,81 @@ export default function OrganizationAuctions() {
   const upcomingAuctionsCount = auctions.filter(a => a.status === 'SCHEDULED').length;
   const participatedCount = auctions.filter(a => a.myBid).length;
   const winningBidsCount = auctions.filter(a => a.myBid?.isWinning).length;
+
+  const handleEnterAuction = (auction: AuctionListing) => {
+    // Navigate to live bidding view
+    setSelectedAuction(auction);
+    setViewMode('bidding');
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedAuction(null);
+  };
+
+  // Show live bidding view when an auction is selected and in bidding mode
+  if (viewMode === 'bidding' && selectedAuction) {
+    return (
+      <div className="space-y-6">
+        {/* Header with back button */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={handleBackToList}
+            className="h-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to Auctions
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+              <Gavel className="h-8 w-8 text-[var(--accent-blue)]" />
+              {selectedAuction.title}
+            </h1>
+            <p className="text-[var(--text-secondary)] mt-1">
+              Live Bidding - {selectedAuction.clientName}
+            </p>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium border flex items-center gap-1 ${getStatusColor(selectedAuction.status)}`}>
+            {getStatusIcon(selectedAuction.status)}
+            {selectedAuction.status}
+          </span>
+        </div>
+
+        {/* Conditional rendering based on auction status */}
+        {selectedAuction.status === 'LIVE' && (
+          <OrganizationLiveBidding 
+            auctionId={Number(selectedAuction.id)} 
+            organizationId={organizationId}
+          />
+        )}
+
+        {selectedAuction.status === 'SCHEDULED' && (
+          <Card className="p-8 text-center">
+            <Calendar className="h-16 w-16 text-[var(--text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+              Auction Not Started Yet
+            </h3>
+            <p className="text-[var(--text-secondary)]">
+              This auction is scheduled to start {formatStartTime(selectedAuction.auctionStartTime)}
+            </p>
+          </Card>
+        )}
+
+        {selectedAuction.status === 'ENDED' && (
+          <Card className="p-8 text-center">
+            <Clock className="h-16 w-16 text-[var(--text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+              Auction Ended
+            </h3>
+            <p className="text-[var(--text-secondary)]">
+              This auction has concluded. Check back for results.
+            </p>
+          </Card>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -448,13 +524,21 @@ export default function OrganizationAuctions() {
                     View Details
                   </Button>
                   {auction.status === 'LIVE' && !auction.myBid && (
-                    <Button variant="primary" className="h-9">
+                    <Button 
+                      variant="primary" 
+                      className="h-9"
+                      onClick={() => handleEnterAuction(auction)}
+                    >
                       <Gavel className="h-4 w-4" />
                       Enter Auction
                     </Button>
                   )}
                   {auction.status === 'LIVE' && auction.myBid && (
-                    <Button variant="primary" className="h-9">
+                    <Button 
+                      variant="primary" 
+                      className="h-9"
+                      onClick={() => handleEnterAuction(auction)}
+                    >
                       <Eye className="h-4 w-4" />
                       Monitor Auction
                     </Button>

@@ -121,6 +121,27 @@ public class AuctionServiceImpl implements AuctionService
     }
 
     @Override
+    public ActiveAuctionsResponse getMyAuctions(String clientUserId, int page, int limit) {
+        log.info("Getting auctions for client: {}, page: {}, limit: {}", clientUserId, page, limit);
+
+        validatePageAndLimit(page, limit);
+
+        int offset = page * limit;
+        List<Auction> auctions = auctionRepository.findByClientUserId(clientUserId, limit, offset);
+        int totalAuctions = auctionRepository.countByClientUserId(clientUserId);
+        int totalPages = (int) Math.ceil((double) totalAuctions / limit);
+
+        ActiveAuctionsResponse response = new ActiveAuctionsResponse();
+        response.setContent(mapToActiveAuctions(auctions));
+        response.setTotalElements(totalAuctions);
+        response.setTotalPages(totalPages);
+        response.setCurrentPage(page);
+
+        log.info("Found {} auctions for client: {}", auctions.size(), clientUserId);
+        return response;
+    }
+
+    @Override
     @Transactional
     public AuctionBidResponse submitBid(String auctionId, SubmitAuctionBidRequest request,
                                         String bidderId, String bidderName, String organizationId) {
@@ -144,6 +165,7 @@ public class AuctionServiceImpl implements AuctionService
         bid.setIsWinning(false);
         bid.setBidTime(LocalDateTime.now());
         bid.setOrganizationId(organizationId);
+        bid.setBidStatus(com.bidsphere.auctionservice.constant.BidStatus.PENDING);
 
         AuctionBid savedBid = auctionBidRepository.save(bid);
 

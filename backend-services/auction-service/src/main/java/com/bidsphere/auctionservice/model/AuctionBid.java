@@ -1,5 +1,6 @@
 package com.bidsphere.auctionservice.model;
 
+import com.bidsphere.auctionservice.constant.BidStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,4 +23,5 @@ public class AuctionBid
     private Boolean isWinning;
     private LocalDateTime bidTime;
     private String organizationId;
+    private BidStatus bidStatus;
 }

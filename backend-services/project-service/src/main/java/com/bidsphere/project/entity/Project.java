@@ -71,6 +71,9 @@ public class Project {
     @Column(name = "auction_end_time")
     private LocalDateTime auctionEndTime;
     
+    @Column(name = "auction_id")
+    private Long auctionId;
+    
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProjectAttachment> attachments = new ArrayList<>();
     
@@ -143,6 +146,9 @@ public class Project {
     
     public LocalDateTime getAuctionEndTime() { return auctionEndTime; }
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }
+    
+    public Long getAuctionId() { return auctionId; }
+    public void setAuctionId(Long auctionId) { this.auctionId = auctionId; }
     
     public List<ProjectAttachment> getAttachments() { return attachments; }
     public void setAttachments(List<ProjectAttachment> attachments) { this.attachments = attachments; }

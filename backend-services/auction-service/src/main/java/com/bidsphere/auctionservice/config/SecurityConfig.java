@@ -37,6 +37,7 @@ public class SecurityConfig
                                 "/api/auctions/health",
                                 "/api/auctions/project/**",
                                 "/api/auctions/active",
+                                "/api/auctions/my-auctions",
                                 "/api/auctions/{auctionId}",
                                 "/api/auctions/{auctionId}/bids",
                                 "/api/auctions/{auctionId}/my-bids",

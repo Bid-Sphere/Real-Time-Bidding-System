@@ -9,12 +9,16 @@ import {
   DollarSign,
   Eye,
   Search,
-  Plus
+  Plus,
+  ArrowLeft
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import { projectApiService } from '@/services/projectApiService';
+import auctionApiService from '@/services/auctionApiService';
 import { showErrorToast } from '@/utils/toast';
+import { GoLiveButton } from './GoLiveButton';
+import { ClientLiveMonitor } from './ClientLiveMonitor';
+import type { AuctionStatus } from '@/types/auction';
 
 interface AuctionProject {
   id: string;
@@ -24,7 +28,7 @@ interface AuctionProject {
   budget: number;
   auctionStartTime?: string;
   auctionEndTime: string;
-  status: 'SCHEDULED' | 'LIVE' | 'ENDED';
+  status: AuctionStatus;
   currentBids: number;
   currentHighestBid?: number;
   viewCount: number;
@@ -39,6 +43,8 @@ export default function ClientAuctions() {
   const [searchQuery, setSearchQuery] = useState('');
   const [auctions, setAuctions] = useState<AuctionProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAuction, setSelectedAuction] = useState<AuctionProject | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'monitor'>('list');
 
   useEffect(() => {
     fetchAuctions();
@@ -47,57 +53,40 @@ export default function ClientAuctions() {
   const fetchAuctions = async () => {
     try {
       setIsLoading(true);
-      // Fetch projects where biddingType is LIVE_AUCTION
-      const response = await projectApiService.getMyProjects();
-      const auctionProjects = response.projects
-        .filter((project: any) => project.biddingType === 'LIVE_AUCTION')
-        .map((project: any) => ({
-          id: project.id,
-          title: project.title,
-          category: project.category,
-          description: project.description,
-          budget: project.budget,
-          auctionStartTime: project.auctionStartTime,
-          auctionEndTime: project.auctionEndTime,
-          status: determineAuctionStatus(project),
-          currentBids: project.bidCount || 0,
-          currentHighestBid: project.highestBid,
-          viewCount: project.viewCount || 0,
-          createdAt: project.createdAt,
-          biddingType: project.biddingType
-        }));
+      // Fetch auctions from auction-service
+      const response = await auctionApiService.getMyAuctions(0, 100);
+      const auctionProjects = response.content.map((auction: any) => ({
+        id: auction.id.toString(), // Use auction ID, not project ID
+        title: auction.projectTitle,
+        category: auction.projectCategory,
+        description: '', // Not available in auction response
+        budget: 0, // Not available in auction response
+        auctionStartTime: auction.startTime,
+        auctionEndTime: auction.endTime,
+        status: auction.status,
+        currentBids: auction.totalBids || 0,
+        currentHighestBid: auction.currentHighestBid,
+        viewCount: 0,
+        createdAt: auction.createdAt,
+        biddingType: 'LIVE_AUCTION'
+      }));
       setAuctions(auctionProjects);
     } catch (error) {
+      console.error('Failed to fetch auctions:', error);
       showErrorToast('Failed to fetch auctions');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const determineAuctionStatus = (project: any): 'SCHEDULED' | 'LIVE' | 'ENDED' => {
-    const now = new Date();
-    const endTime = new Date(project.auctionEndTime);
-    
-    // Check if auction has ended
-    if (now > endTime) {
-      return 'ENDED';
-    }
-    
-    // Check if auction is live (project status is ACCEPTING_BIDS or IN_DISCUSSION)
-    if (project.status === 'ACCEPTING_BIDS' || project.status === 'IN_DISCUSSION') {
-      return 'LIVE';
-    }
-    
-    // Otherwise it's scheduled
-    return 'SCHEDULED';
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'SCHEDULED':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'ACTIVE':
       case 'LIVE':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'CLOSED':
       case 'ENDED':
         return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
       default:
@@ -109,8 +98,10 @@ export default function ClientAuctions() {
     switch (status) {
       case 'SCHEDULED':
         return <Calendar className="h-4 w-4" />;
+      case 'ACTIVE':
       case 'LIVE':
         return <Play className="h-4 w-4" />;
+      case 'CLOSED':
       case 'ENDED':
         return <Clock className="h-4 w-4" />;
       default:
@@ -136,23 +127,105 @@ export default function ClientAuctions() {
     return `${hours}h ${minutes}m remaining`;
   };
 
-  const handleStartAuction = async (auctionId: string) => {
-    // TODO: Implement start auction logic - update project status to ACCEPTING_BIDS
-    console.log('Starting auction:', auctionId);
-    // This will call the auction service to create an auction
+  const handleJoinAuction = (auction: AuctionProject) => {
+    // Navigate to live auction monitor view
+    setSelectedAuction(auction);
+    setViewMode('monitor');
   };
 
-  const handleJoinAuction = (auctionId: string) => {
-    // TODO: Navigate to live auction room
-    console.log('Joining auction:', auctionId);
+  const handleStatusChange = (auctionId: string, newStatus: AuctionStatus) => {
+    // Update the auction status in the list
+    setAuctions(prev => prev.map(auction => 
+      auction.id === auctionId 
+        ? { ...auction, status: newStatus as AuctionProject['status'] }
+        : auction
+    ));
+    
+    // If the auction just went live and it's selected, switch to monitor view
+    if (newStatus === 'LIVE' && selectedAuction?.id === auctionId) {
+      setViewMode('monitor');
+    }
+  };
+
+  const handleBackToList = () => {
+    setViewMode('list');
+    setSelectedAuction(null);
   };
 
   const filteredAuctions = auctions.filter(auction => {
-    const matchesFilter = activeFilter === 'all' || auction.status.toLowerCase() === activeFilter;
-    const matchesSearch = auction.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         auction.description.toLowerCase().includes(searchQuery.toLowerCase());
+    // Normalize status for filtering: ACTIVE and LIVE both map to 'live' filter
+    const statusLower = auction.status.toLowerCase();
+    const normalizedStatus = (auction.status === 'ACTIVE' || auction.status === 'LIVE') ? 'live' : statusLower;
+    const matchesFilter = activeFilter === 'all' || normalizedStatus === activeFilter;
+    const matchesSearch = auction.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  // Show live monitor view when an auction is selected and in monitor mode
+  if (viewMode === 'monitor' && selectedAuction) {
+    return (
+      <div className="space-y-6">
+        {/* Header with back button */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={handleBackToList}
+            className="h-10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            Back to Auctions
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+              <Gavel className="h-8 w-8 text-[var(--accent-blue)]" />
+              {selectedAuction.title}
+            </h1>
+            <p className="text-[var(--text-secondary)] mt-1">
+              Live Auction Monitor
+            </p>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium border flex items-center gap-1 ${getStatusColor(selectedAuction.status)}`}>
+            {getStatusIcon(selectedAuction.status)}
+            {selectedAuction.status}
+          </span>
+        </div>
+
+        {/* Conditional rendering based on auction status */}
+        {selectedAuction.status === 'SCHEDULED' && (
+          <Card className="p-8 text-center">
+            <Calendar className="h-16 w-16 text-[var(--text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+              Auction Not Started
+            </h3>
+            <p className="text-[var(--text-secondary)] mb-6">
+              Click "Go Live" to start accepting bids for this auction
+            </p>
+            <GoLiveButton
+              auctionId={Number(selectedAuction.id)}
+              currentStatus={selectedAuction.status}
+              onStatusChange={(newStatus) => handleStatusChange(selectedAuction.id, newStatus)}
+            />
+          </Card>
+        )}
+
+        {selectedAuction.status === 'LIVE' && (
+          <ClientLiveMonitor auctionId={Number(selectedAuction.id)} />
+        )}
+
+        {selectedAuction.status === 'ENDED' && (
+          <Card className="p-8 text-center">
+            <Clock className="h-16 w-16 text-[var(--text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+              Auction Ended
+            </h3>
+            <p className="text-[var(--text-secondary)]">
+              This auction has concluded. View the results below.
+            </p>
+          </Card>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -375,20 +448,30 @@ export default function ClientAuctions() {
                     View Details
                   </Button>
                   {auction.status === 'SCHEDULED' && (
-                    <Button 
-                      variant="primary" 
-                      className="h-9"
-                      onClick={() => handleStartAuction(auction.id)}
-                    >
-                      <Play className="h-4 w-4" />
-                      Start Auction
-                    </Button>
+                    <>
+                      <GoLiveButton
+                        auctionId={Number(auction.id)}
+                        currentStatus={auction.status}
+                        onStatusChange={(newStatus) => handleStatusChange(auction.id, newStatus)}
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="h-9"
+                        onClick={() => {
+                          setSelectedAuction(auction);
+                          setViewMode('monitor');
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View Monitor
+                      </Button>
+                    </>
                   )}
                   {auction.status === 'LIVE' && (
                     <Button 
                       variant="primary" 
                       className="h-9"
-                      onClick={() => handleJoinAuction(auction.id)}
+                      onClick={() => handleJoinAuction(auction)}
                     >
                       <Eye className="h-4 w-4" />
                       Monitor Live

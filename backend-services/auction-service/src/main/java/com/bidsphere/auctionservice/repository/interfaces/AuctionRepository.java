@@ -11,10 +11,12 @@ public interface AuctionRepository {
     Optional<Auction> findByProjectId(String projectId);
     List<Auction> findByStatus(String status, int limit, int offset);
     List<Auction> findActiveAuctions(int limit, int offset);
+    List<Auction> findByClientUserId(String clientUserId, int limit, int offset);
     List<Auction> findAuctionsToStart();
     List<Auction> findAuctionsToClose();
     int update(Auction auction);
     int updateStatus(String auctionId, String status);
     boolean existsByProjectId(String projectId);
     int countActiveAuctions();
+    int countByClientUserId(String clientUserId);
 }

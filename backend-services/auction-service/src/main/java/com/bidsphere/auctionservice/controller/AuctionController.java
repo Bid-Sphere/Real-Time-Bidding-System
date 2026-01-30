@@ -154,6 +154,49 @@ public class AuctionController {
         }
     }
 
+    @GetMapping("/my-auctions")
+    public ResponseEntity<?> getMyAuctions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            HttpServletRequest servletRequest) {
+
+        log.info("Getting auctions for client: {}, page: {}, limit: {}", clientUserId, page, limit);
+
+        try {
+            // If no user ID provided, return empty response
+            if (clientUserId == null || clientUserId.isEmpty()) {
+                ActiveAuctionsResponse emptyResponse = new ActiveAuctionsResponse();
+                emptyResponse.setContent(new java.util.ArrayList<>());
+                emptyResponse.setTotalElements(0);
+                emptyResponse.setTotalPages(0);
+                emptyResponse.setCurrentPage(page);
+                emptyResponse.setPageSize(limit);
+                
+                BaseResponse<ActiveAuctionsResponse> response = BaseResponse.success(emptyResponse);
+                return ResponseEntity.ok(response);
+            }
+            
+            ActiveAuctionsResponse auctions = auctionService.getMyAuctions(clientUserId, page, limit);
+
+            BaseResponse<ActiveAuctionsResponse> response = BaseResponse.success(auctions);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Get my auctions failed: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("MY_AUCTIONS_RETRIEVAL_FAILED")
+                    .message("Failed to retrieve my auctions")
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
     @PostMapping(Endpoints.SUBMIT_BID)
     public ResponseEntity<?> submitAuctionBid(
             @PathVariable String auctionId,

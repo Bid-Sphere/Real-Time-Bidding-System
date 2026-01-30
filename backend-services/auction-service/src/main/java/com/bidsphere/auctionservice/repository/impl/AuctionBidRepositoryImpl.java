@@ -1,5 +1,6 @@
 package com.bidsphere.auctionservice.repository.impl;
 
+import com.bidsphere.auctionservice.constant.BidStatus;
 import com.bidsphere.auctionservice.model.AuctionBid;
 import com.bidsphere.auctionservice.repository.interfaces.AuctionBidRepository;
 import org.slf4j.Logger;
@@ -42,6 +43,11 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
             bid.setIsWinning(rs.getBoolean("is_winning"));
             bid.setBidTime(rs.getTimestamp("bid_time").toLocalDateTime());
             bid.setOrganizationId(rs.getString("organization_id"));
+            
+            // Map bid_status column to BidStatus enum, default to PENDING if null
+            String statusStr = rs.getString("bid_status");
+            bid.setBidStatus(statusStr != null ? BidStatus.valueOf(statusStr) : BidStatus.PENDING);
+            
             return bid;
         }
     };
@@ -60,8 +66,8 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
     private AuctionBid insert(AuctionBid bid) {
         String sql = "INSERT INTO auction_bids (" +
                 "id, auction_id, bidder_id, bidder_name, bid_amount, " +
-                "proposal, is_winning, bid_time, organization_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "proposal, is_winning, bid_time, organization_id, bid_status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String bidId = UUID.randomUUID().toString();
 
@@ -75,7 +81,8 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
                     bid.getProposal(),
                     bid.getIsWinning() != null ? bid.getIsWinning() : false,
                     Timestamp.valueOf(bid.getBidTime() != null ? bid.getBidTime() : LocalDateTime.now()),
-                    bid.getOrganizationId()
+                    bid.getOrganizationId(),
+                    bid.getBidStatus() != null ? bid.getBidStatus().name() : BidStatus.PENDING.name()
             );
 
             bid.setId(bidId);
@@ -90,7 +97,7 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
 
     private int update(AuctionBid bid) {
         String sql = "UPDATE auction_bids SET " +
-                "bid_amount = ?, proposal = ?, is_winning = ? " +
+                "bid_amount = ?, proposal = ?, is_winning = ?, bid_status = ? " +
                 "WHERE id = ?";
 
         log.info("Updating bid: {}", bid.getId());
@@ -100,6 +107,7 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
                     bid.getBidAmount(),
                     bid.getProposal(),
                     bid.getIsWinning(),
+                    bid.getBidStatus() != null ? bid.getBidStatus().name() : BidStatus.PENDING.name(),
                     bid.getId()
             );
         } catch (Exception e) {
@@ -249,6 +257,62 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
         } catch (Exception e) {
             log.error("Failed to update winning status: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to update winning status: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<AuctionBid> findAcceptedBidForAuction(String auctionId) {
+        String sql = "SELECT * FROM auction_bids WHERE auction_id = ? AND bid_status = 'ACCEPTED' LIMIT 1";
+        log.info("Finding accepted bid for auction: {}", auctionId);
+
+        try {
+            AuctionBid bid = jdbcTemplate.queryForObject(sql, auctionBidRowMapper, auctionId);
+            return Optional.ofNullable(bid);
+        } catch (EmptyResultDataAccessException e) {
+            log.info("No accepted bid found for auction: {}", auctionId);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Error finding accepted bid: {}", e.getMessage());
+            throw new RuntimeException("Error finding accepted bid: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int updateBidStatus(String bidId, BidStatus status) {
+        String sql = "UPDATE auction_bids SET bid_status = ? WHERE id = ?";
+        log.info("Updating bid status for bid: {} to {}", bidId, status);
+
+        try {
+            return jdbcTemplate.update(sql, status.name(), bidId);
+        } catch (Exception e) {
+            log.error("Failed to update bid status: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update bid status: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<AuctionBid> findByAuctionIdAndStatus(String auctionId, BidStatus status) {
+        String sql = "SELECT * FROM auction_bids WHERE auction_id = ? AND bid_status = ? ORDER BY bid_time DESC";
+        log.info("Finding bids for auction: {} with status: {}", auctionId, status);
+
+        try {
+            return jdbcTemplate.query(sql, auctionBidRowMapper, auctionId, status.name());
+        } catch (Exception e) {
+            log.error("Error finding bids by status: {}", e.getMessage());
+            throw new RuntimeException("Error finding bids: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<AuctionBid> findRecentBidsByAuctionId(String auctionId, int limit) {
+        String sql = "SELECT * FROM auction_bids WHERE auction_id = ? ORDER BY bid_time DESC LIMIT ?";
+        log.info("Finding recent {} bids for auction: {}", limit, auctionId);
+
+        try {
+            return jdbcTemplate.query(sql, auctionBidRowMapper, auctionId, limit);
+        } catch (Exception e) {
+            log.error("Error finding recent bids: {}", e.getMessage());
+            throw new RuntimeException("Error finding recent bids: " + e.getMessage(), e);
         }
     }
 }

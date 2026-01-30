@@ -5,7 +5,7 @@ RUN npm install
 COPY . .
 
 # Build-time environment variables for Vite
-ARG VITE_API_URL=http://localhost:8081
+ARG VITE_API_URL=http://localhost:8080
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build

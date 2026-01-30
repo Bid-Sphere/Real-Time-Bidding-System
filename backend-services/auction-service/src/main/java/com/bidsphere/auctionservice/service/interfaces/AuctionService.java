@@ -13,6 +13,7 @@ public interface AuctionService
     AuctionDetailResponse getAuctionByProjectId(String projectId);
     AuctionDetailResponse getAuctionById(String auctionId);
     ActiveAuctionsResponse getActiveAuctions(int page, int limit);
+    ActiveAuctionsResponse getMyAuctions(String clientUserId, int page, int limit);
     AuctionCloseResponse closeAuction(String auctionId);
     BaseResponse<Void> cancelAuction(String auctionId, CancelAuctionRequest request, String userId);
 

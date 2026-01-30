@@ -17,3 +17,6 @@ export { ClientProfileCompletionBar } from './ClientProfileCompletionBar';
 export { ClientEmailVerification } from './ClientEmailVerification';
 export { ClientProfileForm } from './ClientProfileForm';
 export { ProfileCompletionModal } from './ProfileCompletionModal';
+export { default as ClientLiveMonitor } from './ClientLiveMonitor';
+export { default as OrganizationLiveBidding } from './OrganizationLiveBidding';
+export { default as GoLiveButton } from './GoLiveButton';

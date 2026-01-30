@@ -12,8 +12,10 @@ import com.bidsphere.project.repository.*;
 import com.bidsphere.project.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectAttachmentRepository attachmentRepository;
     private final ProjectViewRepository viewRepository;
     private final ProjectBookmarkRepository bookmarkRepository;
+    private final RestTemplate restTemplate;
     
     private static final String UPLOAD_DIR = "uploads/projects/";
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -39,15 +42,20 @@ public class ProjectServiceImpl implements ProjectService {
         "application/dwg", "application/dxf"
     );
     
+    // Auction service URL (inside Docker network)
+    private static final String AUCTION_SERVICE_URL = "http://auction-service:8085/api/auctions";
+    
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository,
                             ProjectAttachmentRepository attachmentRepository,
                             ProjectViewRepository viewRepository,
-                            ProjectBookmarkRepository bookmarkRepository) {
+                            ProjectBookmarkRepository bookmarkRepository,
+                            RestTemplate restTemplate) {
         this.projectRepository = projectRepository;
         this.attachmentRepository = attachmentRepository;
         this.viewRepository = viewRepository;
         this.bookmarkRepository = bookmarkRepository;
+        this.restTemplate = restTemplate;
     }
     
     @Override
@@ -88,6 +96,20 @@ public class ProjectServiceImpl implements ProjectService {
         
         Project savedProject = projectRepository.save(project);
         System.out.println("Project created successfully with ID: " + savedProject.getId());
+        
+        // If this is a LIVE_AUCTION project and not a draft, create an auction
+        if (savedProject.getBiddingType() == BiddingType.LIVE_AUCTION && !savedProject.getIsDraft()) {
+            try {
+                Long auctionId = createAuctionForProject(savedProject, clientId);
+                savedProject.setAuctionId(auctionId);
+                savedProject = projectRepository.save(savedProject);
+                System.out.println("Auction created successfully with ID: " + auctionId + " for project: " + savedProject.getId());
+            } catch (Exception e) {
+                System.err.println("Failed to create auction for project " + savedProject.getId() + ": " + e.getMessage());
+                // Don't fail the project creation, just log the error
+                // The auction can be created later if needed
+            }
+        }
         
         return mapToResponse(savedProject, null);
     }
@@ -431,6 +453,51 @@ public class ProjectServiceImpl implements ProjectService {
     private void validateAuctionEndTime(LocalDateTime auctionEndTime, LocalDateTime deadline) {
         if (auctionEndTime == null) {
             throw new IllegalArgumentException("Auction end time is required for live auctions");
+        }
+    }
+    
+    /**
+     * Creates an auction in the auction-service for a LIVE_AUCTION project
+     */
+    private Long createAuctionForProject(Project project, String clientId) {
+        try {
+            // Prepare auction creation request
+            Map<String, Object> auctionRequest = new HashMap<>();
+            auctionRequest.put("projectId", project.getId());
+            auctionRequest.put("projectTitle", project.getTitle());
+            auctionRequest.put("projectOwnerId", clientId);
+            auctionRequest.put("projectCategory", project.getCategory().name());
+            auctionRequest.put("startTime", LocalDateTime.now()); // Scheduled for now, will go live manually
+            auctionRequest.put("endTime", project.getAuctionEndTime());
+            auctionRequest.put("minimumBidIncrement", BigDecimal.valueOf(100)); // Default increment
+            auctionRequest.put("reservePrice", project.getBudget()); // Use project budget as reserve price
+            
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(auctionRequest, headers);
+            
+            // Call auction-service
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                AUCTION_SERVICE_URL,
+                entity,
+                Map.class
+            );
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> responseBody = response.getBody();
+                Map<String, Object> data = (Map<String, Object>) responseBody.get("data");
+                if (data != null && data.get("id") != null) {
+                    return Long.valueOf(data.get("id").toString());
+                }
+            }
+            
+            throw new RuntimeException("Failed to create auction: Invalid response from auction-service");
+            
+        } catch (Exception e) {
+            System.err.println("Error creating auction for project " + project.getId() + ": " + e.getMessage());
+            throw new RuntimeException("Failed to create auction: " + e.getMessage(), e);
         }
     }
     

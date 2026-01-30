@@ -1,18 +1,33 @@
 ﻿using RealTimeService.Hubs;
+using RealTimeService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers + Swagger
-builder.Services.AddControllers();
+// Controllers + Swagger with JSON options for enum serialization
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Serialize enums as strings to match Java behavior
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// SignalR + Redis backplane
+// HttpClient for AuctionService
+builder.Services.AddHttpClient<IAuctionService, AuctionService>();
+
+// SignalR + Redis backplane with JSON options
 builder.Services.AddSignalR()
+    .AddJsonProtocol(options =>
+    {
+        // Serialize enums as strings to match Java behavior
+        options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
     .AddStackExchangeRedis(builder.Configuration["Redis:ConnectionString"], options =>
     {
         options.Configuration.ChannelPrefix = "BidSphere";

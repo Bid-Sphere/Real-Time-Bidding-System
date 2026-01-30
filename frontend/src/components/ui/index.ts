@@ -15,3 +15,4 @@ export type { MultiSelectProps } from './MultiSelect';
 
 export { default as PhoneInput } from './PhoneInput';
 export type { PhoneInputProps } from './PhoneInput';
+export { default as ConfirmDialog } from './ConfirmDialog';
