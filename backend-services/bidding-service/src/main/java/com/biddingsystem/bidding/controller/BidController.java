@@ -43,7 +43,7 @@ public class BidController {
         
         log.info("Submitting bid for project: {} by bidder: {}", request.getProjectId(), bidderId);
         
-        if (!"ORGANIZATION".equals(role)) {
+        if (!"ORGANIZATION".equals(role) && !"ORGANISATION".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only organizations can submit bids"));
         }
@@ -90,7 +90,7 @@ public class BidController {
         
         log.info("Getting my bids for bidder: {}", bidderId);
         
-        if (!"ORGANIZATION".equals(role)) {
+        if (!"ORGANIZATION".equals(role) && !"ORGANISATION".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only organizations can access this endpoint"));
         }
@@ -131,7 +131,7 @@ public class BidController {
         
         log.info("Updating bid: {} by bidder: {}", bidId, bidderId);
         
-        if (!"ORGANIZATION".equals(role)) {
+        if (!"ORGANIZATION".equals(role) && !"ORGANISATION".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only organizations can update bids"));
         }
@@ -154,7 +154,7 @@ public class BidController {
         
         log.info("Withdrawing bid: {} by bidder: {}", bidId, bidderId);
         
-        if (!"ORGANIZATION".equals(role)) {
+        if (!"ORGANIZATION".equals(role) && !"ORGANISATION".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only organizations can withdraw bids"));
         }
@@ -175,9 +175,10 @@ public class BidController {
         String clientId = (String) httpRequest.getAttribute("userId");
         String role = (String) httpRequest.getAttribute("userRole");
         
-        log.info("Accepting bid: {} by client: {}", bidId, clientId);
+        log.info("Accepting bid: {} by client: {} with role: {}", bidId, clientId, role);
         
-        if (!"CLIENT".equals(role)) {
+        // Accept both CLIENT and INDIVIDUAL spellings
+        if (!"CLIENT".equals(role) && !"INDIVIDUAL".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only clients can accept bids"));
         }
@@ -199,9 +200,10 @@ public class BidController {
         String clientId = (String) httpRequest.getAttribute("userId");
         String role = (String) httpRequest.getAttribute("userRole");
         
-        log.info("Rejecting bid: {} by client: {}", bidId, clientId);
+        log.info("Rejecting bid: {} by client: {} with role: {}", bidId, clientId, role);
         
-        if (!"CLIENT".equals(role)) {
+        // Accept both CLIENT and INDIVIDUAL spellings
+        if (!"CLIENT".equals(role) && !"INDIVIDUAL".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only clients can reject bids"));
         }

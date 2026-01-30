@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import type { Bid, BidSummary } from '@/types/organization';
+import type { BidResponse } from '@/services/biddingApiService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { BidListItem } from '@/components/bids/BidListItem';
+import { ChevronDown, ChevronUp, Mail } from 'lucide-react';
 import { useBidStore } from '@/store/useBidStore';
 
 interface MyBidsSummaryProps {
   summary: BidSummary;
-  bids?: Bid[];
+  bids?: BidResponse[];
   onViewAll: () => void;
-  onEditBid?: (bid: Bid) => void;
+  onEditBid?: (bid: Bid | BidResponse) => void;
 }
 
 export const MyBidsSummary = ({ summary, bids, onViewAll, onEditBid }: MyBidsSummaryProps) => {
@@ -30,9 +30,45 @@ export const MyBidsSummary = ({ summary, bids, onViewAll, onEditBid }: MyBidsSum
     onViewAll();
   };
 
-  const handleEdit = (bid: Bid) => {
+  const handleEdit = (bid: BidResponse) => {
     if (onEditBid) {
-      onEditBid(bid);
+      // Convert BidResponse to Bid format for the edit modal
+      const bidData: Bid = {
+        id: bid.id,
+        projectId: bid.projectId,
+        projectTitle: bid.projectTitle || '',
+        organizationId: bid.bidderId,
+        proposedPrice: bid.proposedPrice,
+        estimatedTimeline: String(bid.estimatedDuration),
+        coverLetter: bid.proposal,
+        status: bid.status.toLowerCase() as 'pending' | 'shortlisted' | 'accepted' | 'rejected',
+        submittedAt: bid.submittedAt,
+        updatedAt: bid.updatedAt,
+        ranking: bid.ranking
+      };
+      onEditBid(bidData);
+    }
+  };
+
+  const handleContactClient = (clientEmail: string) => {
+    // Open Gmail compose with client email
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(clientEmail)}`;
+    window.open(gmailUrl, '_blank');
+  };
+
+  // Map status from BidResponse to display format
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING':
+        return 'bg-yellow-500/20 text-yellow-400';
+      case 'ACCEPTED':
+        return 'bg-green-500/20 text-green-400';
+      case 'REJECTED':
+        return 'bg-red-500/20 text-red-400';
+      case 'WITHDRAWN':
+        return 'bg-gray-500/20 text-gray-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
@@ -89,12 +125,69 @@ export const MyBidsSummary = ({ summary, bids, onViewAll, onEditBid }: MyBidsSum
               ) : (
                 <div className="space-y-3">
                   {bids.map((bid) => (
-                    <BidListItem
+                    <div
                       key={bid.id}
-                      bid={bid}
-                      onEdit={handleEdit}
-                      onWithdraw={handleWithdraw}
-                    />
+                      className="bg-[rgba(26,26,46,0.4)] rounded-lg p-5 border border-gray-800 hover:border-gray-700 transition-all duration-200"
+                    >
+                      {/* Header with Title and Status */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 pr-4">
+                          <h4 className="text-lg font-semibold text-white mb-2">{bid.projectTitle || 'Project'}</h4>
+                          <div className="flex items-center gap-3">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
+                              {bid.status}
+                            </span>
+                            {bid.ranking && (
+                              <span className="text-sm text-gray-400">Rank #{bid.ranking}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-white mb-1">${bid.proposedPrice.toLocaleString()}</div>
+                          <div className="text-sm text-gray-400">{bid.estimatedDuration} days</div>
+                        </div>
+                      </div>
+                      
+                      {/* Actions Footer */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
+                        {/* Left side - Edit/Withdraw for pending */}
+                        <div className="flex items-center gap-3">
+                          {bid.status === 'PENDING' && (
+                            <>
+                              <button
+                                onClick={() => handleEdit(bid)}
+                                className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                              >
+                                Edit Bid
+                              </button>
+                              <span className="text-gray-600">•</span>
+                              <button
+                                onClick={() => handleWithdraw(bid.id)}
+                                className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
+                              >
+                                Withdraw
+                              </button>
+                            </>
+                          )}
+                          {bid.status === 'ACCEPTED' && (
+                            <span className="text-sm text-gray-400">
+                              Accepted on {new Date(bid.acceptedAt || bid.updatedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Right side - Contact button for accepted */}
+                        {bid.status === 'ACCEPTED' && bid.clientEmail && (
+                          <button
+                            onClick={() => handleContactClient(bid.clientEmail!)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition-all duration-200 hover:shadow-blue-500/40"
+                          >
+                            <Mail className="w-4 h-4" />
+                            Contact Client
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

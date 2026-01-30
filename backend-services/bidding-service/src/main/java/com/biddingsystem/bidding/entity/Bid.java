@@ -26,6 +26,15 @@ public class Bid {
     @Column(name = "project_id", nullable = false)
     private String projectId;
     
+    @Column(name = "client_id", nullable = false)
+    private String clientId;
+    
+    @Column(name = "client_email")
+    private String clientEmail;
+    
+    @Column(name = "client_phone")
+    private String clientPhone;
+    
     @Column(name = "bidder_id", nullable = false)
     private String bidderId;
     

@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button';
 interface ProjectCardProps {
   project: Project;
   isVerified: boolean;
+  hasBidded?: boolean;
   onViewDetails: () => void;
   onBid: () => void;
   onInterest: () => void;
@@ -13,6 +14,7 @@ interface ProjectCardProps {
 export function ProjectCard({
   project,
   isVerified,
+  hasBidded = false,
   onViewDetails,
   onBid,
   onInterest,
@@ -134,12 +136,12 @@ export function ProjectCard({
 
         <Button
           onClick={onBid}
-          disabled={!isVerified || project.hasBid}
+          disabled={!isVerified || hasBidded}
           size="md"
           className="w-[130px] h-[44px]"
-          title={!isVerified ? 'Email verification required' : project.hasBid ? 'Already bid on this project' : ''}
+          title={!isVerified ? 'Email verification required' : hasBidded ? 'Already bid on this project' : ''}
         >
-          {project.hasBid ? 'Submitted' : 'Bid'}
+          {hasBidded ? 'Bidded' : 'Bid'}
         </Button>
 
         <button

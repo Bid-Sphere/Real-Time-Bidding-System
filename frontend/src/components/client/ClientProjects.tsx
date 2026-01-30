@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Eye, Edit, Trash2, Calendar, DollarSign, Users } from 'lucide-react';
 import { DashboardHeader } from '@/components/client';
 import { useClientProjectStore } from '../../store/useClientProjectStore';
+import { useBidStore } from '../../store/useBidStore';
 import { useClientProfileCompletion } from '../../hooks/useClientProfileCompletion';
 import { ProfileCompletionModal } from './ProfileCompletionModal';
 import { ProjectDetailsModal } from '@/components/projects/ProjectDetailsModal';
@@ -25,25 +26,56 @@ export default function ClientProjects() {
     clearError
   } = useClientProjectStore();
   
+  const { fetchBidsForProject } = useBidStore();
+  
   const { isComplete, profile } = useClientProfileCompletion();
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [projectsWithBidCounts, setProjectsWithBidCounts] = useState<Project[]>([]);
   
   // Modal state for post/edit project
   const [showPostProjectModal, setShowPostProjectModal] = useState(false);
   const [showProjectDetailsModal, setShowProjectDetailsModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   
   // Fetch projects on mount
   useEffect(() => {
     fetchMyProjects(statusFilter === 'all' ? undefined : statusFilter);
   }, [fetchMyProjects, statusFilter]);
   
+  // Fetch bid counts for all projects
+  useEffect(() => {
+    const fetchBidCounts = async () => {
+      if (projects.length === 0) {
+        setProjectsWithBidCounts([]);
+        return;
+      }
+
+      const projectsWithCounts = await Promise.all(
+        projects.map(async (project) => {
+          try {
+            const bidsResult = await fetchBidsForProject(project.id);
+            return {
+              ...project,
+              bidCount: bidsResult.totalElements || 0
+            };
+          } catch (error) {
+            console.error(`Failed to fetch bid count for project ${project.id}:`, error);
+            return project;
+          }
+        })
+      );
+
+      setProjectsWithBidCounts(projectsWithCounts);
+    };
+
+    fetchBidCounts();
+  }, [projects, fetchBidsForProject]);
+  
   // Convert client Project to organization Project format for ProjectDetailsModal
   const convertToOrgProject = (project: Project): OrgProject => {
-    // Map status to organization format
     const statusMap: Record<string, OrgProject['status']> = {
       'DRAFT': 'open',
       'OPEN': 'open',
@@ -59,13 +91,13 @@ export default function ClientProjects() {
       title: project.title,
       description: project.description,
       category: project.category,
-      tags: project.requiredSkills, // Use required skills as tags
-      budgetMin: project.budget * 0.9, // Estimate range from single budget
+      tags: project.requiredSkills,
+      budgetMin: project.budget * 0.9,
       budgetMax: project.budget * 1.1,
       deadline: project.deadline.toISOString(),
       clientId: project.clientId,
       clientName: project.clientName,
-      requirements: project.requiredSkills, // Use required skills as requirements
+      requirements: project.requiredSkills,
       attachments: project.attachments.map(att => ({
         id: att.id,
         filename: att.filename,
@@ -77,12 +109,12 @@ export default function ClientProjects() {
       status: statusMap[project.status] || 'open',
       location: project.location,
       postedAt: project.createdAt.toISOString(),
-      hasBid: false // Client view, so no bid from client
+      hasBid: false
     };
   };
   
   // Filter projects by search query
-  const filteredProjects = projects.filter(project => {
+  const filteredProjects = projectsWithBidCounts.filter(project => {
     const matchesSearch = searchQuery === '' || 
       project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -145,8 +177,10 @@ export default function ClientProjects() {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
         await deleteProject(projectId);
+        showSuccessToast('Project deleted successfully');
       } catch (error) {
         console.error('Failed to delete project:', error);
+        showErrorToast('Failed to delete project');
       }
     }
   };
@@ -424,7 +458,7 @@ export default function ClientProjects() {
           project={convertToOrgProject(selectedProject)}
           isOpen={showProjectDetailsModal}
           onClose={handleCloseDetailsModal}
-          onBid={() => {}} // No-op for client view
+          onBid={() => {}}
           isVerified={true}
           hideActions={true}
         />

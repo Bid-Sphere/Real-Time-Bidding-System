@@ -122,12 +122,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         throw new Error(result.message || 'Failed to fetch projects');
       }
       
-      const projects = result.data.content.map(mapBackendProjectToOrganizationProject);
+      let projects = result.data.content.map(mapBackendProjectToOrganizationProject);
+      
+      // Filter out expired projects unless showExpired is true
+      if (!currentFilters.showExpired) {
+        const now = new Date();
+        projects = projects.filter((project: Project) => {
+          const deadline = new Date(project.deadline);
+          return deadline >= now;
+        });
+      }
       
       set({ 
         projects,
-        total: result.data.totalElements || 0,
-        totalPages: result.data.totalPages || 0,
+        total: projects.length, // Update total to reflect filtered count
+        totalPages: Math.ceil(projects.length / 20),
         page,
         isLoading: false 
       });

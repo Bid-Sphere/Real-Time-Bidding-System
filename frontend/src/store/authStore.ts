@@ -86,6 +86,9 @@ export const useAuthStore = create<ExtendedAuthState>()(
             registrationStep: null // Clear any registration state
           });
           
+          // Fetch full user data with profile information
+          await get().refreshUser();
+          
           return user;
         } catch (error) {
           set({ isLoading: false });

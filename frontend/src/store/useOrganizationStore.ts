@@ -148,20 +148,39 @@ export const useOrganizationStore = create<OrganizationState>((set, get) => ({
   fetchAnalytics: async (_orgId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // Mock data for now - replace with actual API call
+      // Fetch real bid data from bidding service
+      const biddingApiService = await import('@/services/biddingApiService').then(m => m.default);
+      const result = await biddingApiService.getMyBids({ page: 0, limit: 1000 });
+      
+      const bids = result.content;
+      const totalBids = result.totalElements;
+      const pendingBids = bids.filter(b => b.status === 'PENDING').length;
+      const acceptedBids = bids.filter(b => b.status === 'ACCEPTED').length;
+      const rejectedBids = bids.filter(b => b.status === 'REJECTED').length;
+      
+      // Calculate win rate
+      const winRate = totalBids > 0 ? Math.round((acceptedBids / totalBids) * 100) : 0;
+      
+      // Calculate total earnings from accepted bids
+      const totalEarnings = bids
+        .filter(b => b.status === 'ACCEPTED')
+        .reduce((sum, bid) => sum + bid.proposedPrice, 0);
+      
       const analytics: AnalyticsData = {
-        totalBids: 0,
-        winRate: 0,
-        activeProjects: 0,
-        totalEarnings: 0,
-        pendingBids: 0,
-        acceptedBids: 0,
-        rejectedBids: 0,
-        averageResponseTime: 0,
-        completionRate: 0
+        totalBids,
+        winRate,
+        activeProjects: acceptedBids, // Accepted bids are active projects
+        totalEarnings,
+        pendingBids,
+        acceptedBids,
+        rejectedBids,
+        averageResponseTime: 0, // Not available from current API
+        completionRate: 0 // Not available from current API
       };
+      
       set({ analytics, isLoading: false });
     } catch (error) {
+      console.error('Failed to fetch analytics:', error);
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch analytics', 
         isLoading: false 

@@ -3,51 +3,55 @@ import { X, AlertCircle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
+import { useClientStore } from '@/store/useClientStore';
 import { calculateProfileCompletion } from '@/utils/profileUtils';
+import { calculateClientProfileCompletion } from '@/utils/clientProfileUtils';
 import Button from '@/components/ui/Button';
 
 export default function ProfileCompletionBanner() {
   const [isVisible, setIsVisible] = useState(true);
-  const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [completionPercentage, setCompletionPercentage] = useState<number | null>(null);
   const { user } = useAuth();
-  const { profile, fetchProfile } = useOrganizationStore();
+  const { profile: orgProfile, fetchProfile: fetchOrgProfile } = useOrganizationStore();
+  const { profile: clientProfile, fetchProfile: fetchClientProfile } = useClientStore();
   const navigate = useNavigate();
 
-  // Fetch profile data when component mounts (only for organizations for now)
+  // Fetch profile data when component mounts
   useEffect(() => {
-    if (user && user.role === 'organization') {
-      fetchProfile(user.id);
+    if (user) {
+      if (user.role === 'organization') {
+        fetchOrgProfile(user.id);
+      } else if (user.role === 'client') {
+        fetchClientProfile(user.id);
+      }
     }
-  }, [user, fetchProfile]);
+  }, [user, fetchOrgProfile, fetchClientProfile]);
 
   // Calculate completion percentage when profile or user changes
   useEffect(() => {
-    if (user?.role === 'organization' && profile) {
+    if (user?.role === 'organization' && orgProfile) {
       // Use emailVerified from auth store for accurate calculation
       const profileWithEmailStatus = {
-        ...profile,
+        ...orgProfile,
         emailVerified: user.emailVerified || false
       };
       
       const percentage = calculateProfileCompletion(profileWithEmailStatus);
       setCompletionPercentage(percentage);
-    } else if (user?.role === 'client') {
-      // For clients, use a simple check based on email verification and basic info
-      let clientCompletion = 0;
-      const requiredFields = [
-        user.fullName,
-        user.email,
-        user.emailVerified ? 'verified' : undefined,
-      ];
+    } else if (user?.role === 'client' && clientProfile) {
+      // For clients, use the proper profile completion calculation
+      const profileWithEmailStatus = {
+        ...clientProfile,
+        emailVerified: user.emailVerified || false
+      };
       
-      const filledCount = requiredFields.filter(field => field !== undefined && field !== null && field !== '').length;
-      clientCompletion = Math.round((filledCount / requiredFields.length) * 100);
-      setCompletionPercentage(clientCompletion);
+      const percentage = calculateClientProfileCompletion(profileWithEmailStatus);
+      setCompletionPercentage(percentage);
     }
-  }, [profile, user]);
+  }, [orgProfile, clientProfile, user]);
 
-  // Show banner if profile is not 100% complete
-  const shouldShow = user && completionPercentage < 100;
+  // Show banner only if profile is loaded AND not 100% complete
+  const shouldShow = user && completionPercentage !== null && completionPercentage < 100;
 
   if (!shouldShow || !isVisible) {
     return null;

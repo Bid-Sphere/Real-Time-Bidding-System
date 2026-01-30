@@ -22,6 +22,11 @@ const deadlineOptions = [
   { value: 'this_month', label: 'This Month' },
 ];
 
+const projectStatusOptions = [
+  { value: 'active', label: 'Active Only' },
+  { value: 'all', label: 'Include Expired' },
+];
+
 export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps) {
   const [localFilters, setLocalFilters] = useState<FilterState>(filters);
 
@@ -59,6 +64,11 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
   const handleSearchChange = (value: string) => {
     const searchQuery = value || undefined;
     handleFilterUpdate('searchQuery', searchQuery);
+  };
+
+  const handleProjectStatusChange = (value: string) => {
+    const showExpired = value === 'all';
+    handleFilterUpdate('showExpired', showExpired);
   };
 
   const handleClearFilters = () => {
@@ -154,6 +164,17 @@ export function ProjectFilters({ filters, onFilterChange }: ProjectFiltersProps)
             value={localFilters.location || ''}
             onChange={(e) => handleLocationChange(e.target.value)}
             className="w-full"
+          />
+        </div>
+
+        {/* Project Status Dropdown */}
+        <div>
+          <Select
+            label="Project Status"
+            value={localFilters.showExpired ? 'all' : 'active'}
+            onChange={(e) => handleProjectStatusChange(e.target.value)}
+            options={projectStatusOptions}
+            fullWidth
           />
         </div>
       </div>

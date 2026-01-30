@@ -416,9 +416,9 @@ public class ProjectServiceImpl implements ProjectService {
     private void validateStatusTransition(ProjectStatus current, ProjectStatus next) {
         Map<ProjectStatus, List<ProjectStatus>> validTransitions = Map.of(
             ProjectStatus.DRAFT, List.of(ProjectStatus.OPEN),
-            ProjectStatus.OPEN, List.of(ProjectStatus.ACCEPTING_BIDS, ProjectStatus.CLOSED),
-            ProjectStatus.ACCEPTING_BIDS, List.of(ProjectStatus.IN_DISCUSSION, ProjectStatus.CLOSED),
-            ProjectStatus.IN_DISCUSSION, List.of(ProjectStatus.ACCEPTING_BIDS, ProjectStatus.CLOSED),
+            ProjectStatus.OPEN, List.of(ProjectStatus.ACCEPTING_BIDS, ProjectStatus.CLOSED, ProjectStatus.IN_PROGRESS),
+            ProjectStatus.ACCEPTING_BIDS, List.of(ProjectStatus.IN_DISCUSSION, ProjectStatus.CLOSED, ProjectStatus.IN_PROGRESS),
+            ProjectStatus.IN_DISCUSSION, List.of(ProjectStatus.ACCEPTING_BIDS, ProjectStatus.CLOSED, ProjectStatus.IN_PROGRESS),
             ProjectStatus.CLOSED, List.of(ProjectStatus.IN_PROGRESS),
             ProjectStatus.IN_PROGRESS, List.of(ProjectStatus.COMPLETED)
         );

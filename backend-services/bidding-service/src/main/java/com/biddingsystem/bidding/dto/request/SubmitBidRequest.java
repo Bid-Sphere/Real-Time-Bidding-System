@@ -17,6 +17,13 @@ public class SubmitBidRequest {
     @NotBlank(message = "Project ID is required")
     private String projectId;
     
+    @NotBlank(message = "Client ID is required")
+    private String clientId;
+    
+    private String clientEmail; // Optional - for contact info
+    
+    private String clientPhone; // Optional - for contact info
+    
     @NotNull(message = "Proposed price is required")
     @DecimalMin(value = "0.01", message = "Proposed price must be greater than 0")
     private BigDecimal proposedPrice;

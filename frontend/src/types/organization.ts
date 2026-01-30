@@ -157,6 +157,7 @@ export interface FilterState {
   deadline?: 'urgent' | 'this_week' | 'this_month' | 'any';
   location?: string;
   searchQuery?: string;
+  showExpired?: boolean;
 }
 
 // Bid Summary for Analytics

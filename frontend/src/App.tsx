@@ -18,7 +18,6 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 // Organization Dashboard sections
 const AnalyticsHome = lazy(() => import('@/pages/dashboard/AnalyticsHome'));
 const ProfileSection = lazy(() => import('@/pages/dashboard/ProfileSection'));
-const TeamsSection = lazy(() => import('@/pages/dashboard/TeamsSection'));
 const ProjectDiscoverySection = lazy(() => import('@/pages/dashboard/ProjectDiscoverySection'));
 const ChatSection = lazy(() => import('@/pages/dashboard/ChatSection'));
 
@@ -147,7 +146,6 @@ function AnimatedRoutes() {
           <Route index element={<Navigate to="analytics" replace />} />
           <Route path="analytics" element={<AnalyticsHome />} />
           <Route path="profile" element={<ProfileSection />} />
-          <Route path="teams" element={<TeamsSection />} />
           <Route path="projects" element={<ProjectDiscoverySection />} />
           <Route path="chat" element={<ChatSection />} />
           <Route path="chat/:conversationId" element={<ChatSection />} />

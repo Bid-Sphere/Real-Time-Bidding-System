@@ -1,6 +1,5 @@
 package com.biddingsystem.bidding.service;
 
-import com.biddingsystem.bidding.dto.ProjectDto;
 import com.biddingsystem.bidding.dto.request.RejectBidRequest;
 import com.biddingsystem.bidding.dto.request.SubmitBidRequest;
 import com.biddingsystem.bidding.dto.request.UpdateBidRequest;
@@ -19,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -33,11 +31,9 @@ import java.util.stream.Collectors;
 public class BidServiceImpl implements BidService {
     
     private final BidRepository bidRepository;
-    private final WebClient projectServiceWebClient;
     
-    public BidServiceImpl(BidRepository bidRepository, WebClient projectServiceWebClient) {
+    public BidServiceImpl(BidRepository bidRepository) {
         this.bidRepository = bidRepository;
-        this.projectServiceWebClient = projectServiceWebClient;
     }
     
     @Override
@@ -45,32 +41,23 @@ public class BidServiceImpl implements BidService {
     public BidResponse submitBid(SubmitBidRequest request, String bidderId, String bidderName) {
         log.info("Submitting bid for project: {} by bidder: {}", request.getProjectId(), bidderId);
         
-        // 1. Verify project exists and is open (call project-service)
-        ProjectDto project = getProjectFromService(request.getProjectId());
-        
-        if (project == null) {
-            throw new ProjectNotFoundException("Project not found: " + request.getProjectId());
-        }
-        
-        // 2. Check if project is accepting bids
-        if (!"OPEN".equals(project.getStatus())) {
-            throw new InvalidBidStateException("Project is not accepting bids. Current status: " + project.getStatus());
-        }
-        
-        // 3. Check if bidder is trying to bid on their own project
-        if (bidderId.equals(project.getClientId())) {
+        // 1. Check if bidder is trying to bid on their own project
+        if (bidderId.equals(request.getClientId())) {
             throw new UnauthorizedBidActionException("Cannot bid on your own project");
         }
         
-        // 4. Check for duplicate bid
+        // 2. Check for duplicate bid
         if (bidRepository.existsByProjectIdAndBidderId(request.getProjectId(), bidderId)) {
             throw new DuplicateBidException("You have already submitted a bid for this project");
         }
         
-        // 5. Create and save bid
+        // 3. Create and save bid
         Bid bid = Bid.builder()
                 .id(UUID.randomUUID().toString())
                 .projectId(request.getProjectId())
+                .clientId(request.getClientId())
+                .clientEmail(request.getClientEmail())
+                .clientPhone(request.getClientPhone())
                 .bidderId(bidderId)
                 .bidderName(bidderName)
                 .bidderType(BidderType.ORGANIZATION)
@@ -107,11 +94,10 @@ public class BidServiceImpl implements BidService {
             bids = bidRepository.findByProjectId(projectId, sortedPageable);
         }
         
-        // Check if user is project owner
+        // Check if user is project owner by comparing with clientId stored in bid
         boolean isProjectOwner = false;
-        if (userId != null && "CLIENT".equals(userRole)) {
-            ProjectDto project = getProjectFromService(projectId);
-            isProjectOwner = project != null && userId.equals(project.getClientId());
+        if (userId != null && "CLIENT".equals(userRole) && !bids.isEmpty()) {
+            isProjectOwner = bids.getContent().get(0).getClientId().equals(userId);
         }
         
         // Filter bids based on user role
@@ -149,16 +135,6 @@ public class BidServiceImpl implements BidService {
             BidResponse response = mapToResponse(bid, rankings.get(bid.getId()));
             response.setTotalBids((int) totalBids);
             
-            // Fetch project title
-            try {
-                ProjectDto project = getProjectFromService(bid.getProjectId());
-                if (project != null) {
-                    response.setProjectTitle(project.getTitle());
-                }
-            } catch (Exception e) {
-                log.warn("Could not fetch project title for: {}", bid.getProjectId());
-            }
-            
             return response;
         });
     }
@@ -173,12 +149,7 @@ public class BidServiceImpl implements BidService {
         
         // Authorization check
         boolean isOwner = userId.equals(bid.getBidderId());
-        boolean isProjectOwner = false;
-        
-        if ("CLIENT".equals(userRole)) {
-            ProjectDto project = getProjectFromService(bid.getProjectId());
-            isProjectOwner = project != null && userId.equals(project.getClientId());
-        }
+        boolean isProjectOwner = "CLIENT".equals(userRole) && userId.equals(bid.getClientId());
         
         if (!isOwner && !isProjectOwner) {
             throw new UnauthorizedBidActionException("You are not authorized to view this bid");
@@ -187,19 +158,7 @@ public class BidServiceImpl implements BidService {
         // Calculate ranking
         Map<String, Integer> rankings = calculateRankings(bid.getProjectId());
         
-        BidResponse response = mapToResponse(bid, rankings.get(bid.getId()));
-        
-        // Add project title
-        try {
-            ProjectDto project = getProjectFromService(bid.getProjectId());
-            if (project != null) {
-                response.setProjectTitle(project.getTitle());
-            }
-        } catch (Exception e) {
-            log.warn("Could not fetch project title");
-        }
-        
-        return response;
+        return mapToResponse(bid, rankings.get(bid.getId()));
     }
     
     @Override
@@ -269,8 +228,7 @@ public class BidServiceImpl implements BidService {
                 .orElseThrow(() -> new BidNotFoundException("Bid not found: " + bidId));
         
         // Verify client owns the project
-        ProjectDto project = getProjectFromService(bid.getProjectId());
-        if (project == null || !project.getClientId().equals(clientId)) {
+        if (!bid.getClientId().equals(clientId)) {
             throw new UnauthorizedBidActionException("You are not authorized to accept this bid");
         }
         
@@ -305,8 +263,7 @@ public class BidServiceImpl implements BidService {
                 .orElseThrow(() -> new BidNotFoundException("Bid not found: " + bidId));
         
         // Verify client owns the project
-        ProjectDto project = getProjectFromService(bid.getProjectId());
-        if (project == null || !project.getClientId().equals(clientId)) {
+        if (!bid.getClientId().equals(clientId)) {
             throw new UnauthorizedBidActionException("You are not authorized to reject this bid");
         }
         
@@ -352,36 +309,6 @@ public class BidServiceImpl implements BidService {
     
     // Helper methods
     
-    private ProjectDto getProjectFromService(String projectId) {
-        try {
-            log.debug("Fetching project from project-service: {}", projectId);
-            
-            Map<String, Object> response = projectServiceWebClient.get()
-                    .uri("/api/projects/" + projectId)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-            
-            if (response != null && response.get("data") != null) {
-                Map<String, Object> projectData = (Map<String, Object>) response.get("data");
-                
-                return ProjectDto.builder()
-                        .id((String) projectData.get("id"))
-                        .title((String) projectData.get("title"))
-                        .description((String) projectData.get("description"))
-                        .clientId((String) projectData.get("clientId"))
-                        .clientName((String) projectData.get("clientName"))
-                        .status((String) projectData.get("status"))
-                        .build();
-            }
-            
-            return null;
-        } catch (Exception e) {
-            log.error("Error fetching project from project-service: {}", e.getMessage());
-            throw new ProjectNotFoundException("Could not fetch project details: " + projectId);
-        }
-    }
-    
     private Map<String, Integer> calculateRankings(String projectId) {
         List<Bid> bids = bidRepository.findByProjectIdOrderByProposedPriceAsc(projectId);
         
@@ -423,6 +350,8 @@ public class BidServiceImpl implements BidService {
                 .rejectedAt(bid.getRejectedAt())
                 .rejectionReason(bid.getRejectionReason())
                 .ranking(ranking)
+                .clientEmail(bid.getClientEmail())
+                .clientPhone(bid.getClientPhone())
                 .build();
     }
 }

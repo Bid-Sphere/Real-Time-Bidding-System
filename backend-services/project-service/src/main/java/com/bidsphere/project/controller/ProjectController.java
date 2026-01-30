@@ -144,9 +144,10 @@ public class ProjectController {
         String clientId = (String) httpRequest.getAttribute("userId");
         String role = (String) httpRequest.getAttribute("userRole");
         
-        System.out.println("Updating status of project: " + projectId + " to: " + request.getStatus());
+        System.out.println("Updating status of project: " + projectId + " to: " + request.getStatus() + " by client: " + clientId + " with role: " + role);
         
-        if (!"CLIENT".equals(role)) {
+        // Accept both CLIENT and INDIVIDUAL spellings
+        if (!"CLIENT".equals(role) && !"INDIVIDUAL".equals(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("Only clients can update project status"));
         }

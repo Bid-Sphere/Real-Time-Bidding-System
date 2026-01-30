@@ -2,7 +2,8 @@
 import type { CreateProjectData, Project } from '@/types/project';
 import { useAuthStore } from '@/store/authStore';
 
-const API_BASE_URL = import.meta.env.VITE_PROJECT_API_URL || 'http://localhost:8082';
+// All API calls must go through nginx gateway
+const API_BASE_URL = 'http://localhost:8080';
 
 // Get auth headers from store
 const getAuthHeaders = () => {

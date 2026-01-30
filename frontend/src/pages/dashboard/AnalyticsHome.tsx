@@ -8,6 +8,7 @@ import { MyBidsSummary } from '@/components/analytics/MyBidsSummary';
 import { RecentActivity } from '@/components/analytics/RecentActivity';
 import { EditBidModal } from '@/components/bids/EditBidModal';
 import type { Project, Activity, BidSummary, Bid } from '@/types/organization';
+import type { BidResponse } from '@/services/biddingApiService';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -17,7 +18,7 @@ import {
 
 const AnalyticsHome = () => {
   const { profile, analytics, fetchProfile, fetchAnalytics } = useOrganizationStore();
-  const { bids, fetchBids, updateBid } = useBidStore();
+  const { bids, fetchMyBids } = useBidStore();
   const { markAsInterested } = useProjectStore();
   
   const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
@@ -37,6 +38,7 @@ const AnalyticsHome = () => {
       await Promise.all([
         fetchProfile(orgId),
         fetchAnalytics(orgId),
+        fetchMyBids(), // Fetch bids to populate the summary
         fetchRecommendedProjectsData(),
         fetchRecentActivitiesData(),
       ]);
@@ -75,7 +77,7 @@ const AnalyticsHome = () => {
 
   const handleViewAllBids = async () => {
     if (!showAllBids && bids.length === 0) {
-      await fetchBids(orgId);
+      await fetchMyBids();
     }
     setShowAllBids(true);
   };
@@ -97,16 +99,38 @@ const AnalyticsHome = () => {
     }
   };
 
-  const handleEditBid = (bid: Bid) => {
-    setEditingBid(bid);
+  const handleEditBid = (bid: Bid | BidResponse) => {
+    // Convert BidResponse to Bid format if needed
+    const bidData: Bid = 'organizationId' in bid ? bid : {
+      id: bid.id,
+      projectId: bid.projectId,
+      projectTitle: bid.projectTitle || '',
+      organizationId: bid.bidderId,
+      proposedPrice: bid.proposedPrice,
+      estimatedTimeline: String(bid.estimatedDuration),
+      coverLetter: bid.proposal,
+      status: bid.status.toLowerCase() as 'pending' | 'shortlisted' | 'accepted' | 'rejected',
+      submittedAt: bid.submittedAt,
+      updatedAt: bid.updatedAt,
+      ranking: bid.ranking
+    };
+    
+    setEditingBid(bidData);
     setIsEditModalOpen(true);
   };
 
   const handleSaveBid = async (bidId: string, data: Partial<Pick<Bid, 'proposedPrice' | 'estimatedTimeline' | 'coverLetter'>>) => {
-    await updateBid(bidId, data);
+    // Convert Bid type to BidResponse parameters
+    const proposedPrice = Number(data.proposedPrice) || 0;
+    const estimatedDuration = Number(data.estimatedTimeline) || 0;
+    const proposal = String(data.coverLetter) || '';
+    
+    const { updateBid } = useBidStore.getState();
+    await updateBid(bidId, proposedPrice, estimatedDuration, proposal);
+    
     // Refresh bids and analytics after update
     await Promise.all([
-      fetchBids(orgId),
+      fetchMyBids(),
       fetchAnalytics(orgId),
     ]);
   };

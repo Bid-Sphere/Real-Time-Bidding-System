@@ -33,4 +33,8 @@ public class BidResponse {
     private String rejectionReason;
     private Integer ranking; // Calculated field
     private Integer totalBids; // For "my bids" view
+    
+    // Client contact info (only populated for accepted bids)
+    private String clientEmail;
+    private String clientPhone;
 }

@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS bids (
     id VARCHAR(255) PRIMARY KEY,
     project_id VARCHAR(255) NOT NULL,
+    client_id VARCHAR(255) NOT NULL,
     bidder_id VARCHAR(255) NOT NULL,
     bidder_name VARCHAR(255) NOT NULL,
     bidder_type VARCHAR(50) NOT NULL DEFAULT 'ORGANIZATION',
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS bids (
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_bids_project_id ON bids(project_id);
+CREATE INDEX IF NOT EXISTS idx_bids_client_id ON bids(client_id);
 CREATE INDEX IF NOT EXISTS idx_bids_bidder_id ON bids(bidder_id);
 CREATE INDEX IF NOT EXISTS idx_bids_status ON bids(status);
 CREATE INDEX IF NOT EXISTS idx_bids_submitted_at ON bids(submitted_at);
