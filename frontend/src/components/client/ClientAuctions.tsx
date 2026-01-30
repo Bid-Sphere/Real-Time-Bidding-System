@@ -63,7 +63,7 @@ export default function ClientAuctions() {
         budget: 0, // Not available in auction response
         auctionStartTime: auction.startTime,
         auctionEndTime: auction.endTime,
-        status: auction.status,
+        status: auction.status === 'ACTIVE' ? 'LIVE' : auction.status, // Map ACTIVE to LIVE for frontend
         currentBids: auction.totalBids || 0,
         currentHighestBid: auction.currentHighestBid,
         viewCount: 0,
