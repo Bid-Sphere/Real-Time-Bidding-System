@@ -364,14 +364,14 @@ services:
       dockerfile: Dockerfile
       args:
         # Environment variables for build
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8081}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
         VITE_APP_NAME: BidSphere
     container_name: bidsphere-frontend
     ports:
       - "3000:80"
     environment:
       # Runtime environment variables (if needed)
-      API_URL: ${VITE_API_URL:-http://localhost:8081}
+      API_URL: ${VITE_API_URL:-http://localhost:8080}
     # Note: Frontend is NOT connected to backend in docker-compose
     # This allows independent deployment and testing
     networks:
