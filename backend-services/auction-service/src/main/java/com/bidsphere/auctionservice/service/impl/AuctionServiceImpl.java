@@ -482,7 +482,10 @@ public class AuctionServiceImpl implements AuctionService
             activeAuction.setProjectId(auction.getProjectId());
             activeAuction.setProjectTitle(auction.getProjectTitle());
             activeAuction.setProjectCategory(auction.getProjectCategory());
+            activeAuction.setStartTime(auction.getStartTime());
             activeAuction.setEndTime(auction.getEndTime());
+            activeAuction.setCreatedAt(auction.getCreatedAt());
+            activeAuction.setStatus(auction.getStatus());
             activeAuction.setCurrentHighestBid(auction.getCurrentHighestBid());
             activeAuction.setTotalBids(auction.getTotalBids());
             activeAuction.setTimeRemaining(calculateTimeRemaining(auction));
