@@ -146,6 +146,51 @@ export const projectApiService = {
     }
   },
 
+  // Get all public projects (for organizations to browse)
+  getAllProjects: async (filters?: { 
+    biddingType?: string; 
+    category?: string; 
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ projects: Project[]; total: number }> => {
+    const params = new URLSearchParams({
+      page: (filters?.page || 0).toString(),
+      limit: (filters?.limit || 20).toString(),
+    });
+    
+    if (filters?.biddingType) {
+      params.append('biddingType', filters.biddingType);
+    }
+    
+    if (filters?.category) {
+      params.append('category', filters.category);
+    }
+    
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    
+    const response = await apiCall(`/api/projects?${params.toString()}`);
+    
+    try {
+      return {
+        projects: response.data.content.map((project: any, index: number) => {
+          try {
+            return mapProjectFromBackend(project);
+          } catch (error) {
+            console.error(`Error mapping project at index ${index}:`, project, error);
+            throw new Error(`Failed to map project "${project?.title || 'Unknown'}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }),
+        total: response.data.totalElements || 0
+      };
+    } catch (error) {
+      console.error('Error in getAllProjects:', error);
+      throw error;
+    }
+  },
+
   // Get a single project by ID
   getProjectById: async (projectId: string): Promise<Project> => {
     const response = await apiCall(`/api/projects/${projectId}`);

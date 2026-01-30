@@ -80,11 +80,16 @@ CREATE TABLE bid_attachments (
 ```json
 {
   "projectId": "uuid",
+  "clientId": "uuid",
+  "clientEmail": "client@example.com",
+  "clientPhone": "+1234567890",
   "proposedPrice": 5000.00,
   "estimatedDuration": 30,
   "proposal": "Detailed proposal text (min 50 chars)"
 }
 ```
+
+**Note:** `clientEmail` and `clientPhone` are optional fields for contact information.
 
 **Response:** `201 Created`
 ```json
@@ -94,6 +99,7 @@ CREATE TABLE bid_attachments (
   "data": {
     "id": "uuid",
     "projectId": "uuid",
+    "projectTitle": null,
     "bidderId": "uuid",
     "bidderName": "TechCorp Inc",
     "bidderType": "ORGANIZATION",
@@ -101,20 +107,28 @@ CREATE TABLE bid_attachments (
     "estimatedDuration": 30,
     "proposal": "...",
     "status": "PENDING",
-    "submittedAt": "2024-01-15T10:30:00Z",
-    "updatedAt": "2024-01-15T10:30:00Z"
+    "submittedAt": "2024-01-15T10:30:00",
+    "updatedAt": "2024-01-15T10:30:00",
+    "acceptedAt": null,
+    "rejectedAt": null,
+    "rejectionReason": null,
+    "ranking": null,
+    "totalBids": null,
+    "clientEmail": null,
+    "clientPhone": null
   }
 }
 ```
 
 **Validations:**
-- User must be ORGANIZATION role
+- User must be ORGANIZATION or ORGANISATION role (both spellings accepted)
 - Project must exist and be OPEN/ACCEPTING_BIDS
 - Cannot bid on own project (check clientId != bidderId)
 - Cannot submit duplicate bid (one bid per project per organization)
-- proposedPrice > 0
-- estimatedDuration > 0
+- proposedPrice > 0.01
+- estimatedDuration >= 1
 - proposal length >= 50 characters
+- clientId is required
 
 ---
 
@@ -145,8 +159,15 @@ CREATE TABLE bid_attachments (
         "estimatedDuration": 30,
         "proposal": "...",
         "status": "PENDING",
-        "submittedAt": "2024-01-15T10:30:00Z",
-        "ranking": 2
+        "submittedAt": "2024-01-15T10:30:00",
+        "updatedAt": "2024-01-15T10:30:00",
+        "acceptedAt": null,
+        "rejectedAt": null,
+        "rejectionReason": null,
+        "ranking": 2,
+        "totalBids": null,
+        "clientEmail": null,
+        "clientPhone": null
       }
     ],
     "totalElements": 15,
@@ -158,9 +179,10 @@ CREATE TABLE bid_attachments (
 ```
 
 **Business Logic:**
-- If user is project owner (CLIENT), show all bids
+- If user is project owner (CLIENT or INDIVIDUAL role), show all bids
 - If user is not owner, only show ACCEPTED bids (hide PENDING/REJECTED)
 - Calculate ranking based on price (1 = lowest)
+- Accepts both CLIENT and INDIVIDUAL role spellings
 
 ---
 
@@ -289,7 +311,7 @@ CREATE TABLE bid_attachments (
 ### 7. Accept Bid (Client)
 **POST** `/api/bids/{bidId}/accept`
 
-**Auth:** Required (JWT - CLIENT role, must be project owner)
+**Auth:** Required (JWT - CLIENT or INDIVIDUAL role, must be project owner)
 
 **Response:** `200 OK`
 ```json
@@ -299,7 +321,7 @@ CREATE TABLE bid_attachments (
   "data": {
     "id": "uuid",
     "status": "ACCEPTED",
-    "acceptedAt": "2024-01-15T14:30:00Z"
+    "acceptedAt": "2024-01-15T14:30:00"
   }
 }
 ```
@@ -316,12 +338,12 @@ CREATE TABLE bid_attachments (
 ### 8. Reject Bid (Client)
 **POST** `/api/bids/{bidId}/reject`
 
-**Auth:** Required (JWT - CLIENT role, must be project owner)
+**Auth:** Required (JWT - CLIENT or INDIVIDUAL role, must be project owner)
 
-**Request Body:**
+**Request Body (optional):**
 ```json
 {
-  "reason": "Budget constraints" // optional
+  "reason": "Budget constraints"
 }
 ```
 
@@ -379,6 +401,8 @@ CREATE TABLE bid_attachments (
 }
 ```
 
+**Note:** Returns a simple success response with ApiResponse wrapper.
+
 ---
 
 ## Error Responses
@@ -406,8 +430,12 @@ All errors follow this format:
 
 Extract from JWT token (set by JwtAuthenticationFilter):
 - `userId` - from request.getAttribute("userId")
-- `userEmail` - from request.getAttribute("userEmail")
+- `userEmail` - from request.getAttribute("userEmail")  
 - `userRole` - from request.getAttribute("userRole")
+
+**Accepted Role Values:**
+- ORGANIZATION or ORGANISATION (for bidders)
+- CLIENT or INDIVIDUAL (for project owners)
 
 **JWT Secret:** Must match auth-service (from env: `JWT_SECRET`)
 

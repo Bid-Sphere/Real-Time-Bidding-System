@@ -80,8 +80,11 @@ CREATE TABLE auction_bids (
 ```json
 {
   "projectId": "uuid",
-  "startTime": "2024-01-20T10:00:00Z",
-  "endTime": "2024-01-20T18:00:00Z",
+  "projectTitle": "E-commerce Website",
+  "projectOwnerId": "uuid",
+  "projectCategory": "IT",
+  "startTime": "2024-01-20T10:00:00",
+  "endTime": "2024-01-20T18:00:00",
   "minimumBidIncrement": 100.00,
   "reservePrice": 3000.00
 }
@@ -95,12 +98,18 @@ CREATE TABLE auction_bids (
   "data": {
     "id": "uuid",
     "projectId": "uuid",
-    "startTime": "2024-01-20T10:00:00Z",
-    "endTime": "2024-01-20T18:00:00Z",
+    "projectTitle": "E-commerce Website",
+    "projectCategory": "IT",
+    "startTime": "2024-01-20T10:00:00",
+    "endTime": "2024-01-20T18:00:00",
     "status": "SCHEDULED",
+    "currentHighestBid": null,
+    "currentHighestBidderName": null,
     "minimumBidIncrement": 100.00,
     "reservePrice": 3000.00,
-    "totalBids": 0
+    "totalBids": 0,
+    "timeRemaining": 28800,
+    "nextMinimumBid": 3000.00
   }
 }
 ```
@@ -126,8 +135,9 @@ CREATE TABLE auction_bids (
     "id": "uuid",
     "projectId": "uuid",
     "projectTitle": "E-commerce Website",
-    "startTime": "2024-01-20T10:00:00Z",
-    "endTime": "2024-01-20T18:00:00Z",
+    "projectCategory": "IT",
+    "startTime": "2024-01-20T10:00:00",
+    "endTime": "2024-01-20T18:00:00",
     "status": "ACTIVE",
     "currentHighestBid": 5200.00,
     "currentHighestBidderName": "TechCorp Inc",
@@ -158,7 +168,12 @@ CREATE TABLE auction_bids (
 ### 4. Submit Auction Bid
 **POST** `/api/auctions/{auctionId}/bid`
 
-**Auth:** Required (JWT - ORGANIZATION role)
+**Auth:** Required (Custom Headers - X-User-Id, X-User-Name, X-Organization-Id)
+
+**Headers:**
+- `X-User-Id`: User ID from JWT
+- `X-User-Name`: User name/email from JWT
+- `X-Organization-Id`: Organization ID from JWT
 
 **Request Body:**
 ```json
@@ -172,13 +187,13 @@ CREATE TABLE auction_bids (
 ```json
 {
   "success": true,
-  "message": "Auction bid submitted successfully",
+  "message": "Bid submitted successfully",
   "data": {
     "id": "uuid",
     "auctionId": "uuid",
     "bidAmount": 5300.00,
     "bidderName": "TechCorp Inc",
-    "bidTime": "2024-01-20T14:30:00Z",
+    "bidTime": "2024-01-20T14:30:00",
     "isWinning": true,
     "nextMinimumBid": 5400.00
   }
@@ -314,12 +329,15 @@ CREATE TABLE auction_bids (
 ### 8. Cancel Auction
 **POST** `/api/auctions/{auctionId}/cancel`
 
-**Auth:** Required (JWT - CLIENT role, must be project owner)
+**Auth:** Required (Custom Header - X-User-Id)
 
-**Request Body:**
+**Headers:**
+- `X-User-Id`: User ID from JWT (must be project owner)
+
+**Request Body (optional):**
 ```json
 {
-  "reason": "Project requirements changed"
+  "cancellationReason": "Project requirements changed"
 }
 ```
 
@@ -343,7 +361,10 @@ CREATE TABLE auction_bids (
 ### 9. Get My Auction Bids (Organization)
 **GET** `/api/auctions/my-bids`
 
-**Auth:** Required (JWT - ORGANIZATION role)
+**Auth:** Required (Custom Header - X-Organization-Id)
+
+**Headers:**
+- `X-Organization-Id`: Organization ID from JWT
 
 **Query Params:**
 - `status` (optional): ACTIVE, ENDED
@@ -406,9 +427,27 @@ CREATE TABLE auction_bids (
 **Response:** `200 OK`
 ```json
 {
-  "success": true,
-  "message": "Auction Service is running",
-  "data": "OK"
+  "service": "Auction Service",
+  "status": "HEALTHY",
+  "timestamp": "2024-01-20T10:00:00"
+}
+```
+
+### 12. Database Health Check
+**GET** `/api/auctions/health/db`
+
+**Auth:** None
+
+**Response:** `200 OK`
+```json
+{
+  "status": "HEALTHY",
+  "database": "PostgreSQL",
+  "version": "PostgreSQL 15.x",
+  "current_time": "2024-01-20 10:00:00",
+  "auction_count": 25,
+  "bid_count": 150,
+  "timestamp": "2024-01-20T10:00:00"
 }
 ```
 
@@ -444,6 +483,19 @@ public void autoCloseExpiredAuctions() {
     }
 }
 ```
+
+---
+
+## Authentication
+
+**Uses Custom Headers (not JWT Bearer token in Authorization header):**
+- `X-User-Id` - User ID extracted from JWT by gateway/filter
+- `X-User-Name` - User name/email extracted from JWT
+- `X-Organization-Id` - Organization ID extracted from JWT
+
+These headers are set by an upstream authentication filter or API gateway and passed to the service. The service reads these headers directly from the request rather than parsing JWT tokens.
+
+**Note:** This differs from the Bidding Service which uses JWT token attributes set by JwtAuthenticationFilter.
 
 ---
 

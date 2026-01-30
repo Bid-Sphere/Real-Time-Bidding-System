@@ -29,6 +29,8 @@ import ClientProjectsComponent from '@/components/client/ClientProjects';
 const ClientProjects = () => <ClientProjectsComponent />;
 const ClientBids = lazy(() => import('@/components/client/ClientBids'));
 const ClientChat = lazy(() => import('@/components/client/ClientChat'));
+const ClientAuctionsSection = lazy(() => import('@/pages/dashboard/ClientAuctionsSection'));
+const OrganizationAuctionsSection = lazy(() => import('@/pages/dashboard/OrganizationAuctionsSection'));
 
 // Page transition variants
 const pageVariants = {
@@ -129,6 +131,7 @@ function AnimatedRoutes() {
           <Route path="analytics" element={<ClientAnalytics />} />
           <Route path="profile" element={<ClientProfile />} />
           <Route path="projects" element={<ClientProjects />} />
+          <Route path="auctions" element={<ClientAuctionsSection />} />
           <Route path="bids" element={<ClientBids />} />
           <Route path="chat" element={<ClientChat />} />
           <Route path="chat/:conversationId" element={<ClientChat />} />
@@ -147,6 +150,7 @@ function AnimatedRoutes() {
           <Route path="analytics" element={<AnalyticsHome />} />
           <Route path="profile" element={<ProfileSection />} />
           <Route path="projects" element={<ProjectDiscoverySection />} />
+          <Route path="auctions" element={<OrganizationAuctionsSection />} />
           <Route path="chat" element={<ChatSection />} />
           <Route path="chat/:conversationId" element={<ChatSection />} />
         </Route>

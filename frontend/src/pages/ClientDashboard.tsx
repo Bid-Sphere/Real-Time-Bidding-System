@@ -17,6 +17,8 @@ export default function ClientDashboard() {
       setActiveSection('profile' as DashboardSection);
     } else if (path.includes('/projects')) {
       setActiveSection('projects' as DashboardSection);
+    } else if (path.includes('/auctions')) {
+      setActiveSection('auctions' as DashboardSection);
     } else if (path.includes('/bids')) {
       setActiveSection('bids' as DashboardSection);
     } else if (path.includes('/chat')) {

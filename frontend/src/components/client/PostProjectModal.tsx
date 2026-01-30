@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Upload, Calendar, DollarSign, MapPin } from 'lucide-react';
+import { X, Upload, Calendar, Clock, DollarSign, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
@@ -93,6 +93,13 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
     if (step === 3) {
       if (!formData.budget || formData.budget <= 0) {
         newErrors.budget = 'Budget must be greater than 0';
+      }
+      if (formData.biddingType === 'LIVE_AUCTION') {
+        if (!formData.auctionEndTime) {
+          newErrors.auctionEndTime = 'Auction end time is required for live auctions';
+        } else if (formData.deadline && formData.auctionEndTime >= formData.deadline) {
+          newErrors.auctionEndTime = 'Auction end time must be before project deadline';
+        }
       }
     }
 
@@ -381,8 +388,14 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
               <Input
                 label="Timeline/Deadline"
                 type="date"
+                min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 value={formData.deadline ? formData.deadline.toISOString().split('T')[0] : ''}
-                onChange={(e) => updateFormData('deadline', new Date(e.target.value))}
+                onChange={(e) => {
+                  // Set deadline to end of selected day (23:59:59) to ensure it's at least 24 hours from now
+                  const selectedDate = new Date(e.target.value);
+                  selectedDate.setHours(23, 59, 59, 999);
+                  updateFormData('deadline', selectedDate);
+                }}
                 error={errors.deadline}
                 leftIcon={<Calendar className="h-4 w-4" />}
                 required
@@ -448,6 +461,25 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
                   </label>
                 </div>
               </div>
+
+              {/* Auction End Time - Only show for LIVE_AUCTION */}
+              {formData.biddingType === 'LIVE_AUCTION' && (
+                <Input
+                  label="Auction End Time"
+                  type="datetime-local"
+                  min={new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16)}
+                  max={formData.deadline ? formData.deadline.toISOString().slice(0, 16) : undefined}
+                  value={formData.auctionEndTime ? formData.auctionEndTime.toISOString().slice(0, 16) : ''}
+                  onChange={(e) => {
+                    const selectedDateTime = new Date(e.target.value);
+                    updateFormData('auctionEndTime', selectedDateTime);
+                  }}
+                  error={errors.auctionEndTime}
+                  leftIcon={<Clock className="h-4 w-4" />}
+                  required
+                  helperText="Must be after now and before project deadline"
+                />
+              )}
 
               <Input
                 label="Starting Bid/Budget"

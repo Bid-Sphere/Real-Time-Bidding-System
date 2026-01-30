@@ -56,6 +56,8 @@ public class SecurityConfig
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Allow OPTIONS requests for CORS preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints - note: context path /auth is already stripped by Spring
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
@@ -89,7 +91,7 @@ public class SecurityConfig
         if ("*".equals(corsAllowedOrigins)) {
             // Allow all origins for local development
             corsConfig.setAllowedOriginPatterns(Arrays.asList("*"));
-            corsConfig.setAllowCredentials(false); // Cannot use credentials with wildcard
+            corsConfig.setAllowCredentials(true); // Allow credentials with origin patterns
             log.info("CORS: Allowing all origins (local development mode)");
         } else {
             // Production mode - use specific origins
@@ -104,8 +106,10 @@ public class SecurityConfig
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
         ));
 
-        // Allow all headers - this is important for preflight requests
-        corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        // Allow specific headers
+        corsConfig.setAllowedHeaders(Arrays.asList(
+                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
+        ));
 
         // Exposed headers (headers that browsers are allowed to access)
         corsConfig.setExposedHeaders(Arrays.asList(

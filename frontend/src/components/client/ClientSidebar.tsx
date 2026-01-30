@@ -22,7 +22,8 @@ import {
   Clock,
   DollarSign,
   Users,
-  Building
+  Building,
+  Gavel
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
@@ -56,6 +57,17 @@ const sidebarItems: SidebarItem[] = [
       { id: 'projects-draft', label: 'Draft Projects', icon: <FileText className="h-4 w-4" />, badge: 2 },
       { id: 'projects-completed', label: 'Completed', icon: <Award className="h-4 w-4" />, badge: 8 },
       { id: 'projects-archived', label: 'Archived', icon: <FolderOpen className="h-4 w-4" /> },
+    ]
+  },
+  {
+    id: 'auctions',
+    label: 'Auctions',
+    icon: <Gavel className="h-5 w-5" />,
+    badge: 3,
+    submenu: [
+      { id: 'auctions-live', label: 'Live Auctions', icon: <Gavel className="h-4 w-4" />, badge: 2 },
+      { id: 'auctions-scheduled', label: 'Scheduled', icon: <Calendar className="h-4 w-4" />, badge: 1 },
+      { id: 'auctions-ended', label: 'Ended', icon: <Clock className="h-4 w-4" /> },
     ]
   },
   {
@@ -134,7 +146,7 @@ const quickActions = [
 
 export default function ClientSidebar({ activeSection, onSectionChange, onPostProject }: ClientSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'bids']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'auctions', 'bids']);
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItems(prev =>
