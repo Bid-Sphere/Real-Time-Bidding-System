@@ -216,8 +216,8 @@ export default function ViewBidsPanel({
                           <span>{bid.completedProjects} completed</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          <span>Submitted {bid.submittedAt.toLocaleDateString()}</span>
+                          <Clock className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-300">Submitted {bid.submittedAt.toLocaleDateString()}</span>
                         </div>
                       </div>
 
@@ -225,8 +225,8 @@ export default function ViewBidsPanel({
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-5 w-5 text-green-600" />
                           <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">Proposed Price</div>
-                            <div className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="text-sm text-gray-300">Proposed Price</div>
+                            <div className="text-xl font-bold text-white">
                               ${bid.proposedPrice.toLocaleString()}
                             </div>
                           </div>
@@ -234,8 +234,8 @@ export default function ViewBidsPanel({
                         <div className="flex items-center gap-2">
                           <Clock className="h-5 w-5 text-blue-600" />
                           <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">Estimated Duration</div>
-                            <div className="text-xl font-bold text-gray-900 dark:text-white">
+                            <div className="text-sm text-gray-300">Estimated Duration</div>
+                            <div className="text-xl font-bold text-white">
                               {bid.estimatedDuration} days
                             </div>
                           </div>
@@ -250,14 +250,14 @@ export default function ViewBidsPanel({
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                             {bid.teamComposition.map((member, index) => (
-                              <div key={index} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                                <div className="font-medium text-sm text-gray-900 dark:text-white">
+                              <div key={index} className="bg-gray-800/50 backdrop-blur-sm p-3 rounded-lg border border-gray-700/50">
+                                <div className="font-medium text-sm text-white">
                                   {member.name}
                                 </div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <div className="text-xs text-gray-300">
                                   {member.role}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-500">
+                                <div className="text-xs text-gray-400">
                                   {member.experience}
                                 </div>
                               </div>
@@ -271,8 +271,8 @@ export default function ViewBidsPanel({
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Proposal
                         </h4>
-                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                          <p className={`text-gray-700 dark:text-gray-300 ${
+                        <div className="bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg border border-gray-700/50">
+                          <p className={`text-gray-200 ${
                             expandedProposals.includes(bid.id) ? '' : 'line-clamp-3'
                           }`}>
                             {bid.proposal}

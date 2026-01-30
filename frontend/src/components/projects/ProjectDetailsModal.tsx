@@ -8,6 +8,7 @@ interface ProjectDetailsModalProps {
   onClose: () => void;
   onBid: () => void;
   isVerified: boolean;
+  hideActions?: boolean; // Hide bid actions for client view
 }
 
 export function ProjectDetailsModal({
@@ -16,6 +17,7 @@ export function ProjectDetailsModal({
   onClose,
   onBid,
   isVerified,
+  hideActions = false,
 }: ProjectDetailsModalProps) {
   if (!isOpen) return null;
 
@@ -281,18 +283,27 @@ export function ProjectDetailsModal({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-[#1a1a2e] border-t border-white/10 p-6 flex items-center justify-end gap-3">
-          <Button onClick={onClose} variant="outline">
-            Close
-          </Button>
-          <Button
-            onClick={onBid}
-            disabled={!isVerified || project.hasBid}
-            title={!isVerified ? 'Email verification required' : project.hasBid ? 'Already bid on this project' : ''}
-          >
-            {project.hasBid ? 'Bid Submitted' : 'Bid Now'}
-          </Button>
-        </div>
+        {!hideActions && (
+          <div className="sticky bottom-0 bg-[#1a1a2e] border-t border-white/10 p-6 flex items-center justify-end gap-3">
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
+            <Button
+              onClick={onBid}
+              disabled={!isVerified || project.hasBid}
+              title={!isVerified ? 'Email verification required' : project.hasBid ? 'Already bid on this project' : ''}
+            >
+              {project.hasBid ? 'Bid Submitted' : 'Bid Now'}
+            </Button>
+          </div>
+        )}
+        {hideActions && (
+          <div className="sticky bottom-0 bg-[#1a1a2e] border-t border-white/10 p-6 flex items-center justify-end gap-3">
+            <Button onClick={onClose} variant="outline">
+              Close
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

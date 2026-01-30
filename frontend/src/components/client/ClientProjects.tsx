@@ -4,9 +4,14 @@ import { DashboardHeader } from '@/components/client';
 import { useClientProjectStore } from '../../store/useClientProjectStore';
 import { useClientProfileCompletion } from '../../hooks/useClientProfileCompletion';
 import { ProfileCompletionModal } from './ProfileCompletionModal';
+import { ProjectDetailsModal } from '@/components/projects/ProjectDetailsModal';
+import PostProjectModal from './PostProjectModal';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import type { Project, CreateProjectData } from '@/types/project';
+import type { Project as OrgProject } from '@/types/organization';
+import { showSuccessToast, showErrorToast, formatErrorMessage } from '@/utils/toast';
 
 export default function ClientProjects() {
   const { 
@@ -14,6 +19,8 @@ export default function ClientProjects() {
     isLoading,
     error,
     fetchMyProjects,
+    createProject,
+    updateProject,
     deleteProject,
     clearError
   } = useClientProjectStore();
@@ -23,10 +30,56 @@ export default function ClientProjects() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   
+  // Modal state for post/edit project
+  const [showPostProjectModal, setShowPostProjectModal] = useState(false);
+  const [showProjectDetailsModal, setShowProjectDetailsModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  
   // Fetch projects on mount
   useEffect(() => {
     fetchMyProjects(statusFilter === 'all' ? undefined : statusFilter);
   }, [fetchMyProjects, statusFilter]);
+  
+  // Convert client Project to organization Project format for ProjectDetailsModal
+  const convertToOrgProject = (project: Project): OrgProject => {
+    // Map status to organization format
+    const statusMap: Record<string, OrgProject['status']> = {
+      'DRAFT': 'open',
+      'OPEN': 'open',
+      'ACCEPTING_BIDS': 'in_bidding',
+      'IN_DISCUSSION': 'in_bidding',
+      'CLOSED': 'cancelled',
+      'IN_PROGRESS': 'awarded',
+      'COMPLETED': 'completed'
+    };
+
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      tags: project.requiredSkills, // Use required skills as tags
+      budgetMin: project.budget * 0.9, // Estimate range from single budget
+      budgetMax: project.budget * 1.1,
+      deadline: project.deadline.toISOString(),
+      clientId: project.clientId,
+      clientName: project.clientName,
+      requirements: project.requiredSkills, // Use required skills as requirements
+      attachments: project.attachments.map(att => ({
+        id: att.id,
+        filename: att.filename,
+        url: att.url,
+        size: att.size,
+        mimeType: att.type
+      })),
+      bidCount: project.bidCount,
+      status: statusMap[project.status] || 'open',
+      location: project.location,
+      postedAt: project.createdAt.toISOString(),
+      hasBid: false // Client view, so no bid from client
+    };
+  };
   
   // Filter projects by search query
   const filteredProjects = projects.filter(project => {
@@ -37,13 +90,55 @@ export default function ClientProjects() {
     return matchesSearch;
   });
 
-  const handleCreateProject = () => {
+  const handleOpenPostModal = (editProject?: Project) => {
     if (!isComplete) {
       setShowProfileModal(true);
       return;
     }
-    // Navigate to create project or open modal
-    console.log('Create new project');
+    
+    if (editProject) {
+      setSelectedProject(editProject);
+      setIsEditMode(true);
+    } else {
+      setSelectedProject(null);
+      setIsEditMode(false);
+    }
+    
+    setShowPostProjectModal(true);
+  };
+
+  const handleViewProject = (project: Project) => {
+    setSelectedProject(project);
+    setShowProjectDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setShowProjectDetailsModal(false);
+    setSelectedProject(null);
+  };
+
+  const handleEditProject = (project: Project) => {
+    handleOpenPostModal(project);
+  };
+
+  const handleSubmitProject = async (data: CreateProjectData) => {
+    try {
+      if (isEditMode && selectedProject) {
+        await updateProject(selectedProject.id, data);
+        showSuccessToast('Project updated successfully');
+      } else {
+        await createProject(data);
+        showSuccessToast('Project created successfully');
+      }
+      
+      setShowPostProjectModal(false);
+      setSelectedProject(null);
+      setIsEditMode(false);
+      fetchMyProjects(statusFilter === 'all' ? undefined : statusFilter);
+    } catch (error) {
+      const errorMessage = formatErrorMessage(error);
+      showErrorToast(errorMessage);
+    }
   };
 
   const handleDeleteProject = async (projectId: string) => {
@@ -93,7 +188,7 @@ export default function ClientProjects() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <Button
-              onClick={handleCreateProject}
+              onClick={() => handleOpenPostModal()}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -152,7 +247,7 @@ export default function ClientProjects() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
           <Button
-            onClick={handleCreateProject}
+            onClick={() => handleOpenPostModal()}
             className="bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -219,7 +314,7 @@ export default function ClientProjects() {
               }
             </p>
             {projects.length === 0 && (
-              <Button onClick={handleCreateProject}>
+              <Button onClick={() => handleOpenPostModal()}>
                 <Plus className="h-4 w-4 mr-2" />
                 Post Your First Project
               </Button>
@@ -273,6 +368,7 @@ export default function ClientProjects() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
+                    onClick={() => handleViewProject(project)}
                   >
                     <Eye className="h-4 w-4 mr-1" />
                     View
@@ -281,6 +377,7 @@ export default function ClientProjects() {
                     variant="outline"
                     size="sm"
                     className="flex-1"
+                    onClick={() => handleEditProject(project)}
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
@@ -307,6 +404,31 @@ export default function ClientProjects() {
         profile={profile}
         actionAttempted="create a project"
       />
+
+      {/* Post/Edit Project Modal */}
+      <PostProjectModal
+        isOpen={showPostProjectModal}
+        onClose={() => {
+          setShowPostProjectModal(false);
+          setSelectedProject(null);
+          setIsEditMode(false);
+        }}
+        onSubmit={handleSubmitProject}
+        initialData={selectedProject || undefined}
+        isEditMode={isEditMode}
+      />
+
+      {/* Project Details Modal */}
+      {selectedProject && (
+        <ProjectDetailsModal
+          project={convertToOrgProject(selectedProject)}
+          isOpen={showProjectDetailsModal}
+          onClose={handleCloseDetailsModal}
+          onBid={() => {}} // No-op for client view
+          isVerified={true}
+          hideActions={true}
+        />
+      )}
     </>
   );
 }

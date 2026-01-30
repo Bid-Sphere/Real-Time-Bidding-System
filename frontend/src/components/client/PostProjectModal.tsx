@@ -7,12 +7,14 @@ import Select from '@/components/ui/Select';
 import MultiSelect from '@/components/ui/MultiSelect';
 import { useClientProfileCompletion } from '../../hooks/useClientProfileCompletion';
 import { ProfileCompletionModal } from './ProfileCompletionModal';
-import type { CreateProjectData, ProjectCategory, BiddingType } from '../../types/project';
+import type { CreateProjectData, ProjectCategory, BiddingType, Project } from '../../types/project';
 
 interface PostProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateProjectData) => void;
+  initialData?: Project;
+  isEditMode?: boolean;
 }
 
 // interface AttachedUrl {
@@ -27,22 +29,36 @@ const skillOptions = [
   'Supply Chain', 'Logistics', 'Procurement', 'Quality Control'
 ];
 
-export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProjectModalProps) {
+export default function PostProjectModal({ isOpen, onClose, onSubmit, initialData, isEditMode = false }: PostProjectModalProps) {
   const { isComplete, profile } = useClientProfileCompletion();
   const [showProfileModal, setShowProfileModal] = useState(false);
   
-  const [formData, setFormData] = useState<Partial<CreateProjectData>>({
-    title: '',
-    category: 'IT',
-    description: '',
-    requiredSkills: [],
-    location: '',
-    deadline: new Date(),
-    strictDeadline: false,
-    biddingType: 'STANDARD',
-    budget: 0,
-    isDraft: false
-  });
+  const [formData, setFormData] = useState<Partial<CreateProjectData>>(
+    initialData ? {
+      title: initialData.title,
+      category: initialData.category,
+      description: initialData.description,
+      requiredSkills: initialData.requiredSkills,
+      location: initialData.location,
+      deadline: new Date(initialData.deadline),
+      strictDeadline: initialData.strictDeadline,
+      biddingType: initialData.biddingType,
+      budget: initialData.budget,
+      auctionEndTime: initialData.auctionEndTime ? new Date(initialData.auctionEndTime) : undefined,
+      isDraft: initialData.isDraft
+    } : {
+      title: '',
+      category: 'IT',
+      description: '',
+      requiredSkills: [],
+      location: '',
+      deadline: new Date(),
+      strictDeadline: false,
+      biddingType: 'STANDARD',
+      budget: 0,
+      isDraft: false
+    }
+  );
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -99,28 +115,26 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
     
     if (validateStep(3)) {
       setIsSubmitting(true);
-      try {
-        // Convert form data to the format expected by the API
-        const projectData: CreateProjectData = {
-          title: formData.title!,
-          description: formData.description!,
-          category: formData.category!,
-          budget: formData.budget!,
-          deadline: formData.deadline!,
-          location: formData.location,
-          requiredSkills: formData.requiredSkills!,
-          biddingType: formData.biddingType!,
-          strictDeadline: formData.strictDeadline!,
-          auctionEndTime: formData.auctionEndTime,
-          isDraft: formData.isDraft
-        };
+      
+      // Convert form data to the format expected by the API
+      const projectData: CreateProjectData = {
+        title: formData.title!,
+        description: formData.description!,
+        category: formData.category!,
+        budget: formData.budget!,
+        deadline: formData.deadline!,
+        location: formData.location,
+        requiredSkills: formData.requiredSkills!,
+        biddingType: formData.biddingType!,
+        strictDeadline: formData.strictDeadline!,
+        auctionEndTime: formData.auctionEndTime,
+        isDraft: formData.isDraft
+      };
 
-        await onSubmit(projectData);
-        
-        // Show success message
-        alert(`🎉 Project "${projectData.title}" created successfully!\n\nBudget: $${projectData.budget.toLocaleString()}\nDeadline: ${new Date(projectData.deadline).toLocaleDateString()}\nSkills: ${projectData.requiredSkills.join(', ')}`);
-        
-        // Reset form
+      await onSubmit(projectData);
+      
+      // Reset form only if not in edit mode
+      if (!isEditMode) {
         setFormData({
           title: '',
           category: 'IT',
@@ -134,13 +148,10 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
           isDraft: false
         });
         setCurrentStep(1);
-        
-        onClose();
-      } catch (error) {
-        console.error('Failed to submit project:', error);
-      } finally {
-        setIsSubmitting(false);
       }
+      
+      setIsSubmitting(false);
+      onClose();
     }
   };
 
@@ -192,7 +203,7 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit }: PostProj
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-[var(--text-primary)]">
-              Post New Project
+              {isEditMode ? 'Edit Project' : 'Post New Project'}
             </h2>
             <button
               onClick={onClose}

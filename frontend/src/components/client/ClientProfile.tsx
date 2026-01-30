@@ -5,6 +5,7 @@ import { ProfileCompletionBar } from '@/components/profile/ProfileCompletionBar'
 import { EmailVerification } from '@/components/profile/EmailVerification';
 import { ClientProfileForm } from './ClientProfileForm';
 import { calculateClientProfileCompletion, getMissingClientFields } from '../../utils/clientProfileUtils';
+import { showSuccessToast, showErrorToast, formatErrorMessage } from '../../utils/toast';
 import type { ClientProfile } from '../../types/client';
 
 export default function ClientProfile() {
@@ -92,8 +93,10 @@ export default function ClientProfile() {
       // Update local state
       setProfile(prev => ({ ...prev, ...data }));
       
-      console.log('Profile saved successfully');
+      showSuccessToast('Profile saved successfully');
     } catch (error) {
+      const errorMessage = formatErrorMessage(error);
+      showErrorToast(errorMessage);
       console.error('Failed to save profile:', error);
     } finally {
       setIsLoading(false);

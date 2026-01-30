@@ -200,6 +200,64 @@ services:
       - bidsphere-network
 
   # ================================
+  # Redis Cache
+  # ================================
+  redis:
+    image: redis:7-alpine
+    container_name: bidsphere-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bidsphere-network
+
+  # ================================
+  # Realtime Service (.NET)
+  # ================================
+  realtime-service:
+    build: 
+      context: ./backend-services/realtime-service
+      dockerfile: Dockerfile
+    container_name: bidsphere-realtime-api
+    ports:
+      - "8084:8084"
+    environment:
+      # ASP.NET Configuration
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8084
+      
+      # JWT Configuration (must match auth-service)
+      Jwt__Secret: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      Jwt__Issuer: bidsphere-auth
+      Jwt__Expiration: 86400000
+      
+      # Redis Configuration
+      Redis__ConnectionString: redis:6379
+      Redis__InstanceName: BidSphere:
+      
+      # CORS Configuration
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      Cors__AllowedOrigins__1: http://localhost:5173
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8084/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bidsphere-network
+
+  # ================================
   # Frontend Service
   # ================================
   frontend:
@@ -237,4 +295,6 @@ volumes:
   postgres_project_data:
     driver: local
   postgres_bidding_data:
+    driver: local
+  redis_data:
     driver: local
