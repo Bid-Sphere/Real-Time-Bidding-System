@@ -315,7 +315,15 @@ public class AuctionServiceImpl implements AuctionService
                 myBid.setProjectTitle(auction.getProjectTitle());
                 myBid.setMyHighestBid(bid.getBidAmount());
                 myBid.setCurrentHighestBid(auction.getCurrentHighestBid());
-                myBid.setIsWinning(bid.getIsWinning());
+                
+                // For ENDED auctions, check if this bid is the winner
+                // For active auctions, use the current is_winning flag
+                if (auction.getStatus() == AuctionStatus.ENDED) {
+                    myBid.setIsWinning(bid.getId().equals(auction.getWinnerBidId()));
+                } else {
+                    myBid.setIsWinning(bid.getIsWinning());
+                }
+                
                 myBid.setAuctionStatus(auction.getStatus().name());
                 myBid.setEndTime(auction.getEndTime());
                 myBid.setTimeRemaining(calculateTimeRemaining(auction));
