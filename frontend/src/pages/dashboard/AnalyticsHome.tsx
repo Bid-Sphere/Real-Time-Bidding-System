@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { useBidStore } from '@/store/useBidStore';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useAuthStore } from '@/store/authStore';
 import { MetricCard } from '@/components/analytics/MetricCard';
 import { RecommendedProjects } from '@/components/analytics/RecommendedProjects';
 import { MyBidsSummary } from '@/components/analytics/MyBidsSummary';
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 
 const AnalyticsHome = () => {
+  const { user } = useAuthStore();
   const { profile, analytics, fetchProfile, fetchAnalytics } = useOrganizationStore();
   const { bids, fetchMyBids } = useBidStore();
   const { markAsInterested } = useProjectStore();
@@ -29,12 +31,14 @@ const AnalyticsHome = () => {
   const [editingBid, setEditingBid] = useState<Bid | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Hardcoded orgId for now - in production this would come from auth context
-  const orgId = 'org-1';
+  // Get organization ID from user
+  const orgId = user?.id || '';
 
   useEffect(() => {
     // Fetch all data on mount
     const fetchData = async () => {
+      if (!orgId) return;
+      
       await Promise.all([
         fetchProfile(orgId),
         fetchAnalytics(orgId),
@@ -45,7 +49,7 @@ const AnalyticsHome = () => {
     };
 
     fetchData();
-  }, []);
+  }, [orgId]);
 
   const fetchRecommendedProjectsData = async () => {
     setIsLoadingRecommended(true);

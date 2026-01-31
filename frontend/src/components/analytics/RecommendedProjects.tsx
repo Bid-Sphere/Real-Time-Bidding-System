@@ -70,7 +70,9 @@ export const RecommendedProjects = ({
             <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
               <DollarSign className="w-4 h-4 text-green-400" />
               <span>
-                {project.budgetMin.toLocaleString()} - {project.budgetMax.toLocaleString()}
+                ${project.budgetMin === project.budgetMax 
+                  ? project.budgetMin.toLocaleString() 
+                  : `${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}`}
               </span>
             </div>
 

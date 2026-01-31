@@ -3,8 +3,6 @@ import {
   Home,
   FolderOpen,
   Plus,
-  MessageCircle,
-  Bell,
   Settings,
   User,
   CreditCard,
@@ -79,17 +77,6 @@ const sidebarItems: SidebarItem[] = [
       { id: 'bids-received', label: 'Received Bids', icon: <Users className="h-4 w-4" />, badge: 15 },
       { id: 'bids-shortlisted', label: 'Shortlisted', icon: <Star className="h-4 w-4" />, badge: 8 },
       { id: 'bids-awarded', label: 'Awarded', icon: <Award className="h-4 w-4" /> },
-    ]
-  },
-  {
-    id: 'messages',
-    label: 'Messages',
-    icon: <MessageCircle className="h-5 w-5" />,
-    badge: 7,
-    submenu: [
-      { id: 'messages-all', label: 'All Conversations', icon: <MessageCircle className="h-4 w-4" />, badge: 7 },
-      { id: 'messages-unread', label: 'Unread', icon: <Bell className="h-4 w-4" />, badge: 3 },
-      { id: 'messages-archived', label: 'Archived', icon: <FolderOpen className="h-4 w-4" /> },
     ]
   },
   {

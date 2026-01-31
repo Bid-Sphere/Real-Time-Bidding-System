@@ -173,7 +173,9 @@ export function BidSubmissionModal({
           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
             <p className="text-sm text-gray-400 mb-1">Project Budget Range</p>
             <p className="text-lg font-semibold text-white">
-              ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
+              ${project.budgetMin === project.budgetMax 
+                ? project.budgetMin.toLocaleString() 
+                : `${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}`}
             </p>
           </div>
 

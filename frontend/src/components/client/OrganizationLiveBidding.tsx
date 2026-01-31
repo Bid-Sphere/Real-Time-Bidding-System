@@ -40,6 +40,7 @@ export const OrganizationLiveBidding: React.FC<OrganizationLiveBiddingProps> = (
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionState>('connecting');
+  const [auctionEnded, setAuctionEnded] = useState(false);
 
   useEffect(() => {
     const gatewayUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -99,6 +100,24 @@ export const OrganizationLiveBidding: React.FC<OrganizationLiveBiddingProps> = (
 
     newConnection.on('ReceiveAuctionStatusChange', (statusChange: any) => {
       console.log('Auction status changed:', statusChange);
+      
+      // If auction ended, cancelled, or closed, automatically leave
+      if (statusChange.newStatus === 'ENDED' || 
+          statusChange.newStatus === 'CANCELLED' || 
+          statusChange.newStatus === 'CLOSED') {
+        console.log('Auction has ended, leaving auction...');
+        setAuctionEnded(true);
+        
+        // Leave the auction group
+        newConnection.invoke('LeaveAuction', auctionId)
+          .then(() => {
+            console.log(`Automatically left auction ${auctionId} after it ended`);
+            showSuccessToast('Auction has ended');
+          })
+          .catch(error => {
+            console.error('Error leaving auction:', error);
+          });
+      }
     });
 
     const startConnection = async () => {
@@ -221,6 +240,23 @@ export const OrganizationLiveBidding: React.FC<OrganizationLiveBiddingProps> = (
         >
           Retry Connection
         </Button>
+      </Card>
+    );
+  }
+
+  if (auctionEnded) {
+    return (
+      <Card className="p-8 text-center">
+        <Clock className="h-16 w-16 text-[var(--text-muted)] mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
+          Auction Has Ended
+        </h3>
+        <p className="text-[var(--text-secondary)] mb-4">
+          This auction has been closed by the client. You have been automatically removed from the auction.
+        </p>
+        <p className="text-[var(--text-muted)] text-sm">
+          Check back later for the results or browse other available auctions.
+        </p>
       </Card>
     );
   }

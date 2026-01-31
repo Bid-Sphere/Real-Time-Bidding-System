@@ -18,6 +18,7 @@ import Card from '@/components/ui/Card';
 import auctionApiService from '@/services/auctionApiService';
 import { showErrorToast } from '@/utils/toast';
 import { OrganizationLiveBidding } from './OrganizationLiveBidding';
+import { useAuthStore } from '@/store/authStore';
 
 interface AuctionListing {
   id: string;
@@ -44,13 +45,16 @@ interface AuctionListing {
 type AuctionFilter = 'all' | 'upcoming' | 'live' | 'participated';
 
 export default function OrganizationAuctions() {
+  const { user } = useAuthStore();
   const [activeFilter, setActiveFilter] = useState<AuctionFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [auctions, setAuctions] = useState<AuctionListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAuction, setSelectedAuction] = useState<AuctionListing | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'bidding'>('list');
-  const organizationId = 1; // TODO: Get from auth context
+  
+  // Get organization ID from user profile - ensure it's a number
+  const organizationId = Number(user?.organizationProfile?.id || user?.id || 1);
 
   useEffect(() => {
     fetchAuctions();

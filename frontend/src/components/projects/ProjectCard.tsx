@@ -20,6 +20,9 @@ export function ProjectCard({
   onInterest,
 }: ProjectCardProps) {
   const formatBudget = (min: number, max: number) => {
+    if (min === max) {
+      return `$${min.toLocaleString()}`;
+    }
     return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
   };
 

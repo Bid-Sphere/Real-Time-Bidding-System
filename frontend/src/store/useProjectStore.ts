@@ -50,6 +50,10 @@ const mapFiltersToQueryParams = (filters: FilterState, page: number): URLSearchP
   params.append('page', (page - 1).toString());
   params.append('limit', '20');
   
+  // Exclude LIVE_AUCTION projects from project discovery
+  // Organizations should only see STANDARD bidding projects
+  params.append('biddingType', 'STANDARD');
+  
   if (filters.category) {
     params.append('category', filters.category);
   }

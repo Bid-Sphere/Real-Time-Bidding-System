@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useProjectStore } from '@/store/useProjectStore';
-import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { useBidStore } from '@/store/useBidStore';
+import { useAuthStore } from '@/store/authStore';
 import { ProjectFilters } from '@/components/projects/ProjectFilters';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectDetailsModal } from '@/components/projects/ProjectDetailsModal';
@@ -13,9 +13,9 @@ import type { Project, FilterState } from '@/types/organization';
 // import { createNewProjectNotification, createBidStatusNotification } from '@/utils/notificationHelpers';
 
 function ProjectDiscoverySection() {
+  const { user } = useAuthStore();
   const { projects, filters, isLoading, total, page, totalPages, fetchProjects, setFilters, markAsInterested } = useProjectStore();
   const { submitBid, fetchBidsForProject } = useBidStore();
-  const { profile } = useOrganizationStore();
   
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -23,9 +23,9 @@ function ProjectDiscoverySection() {
   const [projectsWithBidCounts, setProjectsWithBidCounts] = useState<Project[]>([]);
   const [biddedProjectIds, setBiddedProjectIds] = useState<Set<string>>(new Set());
 
-  const isVerified = profile?.emailVerified || false;
-  // Use userId from profile, not the profile id
-  const userId = profile?.userId || profile?.id || 'org-1';
+  const isVerified = user?.emailVerified || false;
+  // Get user ID from auth store
+  const userId = user?.id || '';
 
   useEffect(() => {
     // Fetch projects on mount

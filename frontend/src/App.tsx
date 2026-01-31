@@ -19,7 +19,6 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 const AnalyticsHome = lazy(() => import('@/pages/dashboard/AnalyticsHome'));
 const ProfileSection = lazy(() => import('@/pages/dashboard/ProfileSection'));
 const ProjectDiscoverySection = lazy(() => import('@/pages/dashboard/ProjectDiscoverySection'));
-const ChatSection = lazy(() => import('@/pages/dashboard/ChatSection'));
 
 // Client Dashboard sections
 const ClientAnalytics = lazy(() => import('@/components/client/ClientAnalytics'));
@@ -28,7 +27,6 @@ const ClientProfile = lazy(() => import('@/components/client/ClientProfile'));
 import ClientProjectsComponent from '@/components/client/ClientProjects';
 const ClientProjects = () => <ClientProjectsComponent />;
 const ClientBids = lazy(() => import('@/components/client/ClientBids'));
-const ClientChat = lazy(() => import('@/components/client/ClientChat'));
 const ClientAuctionsSection = lazy(() => import('@/pages/dashboard/ClientAuctionsSection'));
 const OrganizationAuctionsSection = lazy(() => import('@/pages/dashboard/OrganizationAuctionsSection'));
 
@@ -133,8 +131,6 @@ function AnimatedRoutes() {
           <Route path="projects" element={<ClientProjects />} />
           <Route path="auctions" element={<ClientAuctionsSection />} />
           <Route path="bids" element={<ClientBids />} />
-          <Route path="chat" element={<ClientChat />} />
-          <Route path="chat/:conversationId" element={<ClientChat />} />
         </Route>
         
         {/* Organization Dashboard with nested routes */}
@@ -151,8 +147,6 @@ function AnimatedRoutes() {
           <Route path="profile" element={<ProfileSection />} />
           <Route path="projects" element={<ProjectDiscoverySection />} />
           <Route path="auctions" element={<OrganizationAuctionsSection />} />
-          <Route path="chat" element={<ChatSection />} />
-          <Route path="chat/:conversationId" element={<ChatSection />} />
         </Route>
 
         {/* Catch-all route */}

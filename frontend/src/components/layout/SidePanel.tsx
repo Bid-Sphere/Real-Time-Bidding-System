@@ -1,8 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useChatStore } from '@/store/useChatStore';
-import { useEffect } from 'react';
-import { useAuthStore } from '@/store/authStore';
 
 interface SidePanelProps {
   onNavigate?: () => void;
@@ -17,16 +14,6 @@ interface NavItem {
 
 export default function SidePanel({ onNavigate }: SidePanelProps) {
   const location = useLocation();
-  const totalUnreadCount = useChatStore((state) => state.totalUnreadCount);
-  const fetchConversations = useChatStore((state) => state.fetchConversations);
-  const user = useAuthStore((state) => state.user);
-
-  // Fetch conversations on mount to get unread count
-  useEffect(() => {
-    if (user?.id) {
-      fetchConversations(user.id);
-    }
-  }, [user?.id, fetchConversations]);
 
   const navItems: NavItem[] = [
     {
@@ -66,16 +53,6 @@ export default function SidePanel({ onNavigate }: SidePanelProps) {
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-        </svg>
-      ),
-    },
-    {
-      id: 'chat',
-      label: 'Chat',
-      path: '/organization-dashboard/chat',
-      icon: (
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
         </svg>
       ),
     },
@@ -125,17 +102,6 @@ export default function SidePanel({ onNavigate }: SidePanelProps) {
                   <span className={`font-medium transition-colors duration-200 ${active ? 'text-white' : ''}`}>
                     {item.label}
                   </span>
-
-                  {/* Notification badge for Chat */}
-                  {item.id === 'chat' && totalUnreadCount > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full"
-                    >
-                      {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-                    </motion.div>
-                  )}
                 </motion.div>
               </NavLink>
             );

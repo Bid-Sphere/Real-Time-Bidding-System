@@ -33,6 +33,9 @@ export function ProjectDetailsModal({
   console.log('============================');
 
   const formatBudget = (min: number, max: number) => {
+    if (min === max) {
+      return `$${min.toLocaleString()}`;
+    }
     return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
   };
 
