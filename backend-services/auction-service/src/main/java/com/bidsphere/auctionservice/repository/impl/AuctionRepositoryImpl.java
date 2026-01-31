@@ -235,8 +235,9 @@ public class AuctionRepositoryImpl implements AuctionRepository
 
     @Override
     public List<Auction> findActiveAuctions(int limit, int offset) {
-        String sql = "SELECT * FROM auctions WHERE status = 'ACTIVE' ORDER BY end_time ASC LIMIT ? OFFSET ?";
-        log.info("Finding active auctions, limit: {}, offset: {}", limit, offset);
+        // Return both SCHEDULED and ACTIVE auctions for organizations to browse
+        String sql = "SELECT * FROM auctions WHERE status IN ('SCHEDULED', 'ACTIVE') ORDER BY start_time ASC, end_time ASC LIMIT ? OFFSET ?";
+        log.info("Finding active and scheduled auctions, limit: {}, offset: {}", limit, offset);
 
         try {
             return jdbcTemplate.query(sql, auctionRowMapper, limit, offset);
@@ -301,8 +302,9 @@ public class AuctionRepositoryImpl implements AuctionRepository
 
     @Override
     public int countActiveAuctions() {
-        String sql = "SELECT COUNT(*) FROM auctions WHERE status = 'ACTIVE'";
-        log.info("Counting active auctions");
+        // Count both SCHEDULED and ACTIVE auctions for organizations to browse
+        String sql = "SELECT COUNT(*) FROM auctions WHERE status IN ('SCHEDULED', 'ACTIVE')";
+        log.info("Counting active and scheduled auctions");
 
         try {
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class);

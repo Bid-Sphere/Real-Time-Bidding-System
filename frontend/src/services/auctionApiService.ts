@@ -142,6 +142,21 @@ export const getAuctionBids = async (auctionId: string, page: number = 0, limit:
   return response.data.data;
 };
 
+/**
+ * Get my auction bids (for organizations)
+ */
+export const getMyAuctionBids = async (organizationId: string, page: number = 0, limit: number = 100) => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    `/api/auctions/my-bids?page=${page}&limit=${limit}`,
+    {
+      headers: {
+        'X-Organization-Id': organizationId
+      }
+    }
+  );
+  return response.data.data;
+};
+
 const auctionApiService = {
   goLive,
   submitBid,
@@ -153,6 +168,7 @@ const auctionApiService = {
   getActiveAuctions,
   getAuctionById,
   getAuctionBids,
+  getMyAuctionBids,
 };
 
 export default auctionApiService;

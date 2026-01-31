@@ -134,25 +134,33 @@ export const MyBidsSummary = ({ summary, bids, onViewAll, onEditBid }: MyBidsSum
                         <div className="flex-1 pr-4">
                           <h4 className="text-lg font-semibold text-white mb-2">{bid.projectTitle || 'Project'}</h4>
                           <div className="flex items-center gap-3">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
-                              {bid.status}
-                            </span>
-                            {bid.ranking && (
+                            {(bid as any).isAuctionBid ? (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30">
+                                🏆 Won Auction
+                              </span>
+                            ) : (
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(bid.status)}`}>
+                                {bid.status}
+                              </span>
+                            )}
+                            {bid.ranking && !((bid as any).isAuctionBid) && (
                               <span className="text-sm text-gray-400">Rank #{bid.ranking}</span>
                             )}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-white mb-1">${bid.proposedPrice.toLocaleString()}</div>
-                          <div className="text-sm text-gray-400">{bid.estimatedDuration} days</div>
+                          {bid.estimatedDuration > 0 && (
+                            <div className="text-sm text-gray-400">{bid.estimatedDuration} days</div>
+                          )}
                         </div>
                       </div>
                       
                       {/* Actions Footer */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
-                        {/* Left side - Edit/Withdraw for pending */}
+                        {/* Left side - Edit/Withdraw for pending, Accepted date for accepted/auction */}
                         <div className="flex items-center gap-3">
-                          {bid.status === 'PENDING' && (
+                          {bid.status === 'PENDING' && !(bid as any).isAuctionBid && (
                             <>
                               <button
                                 onClick={() => handleEdit(bid)}
@@ -169,15 +177,15 @@ export const MyBidsSummary = ({ summary, bids, onViewAll, onEditBid }: MyBidsSum
                               </button>
                             </>
                           )}
-                          {bid.status === 'ACCEPTED' && (
+                          {(bid.status === 'ACCEPTED' || (bid as any).isAuctionBid) && (
                             <span className="text-sm text-gray-400">
-                              Accepted on {new Date(bid.acceptedAt || bid.updatedAt).toLocaleDateString()}
+                              {(bid as any).isAuctionBid ? 'Won on' : 'Accepted on'} {new Date(bid.acceptedAt || bid.updatedAt).toLocaleDateString()}
                             </span>
                           )}
                         </div>
                         
-                        {/* Right side - Contact button for accepted */}
-                        {bid.status === 'ACCEPTED' && bid.clientEmail && (
+                        {/* Right side - Contact button for accepted/auction */}
+                        {(bid.status === 'ACCEPTED' || (bid as any).isAuctionBid) && bid.clientEmail && (
                           <button
                             onClick={() => handleContactClient(bid.clientEmail!)}
                             className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg shadow-blue-500/20 transition-all duration-200 hover:shadow-blue-500/40"

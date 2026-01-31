@@ -316,13 +316,8 @@ public class AuctionServiceImpl implements AuctionService
                 myBid.setMyHighestBid(bid.getBidAmount());
                 myBid.setCurrentHighestBid(auction.getCurrentHighestBid());
                 
-                // For ENDED auctions, check if this bid is the winner
-                // For active auctions, use the current is_winning flag
-                if (auction.getStatus() == AuctionStatus.ENDED) {
-                    myBid.setIsWinning(bid.getId().equals(auction.getWinnerBidId()));
-                } else {
-                    myBid.setIsWinning(bid.getIsWinning());
-                }
+                // Use is_winning flag from database (maintained by trigger)
+                myBid.setIsWinning(bid.getIsWinning());
                 
                 myBid.setAuctionStatus(auction.getStatus().name());
                 myBid.setEndTime(auction.getEndTime());
