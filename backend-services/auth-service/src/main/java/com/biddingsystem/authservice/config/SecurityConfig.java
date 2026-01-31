@@ -68,6 +68,8 @@ public class SecurityConfig
                         .requestMatchers("/db-config").permitAll()
                         .requestMatchers("/status").permitAll()
                         .requestMatchers("/error").permitAll()
+                        // User profile endpoints - require authentication
+                        .requestMatchers("/api/users/**").authenticated()
                         // Role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
@@ -89,14 +91,14 @@ public class SecurityConfig
 
         // Parse allowed origins from environment variable
         if ("*".equals(corsAllowedOrigins)) {
-            // Allow all origins for local development
+            // Allow all origins for local development - MUST use allowedOriginPatterns with credentials
             corsConfig.setAllowedOriginPatterns(Arrays.asList("*"));
-            corsConfig.setAllowCredentials(true); // Allow credentials with origin patterns
+            corsConfig.setAllowCredentials(true);
             log.info("CORS: Allowing all origins (local development mode)");
         } else {
-            // Production mode - use specific origins
+            // Production mode - use specific origin patterns (not origins) to support credentials
             String[] origins = corsAllowedOrigins.split(",");
-            corsConfig.setAllowedOrigins(Arrays.asList(origins));
+            corsConfig.setAllowedOriginPatterns(Arrays.asList(origins));
             corsConfig.setAllowCredentials(true);
             log.info("CORS: Allowing specific origins: {}", Arrays.toString(origins));
         }
@@ -108,7 +110,8 @@ public class SecurityConfig
 
         // Allow specific headers
         corsConfig.setAllowedHeaders(Arrays.asList(
-                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
+                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", 
+                "X-User-Id", "X-Organization-Id", "X-Organization-Name"
         ));
 
         // Exposed headers (headers that browsers are allowed to access)
@@ -116,7 +119,10 @@ public class SecurityConfig
                 "Authorization",
                 "Content-Disposition",
                 "Content-Length",
-                "Content-Type"
+                "Content-Type",
+                "X-User-Id",
+                "X-Organization-Id",
+                "X-Organization-Name"
         ));
 
         corsConfig.setMaxAge(3600L); // Cache preflight request for 1 hour
