@@ -61,6 +61,7 @@ const mapProjectToBackend = (data: CreateProjectData) => {
     requiredSkills: data.requiredSkills || [],
     strictDeadline: data.strictDeadline || false,
     biddingType: data.biddingType, // Already in correct format (LIVE_AUCTION, STANDARD)
+    auctionStartTime: data.auctionStartTime ? data.auctionStartTime.toISOString() : null,
     auctionEndTime: data.auctionEndTime ? data.auctionEndTime.toISOString() : null,
     isDraft: data.isDraft || false,
     attachments: [] // Empty for now, file upload not implemented
@@ -69,6 +70,12 @@ const mapProjectToBackend = (data: CreateProjectData) => {
 
 // Map backend response to frontend format
 const mapProjectFromBackend = (backendProject: any): Project => {
+  // Debug logging
+  console.log('=== MAPPING PROJECT FROM BACKEND ===');
+  console.log('Backend Project:', backendProject);
+  console.log('Winner Organization Name from backend:', backendProject.winnerOrganizationName);
+  console.log('===================================');
+
   // Helper to safely parse dates
   const parseDate = (dateValue: any): Date => {
     if (!dateValue) return new Date();
@@ -98,7 +105,13 @@ const mapProjectFromBackend = (backendProject: any): Project => {
     auctionEndTime: backendProject.auctionEndTime ? parseDate(backendProject.auctionEndTime) : undefined,
     isDraft: backendProject.isDraft || false,
     isBookmarked: backendProject.isBookmarked || false,
-    averageBidAmount: backendProject.averageBidAmount || 0
+    averageBidAmount: backendProject.averageBidAmount || 0,
+    // Auction winner fields
+    winningBidId: backendProject.winningBidId,
+    winnerOrganizationId: backendProject.winnerOrganizationId,
+    winningAmount: backendProject.winningAmount,
+    winnerEmail: backendProject.winnerEmail,
+    winnerOrganizationName: backendProject.winnerOrganizationName
   };
 };
 

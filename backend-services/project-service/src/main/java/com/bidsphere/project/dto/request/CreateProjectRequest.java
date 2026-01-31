@@ -43,6 +43,7 @@ public class CreateProjectRequest {
     @NotNull(message = "Bidding type is required")
     private BiddingType biddingType;
     
+    private LocalDateTime auctionStartTime;
     private LocalDateTime auctionEndTime;
     private List<AttachmentRequest> attachments;
     private Boolean isDraft = false;
@@ -83,6 +84,9 @@ public class CreateProjectRequest {
     public BiddingType getBiddingType() { return biddingType; }
     public void setBiddingType(BiddingType biddingType) { this.biddingType = biddingType; }
     
+    public LocalDateTime getAuctionStartTime() { return auctionStartTime; }
+    public void setAuctionStartTime(LocalDateTime auctionStartTime) { this.auctionStartTime = auctionStartTime; }
+    
     public LocalDateTime getAuctionEndTime() { return auctionEndTime; }
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }
     
@@ -93,11 +97,13 @@ public class CreateProjectRequest {
     public void setIsDraft(Boolean isDraft) { this.isDraft = isDraft; }
     
     // Custom validation methods
-    @AssertTrue(message = "Auction end time is required for live auctions")
-    public boolean isAuctionEndTimeValid() {
+    @AssertTrue(message = "Auction start and end times are required for live auctions")
+    public boolean isAuctionTimesValid() {
         if (biddingType == BiddingType.LIVE_AUCTION) {
-            return auctionEndTime != null && 
-                   auctionEndTime.isAfter(LocalDateTime.now()) && 
+            return auctionStartTime != null && 
+                   auctionEndTime != null &&
+                   auctionStartTime.isAfter(LocalDateTime.now()) && 
+                   auctionEndTime.isAfter(auctionStartTime) &&
                    auctionEndTime.isBefore(deadline);
         }
         return true;

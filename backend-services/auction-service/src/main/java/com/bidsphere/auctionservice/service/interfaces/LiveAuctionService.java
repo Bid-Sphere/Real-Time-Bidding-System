@@ -29,7 +29,7 @@ public interface LiveAuctionService {
      * @param amount The bid amount
      * @return The created bid DTO
      */
-    BidDTO submitBid(String auctionId, String organizationId, String organizationName, BigDecimal amount);
+    BidDTO submitBid(String auctionId, String organizationId, String organizationName, String organizationEmail, BigDecimal amount);
 
     /**
      * Accept a pending bid.

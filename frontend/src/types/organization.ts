@@ -58,6 +58,12 @@ export interface Project {
   postedAt: string;
   isInterested?: boolean; // client-side flag
   hasBid?: boolean; // client-side flag
+  // Auction-specific fields
+  biddingType?: 'LIVE_AUCTION' | 'STANDARD';
+  winningBidAmount?: number;
+  winnerOrganizationId?: string;
+  winnerOrganizationName?: string;
+  winnerEmail?: string;
 }
 
 // Bid

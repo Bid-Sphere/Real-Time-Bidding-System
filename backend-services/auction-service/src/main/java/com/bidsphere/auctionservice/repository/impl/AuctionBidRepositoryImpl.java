@@ -38,6 +38,7 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
             bid.setAuctionId(rs.getString("auction_id"));
             bid.setBidderId(rs.getString("bidder_id"));
             bid.setBidderName(rs.getString("bidder_name"));
+            bid.setBidderEmail(rs.getString("bidder_email"));
             bid.setBidAmount(rs.getBigDecimal("bid_amount"));
             bid.setProposal(rs.getString("proposal"));
             bid.setIsWinning(rs.getBoolean("is_winning"));
@@ -65,9 +66,9 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
 
     private AuctionBid insert(AuctionBid bid) {
         String sql = "INSERT INTO auction_bids (" +
-                "id, auction_id, bidder_id, bidder_name, bid_amount, " +
+                "id, auction_id, bidder_id, bidder_name, bidder_email, bid_amount, " +
                 "proposal, is_winning, bid_time, organization_id, bid_status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         String bidId = UUID.randomUUID().toString();
 
@@ -77,6 +78,7 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
                     bid.getAuctionId(),
                     bid.getBidderId(),
                     bid.getBidderName(),
+                    bid.getBidderEmail(),
                     bid.getBidAmount(),
                     bid.getProposal(),
                     bid.getIsWinning() != null ? bid.getIsWinning() : false,
@@ -174,6 +176,23 @@ public class AuctionBidRepositoryImpl implements AuctionBidRepository
         } catch (Exception e) {
             log.error("Error finding highest bid: {}", e.getMessage());
             throw new RuntimeException("Error finding highest bid: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Optional<AuctionBid> findLowestBidForAuction(String auctionId) {
+        String sql = "SELECT * FROM auction_bids WHERE auction_id = ? AND bid_status = 'ACCEPTED' ORDER BY bid_amount ASC LIMIT 1";
+        log.info("Finding lowest accepted bid for auction: {}", auctionId);
+
+        try {
+            AuctionBid bid = jdbcTemplate.queryForObject(sql, auctionBidRowMapper, auctionId);
+            return Optional.ofNullable(bid);
+        } catch (EmptyResultDataAccessException e) {
+            log.info("No accepted bids found for auction: {}", auctionId);
+            return Optional.empty();
+        } catch (Exception e) {
+            log.error("Error finding lowest accepted bid: {}", e.getMessage());
+            throw new RuntimeException("Error finding lowest accepted bid: " + e.getMessage(), e);
         }
     }
 

@@ -6,7 +6,7 @@ import { showSuccessToast, showErrorToast } from '@/utils/toast';
 import type { AuctionStatus } from '@/types/auction';
 
 interface GoLiveButtonProps {
-  auctionId: number;
+  auctionId: string;
   currentStatus: AuctionStatus;
   onStatusChange: (newStatus: AuctionStatus) => void;
 }
@@ -35,8 +35,11 @@ export const GoLiveButton: React.FC<GoLiveButtonProps> = ({
       // Show success message
       showSuccessToast('Auction is now live!');
       
+      // Map ACTIVE status from backend to LIVE for frontend
+      const frontendStatus = updatedAuction.status === 'ACTIVE' ? 'LIVE' : updatedAuction.status;
+      
       // Notify parent component of status change
-      onStatusChange(updatedAuction.status);
+      onStatusChange(frontendStatus as AuctionStatus);
     } catch (err: any) {
       console.error('Failed to start auction:', err);
       

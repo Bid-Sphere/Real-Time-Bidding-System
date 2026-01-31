@@ -43,6 +43,7 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/projects/health").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/projects/*/view").permitAll() // Allow tracking views
+                .requestMatchers(HttpMethod.POST, "/api/projects/*/auction-completed").permitAll() // Allow auction service to update
                 // GET endpoints - public for browsing projects
                 .requestMatchers(HttpMethod.GET, "/api/projects").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()

@@ -12,6 +12,7 @@ public interface AuctionBidRepository
     List<AuctionBid> findByAuctionId(String auctionId, int limit, int offset);
     List<AuctionBid> findByAuctionIdOrderByAmountDesc(String auctionId);
     Optional<AuctionBid> findHighestBidForAuction(String auctionId);
+    Optional<AuctionBid> findLowestBidForAuction(String auctionId);
     List<AuctionBid> findByBidderId(String bidderId, int limit, int offset);
     List<AuctionBid> findByOrganizationId(String organizationId, int limit, int offset);
     int countByAuctionId(String auctionId);

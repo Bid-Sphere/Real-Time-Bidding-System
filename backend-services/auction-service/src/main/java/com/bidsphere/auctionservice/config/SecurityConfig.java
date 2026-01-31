@@ -42,6 +42,11 @@ public class SecurityConfig
                                 "/api/auctions/{auctionId}/bids",
                                 "/api/auctions/{auctionId}/my-bids",
                                 "/api/auctions/{auctionId}/stats",
+                                "/api/auctions/{auctionId}/live-state",
+                                "/api/auctions/{auctionId}/go-live",
+                                "/api/auctions/{auctionId}/bids/{bidId}/accept",
+                                "/api/auctions/{auctionId}/bids/{bidId}/reject",
+                                "/api/auctions/{auctionId}/end",
                                 "/swagger-ui/**",
                                 "/api-docs/**"
                         ).permitAll()
@@ -71,8 +76,8 @@ public class SecurityConfig
         }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", "X-User-Id", "X-Organization-Id", "X-Organization-Name"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-User-Id", "X-Organization-Id", "X-Organization-Name"));
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

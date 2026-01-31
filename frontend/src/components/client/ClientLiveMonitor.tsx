@@ -23,7 +23,7 @@ import ConnectionStatus from '@/components/shared/ConnectionStatus';
 import type { ConnectionState } from '@/components/shared/ConnectionStatus';
 
 interface ClientLiveMonitorProps {
-  auctionId: number;
+  auctionId: string;
   onAuctionEnded?: () => void;
 }
 
@@ -33,18 +33,26 @@ export const ClientLiveMonitor: React.FC<ClientLiveMonitorProps> = ({ auctionId,
   const [currentAcceptedBid, setCurrentAcceptedBid] = useState<Bid | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [processingBidId, setProcessingBidId] = useState<number | null>(null);
+  const [processingBidId, setProcessingBidId] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionState>('connecting');
   const [showEndAuctionDialog, setShowEndAuctionDialog] = useState(false);
   const [isEndingAuction, setIsEndingAuction] = useState(false);
 
   // Handler: Accept a bid
-  const handleAcceptBid = async (bidId: number) => {
+  const handleAcceptBid = async (bidId: string) => {
     try {
       setProcessingBidId(bidId);
       
+      // Get user ID from auth storage
+      const authStorage = localStorage.getItem('auth-storage');
+      const userId = authStorage ? JSON.parse(authStorage)?.state?.user?.id : null;
+      
       // Call REST API to accept the bid
-      await apiClient.put(`/api/auctions/${auctionId}/bids/${bidId}/accept`);
+      await apiClient.put(`/api/auctions/${auctionId}/bids/${bidId}/accept`, {}, {
+        headers: {
+          'X-User-Id': userId
+        }
+      });
       
       showSuccessToast('Bid accepted successfully');
     } catch (error: any) {
@@ -57,12 +65,20 @@ export const ClientLiveMonitor: React.FC<ClientLiveMonitorProps> = ({ auctionId,
   };
 
   // Handler: Reject a bid
-  const handleRejectBid = async (bidId: number) => {
+  const handleRejectBid = async (bidId: string) => {
     try {
       setProcessingBidId(bidId);
       
+      // Get user ID from auth storage
+      const authStorage = localStorage.getItem('auth-storage');
+      const userId = authStorage ? JSON.parse(authStorage)?.state?.user?.id : null;
+      
       // Call REST API to reject the bid
-      await apiClient.put(`/api/auctions/${auctionId}/bids/${bidId}/reject`);
+      await apiClient.put(`/api/auctions/${auctionId}/bids/${bidId}/reject`, {}, {
+        headers: {
+          'X-User-Id': userId
+        }
+      });
       
       showSuccessToast('Bid rejected');
     } catch (error: any) {
@@ -79,8 +95,12 @@ export const ClientLiveMonitor: React.FC<ClientLiveMonitorProps> = ({ auctionId,
     try {
       setIsEndingAuction(true);
       
+      // Get user ID from auth storage
+      const authStorage = localStorage.getItem('auth-storage');
+      const userId = authStorage ? JSON.parse(authStorage)?.state?.user?.id : null;
+      
       // Call REST API to end the auction
-      await auctionApiService.endAuction(auctionId);
+      await auctionApiService.endAuction(auctionId, userId);
       
       showSuccessToast('Auction ended successfully');
       setShowEndAuctionDialog(false);
@@ -108,7 +128,7 @@ export const ClientLiveMonitor: React.FC<ClientLiveMonitorProps> = ({ auctionId,
     
     // Initialize SignalR connection with automatic reconnection
     const newConnection = new HubConnectionBuilder()
-      .withUrl(`${gatewayUrl}/hub/auctionHub`, {
+      .withUrl(`${gatewayUrl}/hubs/auction`, {
         accessTokenFactory: () => authToken || ''
       })
       .withAutomaticReconnect({
@@ -191,7 +211,7 @@ export const ClientLiveMonitor: React.FC<ClientLiveMonitorProps> = ({ auctionId,
         setConnectionStatus('connected');
         
         // Join the auction room
-        await newConnection.invoke('JoinAuction', auctionId);
+        await newConnection.invoke('JoinAuction', auctionId.toString());
         console.log(`Joined auction ${auctionId}`);
         
         setIsConnecting(false);

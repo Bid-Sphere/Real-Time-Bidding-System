@@ -62,7 +62,7 @@ export default function OrganizationAuctions() {
       // Fetch active auctions from auction-service
       const response = await auctionApiService.getActiveAuctions(0, 100);
       const auctionListings = response.content.map((auction: any) => ({
-        id: auction.id.toString(),
+        id: auction.auctionId || auction.id,
         title: auction.projectTitle,
         category: auction.projectCategory,
         description: '', // Not available in auction response
@@ -231,7 +231,7 @@ export default function OrganizationAuctions() {
         {/* Conditional rendering based on auction status */}
         {selectedAuction.status === 'LIVE' && (
           <OrganizationLiveBidding 
-            auctionId={Number(selectedAuction.id)} 
+            auctionId={selectedAuction.id} 
             organizationId={organizationId}
           />
         )}

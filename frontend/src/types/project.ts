@@ -23,9 +23,16 @@ export interface Project {
   clientName: string;
   strictDeadline: boolean;
   auctionEndTime?: Date;
+  auctionId?: string;
   isDraft: boolean;
   isBookmarked?: boolean;
   averageBidAmount?: number;
+  // Auction winner fields
+  winningBidId?: string;
+  winnerOrganizationId?: string;
+  winningAmount?: number;
+  winnerEmail?: string;
+  winnerOrganizationName?: string;
 }
 
 export interface ProjectAttachment {
@@ -99,6 +106,7 @@ export interface CreateProjectData {
   strictDeadline: boolean;
   biddingType: BiddingType;
   budget: number;
+  auctionStartTime?: Date; // Only for LIVE_AUCTION
   auctionEndTime?: Date; // Only for LIVE_AUCTION
   isDraft?: boolean;
 }

@@ -11,6 +11,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -181,6 +182,33 @@ public class ProjectController {
         
         return ResponseEntity.ok(
             ApiResponse.success("Project published successfully", response)
+        );
+    }
+    
+    @PostMapping("/{projectId}/auction-completed")
+    public ResponseEntity<ApiResponse<Void>> handleAuctionCompletion(
+            @PathVariable String projectId,
+            @RequestBody Map<String, Object> request) {
+        
+        System.out.println("Handling auction completion for project: " + projectId);
+        
+        String winningBidId = (String) request.get("winningBidId");
+        String winnerOrganizationId = (String) request.get("winnerOrganizationId");
+        String winnerOrganizationName = (String) request.get("winnerOrganizationName");
+        String winnerEmail = (String) request.get("winnerEmail");
+        Object winningAmountObj = request.get("winningAmount");
+        Integer totalBids = (Integer) request.get("totalBids");
+        
+        BigDecimal winningAmount = null;
+        if (winningAmountObj instanceof Number) {
+            winningAmount = BigDecimal.valueOf(((Number) winningAmountObj).doubleValue());
+        }
+        
+        projectService.handleAuctionCompletion(projectId, winningBidId, winnerOrganizationId, 
+                                              winningAmount, totalBids, winnerEmail, winnerOrganizationName);
+        
+        return ResponseEntity.ok(
+            ApiResponse.success("Project updated after auction completion", null)
         );
     }
     

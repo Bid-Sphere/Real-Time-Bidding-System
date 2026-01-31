@@ -4,6 +4,6 @@ namespace RealTimeService.Services
 {
     public interface IAuctionService
     {
-        Task<LiveAuctionStateDTO?> GetLiveStateAsync(long auctionId);
+        Task<LiveAuctionStateDTO?> GetLiveStateAsync(string auctionId);
     }
 }

@@ -20,7 +20,7 @@ namespace RealTimeService.Services
                 ?? "http://localhost:8084";
         }
 
-        public async Task<LiveAuctionStateDTO?> GetLiveStateAsync(long auctionId)
+        public async Task<LiveAuctionStateDTO?> GetLiveStateAsync(string auctionId)
         {
             try
             {
@@ -39,12 +39,25 @@ namespace RealTimeService.Services
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Live state response: {Content}", content);
+                
                 var options = new JsonSerializerOptions
                 {
-                    PropertyNameCaseInsensitive = true
+                    PropertyNameCaseInsensitive = true,
+                    Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
                 };
 
-                var liveState = JsonSerializer.Deserialize<LiveAuctionStateDTO>(content, options);
+                // The response is wrapped in BaseResponse structure
+                var wrapper = JsonSerializer.Deserialize<BaseResponseWrapper>(content, options);
+                if (wrapper?.Data == null)
+                {
+                    _logger.LogWarning("No data in live state response for auction {AuctionId}", auctionId);
+                    return null;
+                }
+
+                var liveState = JsonSerializer.Deserialize<LiveAuctionStateDTO>(
+                    JsonSerializer.Serialize(wrapper.Data), options);
+                
                 _logger.LogInformation(
                     "Successfully fetched live state for auction {AuctionId}", auctionId);
 
@@ -57,5 +70,13 @@ namespace RealTimeService.Services
                 return null;
             }
         }
+    }
+
+    // Helper class to deserialize the BaseResponse wrapper
+    internal class BaseResponseWrapper
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public JsonElement Data { get; set; }
     }
 }

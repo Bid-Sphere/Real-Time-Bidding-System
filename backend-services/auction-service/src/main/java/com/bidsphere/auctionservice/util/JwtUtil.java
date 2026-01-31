@@ -60,6 +60,52 @@ public class JwtUtil {
     }
 
     /**
+     * Extract organization ID from JWT token
+     */
+    public String extractOrganizationId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String orgId = claims.get("organizationId", String.class);
+            log.debug("Extracted organizationId from JWT: {}", orgId);
+            return orgId;
+        } catch (Exception e) {
+            log.error("Failed to extract organizationId from JWT: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Extract organization name from JWT token
+     */
+    public String extractOrganizationName(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String orgName = claims.get("organizationName", String.class);
+            log.debug("Extracted organizationName from JWT: {}", orgName);
+            return orgName;
+        } catch (Exception e) {
+            log.error("Failed to extract organizationName from JWT: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Extract email from JWT token
+     */
+    public String extractEmail(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            // Email is typically in the subject or a dedicated claim
+            String email = claims.getSubject(); // Usually email is the subject
+            log.debug("Extracted email from JWT: {}", email);
+            return email;
+        } catch (Exception e) {
+            log.error("Failed to extract email from JWT: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Extract all claims from JWT token
      */
     private Claims extractAllClaims(String token) {

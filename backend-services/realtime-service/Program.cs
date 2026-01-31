@@ -61,7 +61,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]))
+                Convert.FromBase64String(builder.Configuration["Jwt:Secret"]))
         };
 
         // SignalR token support

@@ -9,7 +9,6 @@ import {
   DollarSign,
   Eye,
   Search,
-  Plus,
   ArrowLeft
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -18,6 +17,8 @@ import auctionApiService from '@/services/auctionApiService';
 import { showErrorToast } from '@/utils/toast';
 import { GoLiveButton } from './GoLiveButton';
 import { ClientLiveMonitor } from './ClientLiveMonitor';
+import { AuctionDetailsView } from './AuctionDetailsView';
+import { AuctionResultsView } from './AuctionResultsView';
 import type { AuctionStatus } from '@/types/auction';
 
 interface AuctionProject {
@@ -44,7 +45,7 @@ export default function ClientAuctions() {
   const [auctions, setAuctions] = useState<AuctionProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedAuction, setSelectedAuction] = useState<AuctionProject | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'monitor'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'monitor' | 'details' | 'results'>('list');
 
   useEffect(() => {
     fetchAuctions();
@@ -60,17 +61,34 @@ export default function ClientAuctions() {
         title: auction.projectTitle,
         category: auction.projectCategory,
         description: '', // Not available in auction response
-        budget: 0, // Not available in auction response
+        budget: auction.status === 'ENDED' && auction.winningBidAmount 
+          ? auction.winningBidAmount 
+          : (auction.reservePrice || 0), // Show winning bid for ended auctions, otherwise reserve price
         auctionStartTime: auction.startTime,
         auctionEndTime: auction.endTime,
         status: auction.status === 'ACTIVE' ? 'LIVE' : auction.status, // Map ACTIVE to LIVE for frontend
         currentBids: auction.totalBids || 0,
         currentHighestBid: auction.currentHighestBid,
-        viewCount: 0,
+        viewCount: 0, // Will be fetched separately for LIVE auctions
         createdAt: auction.createdAt,
         biddingType: 'LIVE_AUCTION'
       }));
       setAuctions(auctionProjects);
+      
+      // Fetch viewer counts for LIVE auctions
+      auctionProjects.forEach(async (auction: AuctionProject) => {
+        if (auction.status === 'LIVE') {
+          try {
+            const response = await fetch(`http://localhost:8080/api/realtime/auctions/${auction.id}/viewers`);
+            const data = await response.json();
+            setAuctions(prev => prev.map(a => 
+              a.id === auction.id ? { ...a, viewCount: data.viewerCount } : a
+            ));
+          } catch (error) {
+            console.error(`Failed to fetch viewer count for auction ${auction.id}:`, error);
+          }
+        }
+      });
     } catch (error) {
       console.error('Failed to fetch auctions:', error);
       showErrorToast('Failed to fetch auctions');
@@ -133,16 +151,34 @@ export default function ClientAuctions() {
     setViewMode('monitor');
   };
 
+  const handleViewDetails = (auction: AuctionProject) => {
+    setSelectedAuction(auction);
+    setViewMode('details');
+  };
+
+  const handleViewResults = (auction: AuctionProject) => {
+    setSelectedAuction(auction);
+    setViewMode('results');
+  };
+
   const handleStatusChange = (auctionId: string, newStatus: AuctionStatus) => {
+    // Map ACTIVE to LIVE for frontend consistency
+    const mappedStatus = newStatus === 'ACTIVE' ? 'LIVE' : newStatus;
+    
     // Update the auction status in the list
     setAuctions(prev => prev.map(auction => 
       auction.id === auctionId 
-        ? { ...auction, status: newStatus as AuctionProject['status'] }
+        ? { ...auction, status: mappedStatus as AuctionProject['status'] }
         : auction
     ));
     
+    // Update the selected auction status if it's the one that changed
+    if (selectedAuction?.id === auctionId) {
+      setSelectedAuction(prev => prev ? { ...prev, status: mappedStatus as AuctionProject['status'] } : null);
+    }
+    
     // If the auction just went live and it's selected, switch to monitor view
-    if (newStatus === 'LIVE' && selectedAuction?.id === auctionId) {
+    if ((newStatus === 'LIVE' || newStatus === 'ACTIVE') && selectedAuction?.id === auctionId) {
       setViewMode('monitor');
     }
   };
@@ -150,6 +186,8 @@ export default function ClientAuctions() {
   const handleBackToList = () => {
     setViewMode('list');
     setSelectedAuction(null);
+    // Refresh auctions list
+    fetchAuctions();
   };
 
   const filteredAuctions = auctions.filter(auction => {
@@ -201,7 +239,7 @@ export default function ClientAuctions() {
               Click "Go Live" to start accepting bids for this auction
             </p>
             <GoLiveButton
-              auctionId={Number(selectedAuction.id)}
+              auctionId={selectedAuction.id}
               currentStatus={selectedAuction.status}
               onStatusChange={(newStatus) => handleStatusChange(selectedAuction.id, newStatus)}
             />
@@ -209,7 +247,10 @@ export default function ClientAuctions() {
         )}
 
         {selectedAuction.status === 'LIVE' && (
-          <ClientLiveMonitor auctionId={Number(selectedAuction.id)} />
+          <ClientLiveMonitor 
+            auctionId={selectedAuction.id}
+            onAuctionEnded={handleBackToList}
+          />
         )}
 
         {selectedAuction.status === 'ENDED' && (
@@ -227,6 +268,28 @@ export default function ClientAuctions() {
     );
   }
 
+  // Show details view
+  if (viewMode === 'details' && selectedAuction) {
+    return (
+      <AuctionDetailsView
+        auctionId={selectedAuction.id}
+        auctionTitle={selectedAuction.title}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
+  // Show results view
+  if (viewMode === 'results' && selectedAuction) {
+    return (
+      <AuctionResultsView
+        auctionId={selectedAuction.id}
+        auctionTitle={selectedAuction.title}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -240,10 +303,6 @@ export default function ClientAuctions() {
             Manage your live auction projects
           </p>
         </div>
-        <Button variant="primary" size="md" className="h-10">
-          <Plus className="h-5 w-5" />
-          Create Auction Project
-        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -369,15 +428,11 @@ export default function ClientAuctions() {
           <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2">
             No Auctions Found
           </h3>
-          <p className="text-[var(--text-secondary)] mb-6">
+          <p className="text-[var(--text-secondary)]">
             {searchQuery 
               ? 'No auctions match your search criteria'
-              : 'Create your first auction project to get started'}
+              : 'No auctions found'}
           </p>
-          <Button variant="primary" className="h-10">
-            <Plus className="h-5 w-5" />
-            Create Auction Project
-          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -406,10 +461,12 @@ export default function ClientAuctions() {
                       <Users className="h-4 w-4" />
                       {auction.currentBids} bids
                     </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-4 w-4" />
-                      {auction.viewCount} views
-                    </span>
+                    {auction.status === 'LIVE' && (
+                      <span className="flex items-center gap-1">
+                        <Eye className="h-4 w-4" />
+                        {auction.viewCount} {auction.viewCount === 1 ? 'viewer' : 'viewers'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -417,7 +474,9 @@ export default function ClientAuctions() {
               <div className="flex items-center justify-between pt-4 border-t border-[var(--border-light)]">
                 <div className="flex items-center gap-6">
                   <div>
-                    <p className="text-xs text-[var(--text-muted)] mb-1">Budget</p>
+                    <p className="text-xs text-[var(--text-muted)] mb-1">
+                      {auction.status === 'ENDED' ? 'Winning Bid' : 'Starting Bid'}
+                    </p>
                     <p className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-1">
                       <DollarSign className="h-4 w-4" />
                       {auction.budget.toLocaleString()}
@@ -444,13 +503,17 @@ export default function ClientAuctions() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" className="h-9">
+                  <Button 
+                    variant="outline" 
+                    className="h-9"
+                    onClick={() => handleViewDetails(auction)}
+                  >
                     View Details
                   </Button>
                   {auction.status === 'SCHEDULED' && (
                     <>
                       <GoLiveButton
-                        auctionId={Number(auction.id)}
+                        auctionId={auction.id}
                         currentStatus={auction.status}
                         onStatusChange={(newStatus) => handleStatusChange(auction.id, newStatus)}
                       />
@@ -478,7 +541,11 @@ export default function ClientAuctions() {
                     </Button>
                   )}
                   {auction.status === 'ENDED' && (
-                    <Button variant="primary" className="h-9">
+                    <Button 
+                      variant="primary" 
+                      className="h-9"
+                      onClick={() => handleViewResults(auction)}
+                    >
                       View Results
                     </Button>
                   )}

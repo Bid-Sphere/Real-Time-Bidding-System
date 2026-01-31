@@ -101,7 +101,7 @@ public class ProjectServiceImpl implements ProjectService {
         // If this is a LIVE_AUCTION project and not a draft, create an auction
         if (savedProject.getBiddingType() == BiddingType.LIVE_AUCTION && !savedProject.getIsDraft()) {
             try {
-                String auctionId = createAuctionForProject(savedProject, clientId);
+                String auctionId = createAuctionForProject(savedProject, clientId, request.getAuctionStartTime());
                 savedProject.setAuctionId(auctionId);
                 savedProject = projectRepository.save(savedProject);
                 System.out.println("Auction created successfully with ID: " + auctionId + " for project: " + savedProject.getId());
@@ -406,6 +406,41 @@ public class ProjectServiceImpl implements ProjectService {
         return analytics;
     }
     
+    @Override
+    public void handleAuctionCompletion(String projectId, String winningBidId, 
+                                       String winnerOrganizationId, BigDecimal winningAmount, 
+                                       Integer totalBids, String winnerEmail, String winnerOrganizationName) {
+        System.out.println("Handling auction completion for project: " + projectId);
+        
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+        
+        // Validate that this is a LIVE_AUCTION project
+        if (project.getBiddingType() != BiddingType.LIVE_AUCTION) {
+            throw new IllegalArgumentException("Project is not a live auction project");
+        }
+        
+        // Update project status to IN_PROGRESS
+        project.setStatus(ProjectStatus.IN_PROGRESS);
+        
+        // Store winning bid information
+        project.setWinningBidId(winningBidId);
+        project.setWinnerOrganizationId(winnerOrganizationId);
+        project.setWinningAmount(winningAmount);
+        project.setWinnerEmail(winnerEmail);
+        project.setWinnerOrganizationName(winnerOrganizationName);
+        
+        // Update bid count
+        if (totalBids != null) {
+            project.setBidCount(totalBids);
+        }
+        
+        projectRepository.save(project);
+        
+        System.out.println("Project " + projectId + " updated after auction completion. Winner: " + 
+                         winnerOrganizationId + ", Email: " + winnerEmail + ", Amount: " + winningAmount);
+    }
+    
     // Helper methods
     private void validateOwnership(Project project, String clientId) {
         if (!project.getClientId().equals(clientId)) {
@@ -461,7 +496,7 @@ public class ProjectServiceImpl implements ProjectService {
     /**
      * Creates an auction in the auction-service for a LIVE_AUCTION project
      */
-    private String createAuctionForProject(Project project, String clientId) {
+    private String createAuctionForProject(Project project, String clientId, LocalDateTime auctionStartTime) {
         try {
             // Prepare auction creation request
             Map<String, Object> auctionRequest = new HashMap<>();
@@ -472,7 +507,13 @@ public class ProjectServiceImpl implements ProjectService {
             
             // Format dates to match auction-service expected format (yyyy-MM-dd'T'HH:mm:ss)
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-            auctionRequest.put("startTime", LocalDateTime.now().format(formatter)); // Scheduled for now, will go live manually
+            
+            // Use auctionStartTime from request if provided, otherwise schedule for now
+            LocalDateTime startTime = auctionStartTime != null 
+                ? auctionStartTime 
+                : LocalDateTime.now();
+            
+            auctionRequest.put("startTime", startTime.format(formatter));
             auctionRequest.put("endTime", project.getAuctionEndTime().format(formatter));
             
             auctionRequest.put("minimumBidIncrement", BigDecimal.valueOf(100)); // Default increment
@@ -588,6 +629,11 @@ public class ProjectServiceImpl implements ProjectService {
         response.setIsBookmarked(isBookmarked != null ? isBookmarked : false);
         response.setCreatedAt(project.getCreatedAt());
         response.setUpdatedAt(project.getUpdatedAt());
+        response.setWinningBidId(project.getWinningBidId());
+        response.setWinnerOrganizationId(project.getWinnerOrganizationId());
+        response.setWinningAmount(project.getWinningAmount());
+        response.setWinnerEmail(project.getWinnerEmail());
+        response.setWinnerOrganizationName(project.getWinnerOrganizationName());
         
         return response;
     }

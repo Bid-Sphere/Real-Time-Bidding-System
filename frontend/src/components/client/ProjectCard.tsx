@@ -11,16 +11,24 @@ interface ProjectCardProps {
 export default function ProjectCard({ project, onViewBids }: ProjectCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'DRAFT':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'OPEN':
       case 'open_for_bidding':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'ACCEPTING_BIDS':
       case 'accepting_bids':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'IN_DISCUSSION':
       case 'in_discussion':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'CLOSED':
       case 'closed_for_bidding':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'IN_PROGRESS':
       case 'awarded':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'COMPLETED':
       case 'completed':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       default:
@@ -30,20 +38,29 @@ export default function ProjectCard({ project, onViewBids }: ProjectCardProps) {
 
   const getStatusText = (status: string) => {
     switch (status) {
+      case 'DRAFT':
+        return '📝 Draft';
+      case 'OPEN':
       case 'open_for_bidding':
         return '🟢 Open for Bidding';
+      case 'ACCEPTING_BIDS':
       case 'accepting_bids':
         return '🔵 Accepting Bids';
+      case 'IN_DISCUSSION':
       case 'in_discussion':
         return '🟡 In Discussion';
+      case 'CLOSED':
       case 'closed_for_bidding':
-        return '⚫ Closed for Bidding';
+        return '⚫ Closed';
+      case 'IN_PROGRESS':
       case 'awarded':
-        return '🟣 Awarded';
+        return '🟣 In Progress';
+      case 'COMPLETED':
       case 'completed':
         return '✅ Completed';
       default:
-        return status;
+        // Format any unknown status by replacing underscores and capitalizing
+        return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 

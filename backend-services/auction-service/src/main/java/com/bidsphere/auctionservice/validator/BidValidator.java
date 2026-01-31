@@ -116,28 +116,19 @@ public class BidValidator {
     }
 
     /**
-     * Gets the current lowest bid amount for an auction.
-     * In a reverse auction, we're looking for the minimum bid amount.
+     * Gets the current lowest ACCEPTED bid amount for an auction.
+     * In a reverse auction, we're looking for the minimum ACCEPTED bid amount.
+     * REJECTED bids are not considered.
      * 
      * @param auctionId The auction ID
-     * @return The current lowest bid amount, or null if no bids exist
+     * @return The current lowest ACCEPTED bid amount, or null if no ACCEPTED bids exist
      */
     private BigDecimal getCurrentLowestBid(String auctionId) {
-        // For reverse auction, we need to find the MINIMUM bid amount
-        // The existing repository has findHighestBidForAuction, but we need lowest
-        // We'll use findByAuctionIdOrderByAmountDesc and get the last one (lowest)
-        // Or we can query all bids and find the minimum
+        // Find the lowest ACCEPTED bid for the auction
+        Optional<AuctionBid> lowestAcceptedBid = auctionBidRepository.findAcceptedBidForAuction(auctionId);
         
-        Optional<AuctionBid> highestBid = auctionBidRepository.findHighestBidForAuction(auctionId);
-        
-        // Note: In a reverse auction context, we need to find the LOWEST bid
-        // The current repository method name suggests highest, but for reverse auctions
-        // we need to interpret this as the current winning bid (which is the lowest)
-        // For now, we'll assume the repository returns the current winning bid
-        // which in a reverse auction would be the lowest accepted bid
-        
-        if (highestBid.isPresent()) {
-            return highestBid.get().getBidAmount();
+        if (lowestAcceptedBid.isPresent()) {
+            return lowestAcceptedBid.get().getBidAmount();
         }
         
         return null;

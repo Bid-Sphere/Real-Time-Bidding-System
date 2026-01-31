@@ -8,6 +8,7 @@ import com.bidsphere.auctionservice.dto.response.BidDTO;
 import com.bidsphere.auctionservice.dto.response.LiveAuctionStateDTO;
 import com.bidsphere.auctionservice.model.ErrorResponse;
 import com.bidsphere.auctionservice.service.interfaces.LiveAuctionService;
+import com.bidsphere.auctionservice.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -29,9 +30,11 @@ import java.time.LocalDateTime;
 public class LiveAuctionController {
 
     private final LiveAuctionService liveAuctionService;
+    private final JwtUtil jwtUtil;
 
-    public LiveAuctionController(LiveAuctionService liveAuctionService) {
+    public LiveAuctionController(LiveAuctionService liveAuctionService, JwtUtil jwtUtil) {
         this.liveAuctionService = liveAuctionService;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -41,19 +44,45 @@ public class LiveAuctionController {
      * Requirements: 1.1, 9.2
      * 
      * @param auctionId The auction ID to start
-     * @param userId The client user ID from custom header
+     * @param clientUserId The client user ID from custom header (optional)
+     * @param authHeader The Authorization header containing JWT token
      * @param servletRequest The HTTP request
      * @return The updated auction with LIVE status
      */
     @PostMapping("/{auctionId}/go-live")
     public ResponseEntity<?> goLive(
             @PathVariable String auctionId,
-            @RequestHeader(SecurityConstants.USER_ID_HEADER) String userId,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
             HttpServletRequest servletRequest) {
 
-        log.info("Request to go live for auction: {}, client user: {}", auctionId, userId);
+        log.info("Request to go live for auction: {}", auctionId);
 
         try {
+            String userId = clientUserId;
+            
+            // If no X-User-Id header, try to extract from JWT token
+            if (userId == null || userId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    userId = jwtUtil.extractUserId(token);
+                    log.info("Extracted userId from JWT: {}", userId);
+                }
+            }
+            
+            // If still no user ID, return error
+            if (userId == null || userId.isEmpty()) {
+                log.warn("No user ID found in headers or JWT token");
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .error("UNAUTHORIZED")
+                        .message("User authentication required")
+                        .timestamp(LocalDateTime.now())
+                        .path(servletRequest.getRequestURI())
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+
+            log.info("Going live for auction: {}, client user: {}", auctionId, userId);
             AuctionDetailResponse auction = liveAuctionService.goLive(auctionId, userId);
 
             BaseResponse<AuctionDetailResponse> response = BaseResponse.success(
@@ -89,8 +118,9 @@ public class LiveAuctionController {
      * 
      * @param auctionId The auction ID
      * @param request The bid submission request containing amount
-     * @param organizationId The organization ID from custom header
-     * @param organizationName The organization name from custom header (optional)
+     * @param orgId The organization ID from custom header (optional)
+     * @param orgName The organization name from custom header (optional)
+     * @param authHeader The Authorization header containing JWT token
      * @param servletRequest The HTTP request
      * @return The created bid with PENDING status
      */
@@ -98,16 +128,50 @@ public class LiveAuctionController {
     public ResponseEntity<?> submitBid(
             @PathVariable String auctionId,
             @Valid @RequestBody SubmitLiveBidRequest request,
-            @RequestHeader(SecurityConstants.ORG_ID_HEADER) String organizationId,
-            @RequestHeader(value = SecurityConstants.ORG_NAME_HEADER, required = false) String organizationName,
+            @RequestHeader(value = SecurityConstants.ORG_ID_HEADER, required = false) String orgId,
+            @RequestHeader(value = SecurityConstants.ORG_NAME_HEADER, required = false) String orgName,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
             HttpServletRequest servletRequest) {
 
-        log.info("Submitting live bid for auction: {}, organization: {}, amount: {}",
-                auctionId, organizationId, request.getAmount());
+        log.info("Submitting live bid for auction: {}, amount: {}", auctionId, request.getAmount());
 
         try {
+            String organizationId = orgId;
+            String organizationName = orgName;
+            String organizationEmail = null;
+            
+            // Extract email from JWT token (always needed for storing in bids)
+            if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                organizationEmail = jwtUtil.extractEmail(token);
+            }
+            
+            // If no X-Organization-Id header, try to extract from JWT token
+            if (organizationId == null || organizationId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    organizationId = jwtUtil.extractOrganizationId(token);
+                    organizationName = jwtUtil.extractOrganizationName(token);
+                    log.info("Extracted organizationId from JWT: {}", organizationId);
+                }
+            }
+            
+            // If still no organization ID, return error
+            if (organizationId == null || organizationId.isEmpty()) {
+                log.warn("No organization ID found in headers or JWT token");
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .error("UNAUTHORIZED")
+                        .message("Organization authentication required")
+                        .timestamp(LocalDateTime.now())
+                        .path(servletRequest.getRequestURI())
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+
+            log.info("Submitting bid for auction: {}, organization: {}, amount: {}", 
+                    auctionId, organizationId, request.getAmount());
             BidDTO bid = liveAuctionService.submitBid(
-                    auctionId, organizationId, organizationName, request.getAmount());
+                    auctionId, organizationId, organizationName, organizationEmail, request.getAmount());
 
             BaseResponse<BidDTO> response = BaseResponse.success(
                     "Bid submitted successfully", bid);
@@ -142,7 +206,8 @@ public class LiveAuctionController {
      * 
      * @param auctionId The auction ID
      * @param bidId The bid ID to accept
-     * @param userId The client user ID from custom header
+     * @param clientUserId The client user ID from custom header (optional)
+     * @param authHeader The Authorization header containing JWT token
      * @param servletRequest The HTTP request
      * @return The updated bid with ACCEPTED status
      */
@@ -150,13 +215,37 @@ public class LiveAuctionController {
     public ResponseEntity<?> acceptBid(
             @PathVariable String auctionId,
             @PathVariable String bidId,
-            @RequestHeader(SecurityConstants.USER_ID_HEADER) String userId,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
             HttpServletRequest servletRequest) {
 
-        log.info("Request to accept bid: {} for auction: {}, client user: {}",
-                bidId, auctionId, userId);
+        log.info("Request to accept bid: {} for auction: {}", bidId, auctionId);
 
         try {
+            String userId = clientUserId;
+            
+            // If no X-User-Id header, try to extract from JWT token
+            if (userId == null || userId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    userId = jwtUtil.extractUserId(token);
+                    log.info("Extracted userId from JWT: {}", userId);
+                }
+            }
+            
+            // If still no user ID, return error
+            if (userId == null || userId.isEmpty()) {
+                log.warn("No user ID found in headers or JWT token");
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .error("UNAUTHORIZED")
+                        .message("User authentication required")
+                        .timestamp(LocalDateTime.now())
+                        .path(servletRequest.getRequestURI())
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+
+            log.info("Accepting bid: {} for auction: {}, client user: {}", bidId, auctionId, userId);
             BidDTO bid = liveAuctionService.acceptBid(auctionId, bidId, userId);
 
             BaseResponse<BidDTO> response = BaseResponse.success(
@@ -192,7 +281,8 @@ public class LiveAuctionController {
      * 
      * @param auctionId The auction ID
      * @param bidId The bid ID to reject
-     * @param userId The client user ID from custom header
+     * @param clientUserId The client user ID from custom header (optional)
+     * @param authHeader The Authorization header containing JWT token
      * @param servletRequest The HTTP request
      * @return The updated bid with REJECTED status
      */
@@ -200,13 +290,37 @@ public class LiveAuctionController {
     public ResponseEntity<?> rejectBid(
             @PathVariable String auctionId,
             @PathVariable String bidId,
-            @RequestHeader(SecurityConstants.USER_ID_HEADER) String userId,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
             HttpServletRequest servletRequest) {
 
-        log.info("Request to reject bid: {} for auction: {}, client user: {}",
-                bidId, auctionId, userId);
+        log.info("Request to reject bid: {} for auction: {}", bidId, auctionId);
 
         try {
+            String userId = clientUserId;
+            
+            // If no X-User-Id header, try to extract from JWT token
+            if (userId == null || userId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    userId = jwtUtil.extractUserId(token);
+                    log.info("Extracted userId from JWT: {}", userId);
+                }
+            }
+            
+            // If still no user ID, return error
+            if (userId == null || userId.isEmpty()) {
+                log.warn("No user ID found in headers or JWT token");
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .error("UNAUTHORIZED")
+                        .message("User authentication required")
+                        .timestamp(LocalDateTime.now())
+                        .path(servletRequest.getRequestURI())
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+
+            log.info("Rejecting bid: {} for auction: {}, client user: {}", bidId, auctionId, userId);
             BidDTO bid = liveAuctionService.rejectBid(auctionId, bidId, userId);
 
             BaseResponse<BidDTO> response = BaseResponse.success(
@@ -285,19 +399,45 @@ public class LiveAuctionController {
      * Requirements: 7.1, 9.2
      * 
      * @param auctionId The auction ID to end
-     * @param userId The client user ID from custom header
+     * @param clientUserId The client user ID from custom header (optional)
+     * @param authHeader The Authorization header containing JWT token
      * @param servletRequest The HTTP request
      * @return The updated auction with ENDED status and winner information
      */
     @PostMapping("/{auctionId}/end")
     public ResponseEntity<?> endAuction(
             @PathVariable String auctionId,
-            @RequestHeader(SecurityConstants.USER_ID_HEADER) String userId,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
             HttpServletRequest servletRequest) {
 
-        log.info("Request to end auction: {}, client user: {}", auctionId, userId);
+        log.info("Request to end auction: {}", auctionId);
 
         try {
+            String userId = clientUserId;
+            
+            // If no X-User-Id header, try to extract from JWT token
+            if (userId == null || userId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    userId = jwtUtil.extractUserId(token);
+                    log.info("Extracted userId from JWT: {}", userId);
+                }
+            }
+            
+            // If still no user ID, return error
+            if (userId == null || userId.isEmpty()) {
+                log.warn("No user ID found in headers or JWT token");
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .error("UNAUTHORIZED")
+                        .message("User authentication required")
+                        .timestamp(LocalDateTime.now())
+                        .path(servletRequest.getRequestURI())
+                        .build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            }
+
+            log.info("Ending auction: {}, client user: {}", auctionId, userId);
             AuctionDetailResponse auction = liveAuctionService.endAuction(auctionId);
 
             BaseResponse<AuctionDetailResponse> response = BaseResponse.success(

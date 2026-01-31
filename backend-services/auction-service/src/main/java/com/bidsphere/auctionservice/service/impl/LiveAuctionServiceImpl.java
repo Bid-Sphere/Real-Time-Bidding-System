@@ -44,6 +44,9 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
     @Autowired
     private RealtimeNotificationService realtimeNotificationService;
 
+    @Autowired
+    private ProjectServiceClient projectServiceClient;
+
     /**
      * Transition an auction from SCHEDULED to LIVE status.
      * Requirements: 1.1, 1.4, 1.5
@@ -100,7 +103,8 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
      */
     @Override
     @Transactional
-    public BidDTO submitBid(String auctionId, String organizationId, String organizationName, BigDecimal amount) {
+    public BidDTO submitBid(String auctionId, String organizationId, String organizationName, 
+                           String organizationEmail, BigDecimal amount) {
         log.info("Submitting bid for auction: {}, organization: {}, amount: {}", 
                 auctionId, organizationName, amount);
 
@@ -117,6 +121,7 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
         bid.setOrganizationId(organizationId);
         bid.setBidderId(organizationId); // Using organizationId as bidderId
         bid.setBidderName(organizationName);
+        bid.setBidderEmail(organizationEmail);
         bid.setBidAmount(amount);
         bid.setBidStatus(BidStatus.PENDING);
         bid.setBidTime(LocalDateTime.now());
@@ -129,6 +134,11 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
         }
 
         log.info("Bid saved with ID: {}", savedBid.getId());
+
+        // Update auction's total bids counter
+        auction.setTotalBids(auction.getTotalBids() + 1);
+        auction.setUpdatedAt(LocalDateTime.now());
+        auctionRepository.update(auction);
 
         // Determine if this is the current lowest bid
         boolean isCurrentLowest = isLowestBid(auctionId, amount);
@@ -154,6 +164,9 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
     /**
      * Accept a pending bid.
      * Requirements: 4.1, 4.2, 4.5
+     * 
+     * Note: Multiple bids can be ACCEPTED. The lowest ACCEPTED bid is the current winner.
+     * When accepting a new bid, previous ACCEPTED bids remain ACCEPTED.
      */
     @Override
     @Transactional
@@ -175,20 +188,16 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
                     ". Only PENDING bids can be accepted.");
         }
 
-        // Find and update any existing ACCEPTED bid to PENDING
-        Optional<AuctionBid> existingAcceptedBid = auctionBidRepository.findAcceptedBidForAuction(auctionId);
-        if (existingAcceptedBid.isPresent()) {
-            AuctionBid previousAccepted = existingAcceptedBid.get();
-            previousAccepted.setBidStatus(BidStatus.PENDING);
-            auctionBidRepository.save(previousAccepted);
-            log.info("Updated previous accepted bid {} to PENDING", previousAccepted.getId());
-        }
-
         // Update target bid to ACCEPTED
+        // Note: We do NOT change previous ACCEPTED bids back to PENDING
+        // Multiple bids can be ACCEPTED; the lowest one is the current winner
         bid.setBidStatus(BidStatus.ACCEPTED);
         AuctionBid updatedBid = auctionBidRepository.save(bid);
 
         log.info("Bid {} accepted successfully", bidId);
+
+        // Determine if this is the current lowest ACCEPTED bid
+        boolean isCurrentLowest = isLowestAcceptedBid(auctionId, updatedBid.getBidAmount());
 
         // Build BidDTO
         BidDTO bidDTO = BidDTO.builder()
@@ -199,7 +208,7 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
                 .amount(updatedBid.getBidAmount())
                 .status(updatedBid.getBidStatus())
                 .createdAt(updatedBid.getBidTime())
-                .isCurrentLowest(true) // Accepted bid is considered current lowest
+                .isCurrentLowest(isCurrentLowest)
                 .build();
 
         // Notify realtime service to broadcast acceptance
@@ -302,18 +311,19 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
             remainingTimeMs = remaining > 0 ? remaining : 0L;
         }
 
-        // Calculate minimum next bid based on current lowest
+        // Calculate minimum next bid based on current lowest ACCEPTED bid
         BigDecimal minimumNextBid = null;
         if (currentAcceptedBid != null) {
             minimumNextBid = bidValidator.calculateMinimumNextBid(currentAcceptedBid.getAmount());
         } else if (!recentBids.isEmpty()) {
-            // If no accepted bid, use the lowest bid from recent bids
-            BigDecimal lowestAmount = recentBids.stream()
+            // If no accepted bid, use the lowest PENDING bid from recent bids
+            BigDecimal lowestPendingAmount = recentBids.stream()
+                    .filter(bid -> bid.getStatus() == BidStatus.PENDING)
                     .map(BidDTO::getAmount)
                     .min(BigDecimal::compareTo)
                     .orElse(null);
-            if (lowestAmount != null) {
-                minimumNextBid = bidValidator.calculateMinimumNextBid(lowestAmount);
+            if (lowestPendingAmount != null) {
+                minimumNextBid = bidValidator.calculateMinimumNextBid(lowestPendingAmount);
             }
         }
 
@@ -384,6 +394,20 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
 
         log.info("Auction {} successfully ended", auctionId);
 
+        // Update project service with auction results
+        if (acceptedBidOpt.isPresent()) {
+            AuctionBid winningBid = acceptedBidOpt.get();
+            projectServiceClient.updateProjectAfterAuction(
+                    auction.getProjectId(),
+                    winningBid.getId(),
+                    winningBid.getOrganizationId(),
+                    winningBid.getBidAmount(),
+                    auction.getTotalBids(),
+                    winningBid.getBidderEmail(),
+                    winningBid.getBidderName()
+            );
+        }
+
         // Notify realtime service to broadcast final status
         AuctionStatusChangeDTO statusChange = AuctionStatusChangeDTO.builder()
                 .auctionId(auctionId)
@@ -401,6 +425,7 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
     /**
      * Helper method to determine if a bid amount is the current lowest for an auction.
      * In a reverse auction, lower bids are better.
+     * Only considers PENDING and ACCEPTED bids (not REJECTED).
      */
     private boolean isLowestBid(String auctionId, BigDecimal amount) {
         List<AuctionBid> allBids = auctionBidRepository.findByAuctionIdOrderByAmountDesc(auctionId);
@@ -409,13 +434,31 @@ public class LiveAuctionServiceImpl implements LiveAuctionService {
             return true; // First bid is always the lowest
         }
 
-        // Find the minimum bid amount (for reverse auction)
+        // Find the minimum bid amount among non-rejected bids (for reverse auction)
         BigDecimal currentLowest = allBids.stream()
+                .filter(bid -> bid.getBidStatus() != BidStatus.REJECTED)
                 .map(AuctionBid::getBidAmount)
                 .min(BigDecimal::compareTo)
                 .orElse(null);
 
         return currentLowest == null || amount.compareTo(currentLowest) < 0;
+    }
+
+    /**
+     * Helper method to determine if a bid amount is the current lowest ACCEPTED bid.
+     * Used after accepting a bid to determine if it's the current winner.
+     */
+    private boolean isLowestAcceptedBid(String auctionId, BigDecimal amount) {
+        List<AuctionBid> allBids = auctionBidRepository.findByAuctionIdOrderByAmountDesc(auctionId);
+        
+        // Find the minimum bid amount among ACCEPTED bids only
+        BigDecimal currentLowestAccepted = allBids.stream()
+                .filter(bid -> bid.getBidStatus() == BidStatus.ACCEPTED)
+                .map(AuctionBid::getBidAmount)
+                .min(BigDecimal::compareTo)
+                .orElse(null);
+
+        return currentLowestAccepted != null && amount.compareTo(currentLowestAccepted) <= 0;
     }
 
     /**

@@ -34,12 +34,12 @@ vi.mock('@/utils/toast', () => ({
 
 describe('ClientLiveMonitor', () => {
   it('should render without crashing', () => {
-    const { container } = render(<ClientLiveMonitor auctionId={123} />);
+    const { container } = render(<ClientLiveMonitor auctionId="d479e8f9-a378-4df8-ba01-09c27ef42edd" />);
     expect(container).toBeInTheDocument();
   });
 
   it('should accept auctionId prop', () => {
-    const { container } = render(<ClientLiveMonitor auctionId={456} />);
+    const { container } = render(<ClientLiveMonitor auctionId="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />);
     expect(container).toBeInTheDocument();
   });
 });

@@ -2,15 +2,15 @@ import apiClient from './api';
 import type { AuctionStatus, Bid, LiveAuctionState } from '@/types/auction';
 
 export interface AuctionDTO {
-  id: number;
-  projectId: number;
-  clientUserId: number;
+  id: string;
+  projectId: string;
+  clientUserId: string;
   status: AuctionStatus;
   startTime: string;
   endTime: string;
   actualStartTime?: string;
   currentHighestBid?: number;
-  winnerOrganizationId?: number;
+  winnerOrganizationId?: string;
   winningBidAmount?: number;
   createdAt: string;
   updatedAt: string;
@@ -29,7 +29,7 @@ export interface ApiResponse<T> {
 /**
  * Transition auction from SCHEDULED to LIVE status
  */
-export const goLive = async (auctionId: number): Promise<AuctionDTO> => {
+export const goLive = async (auctionId: string): Promise<AuctionDTO> => {
   const response = await apiClient.post<ApiResponse<AuctionDTO>>(
     `/api/auctions/${auctionId}/go-live`
   );
@@ -40,7 +40,7 @@ export const goLive = async (auctionId: number): Promise<AuctionDTO> => {
  * Submit a bid to a live auction
  */
 export const submitBid = async (
-  auctionId: number,
+  auctionId: string,
   request: SubmitBidRequest
 ): Promise<Bid> => {
   const response = await apiClient.post<ApiResponse<Bid>>(
@@ -54,8 +54,8 @@ export const submitBid = async (
  * Accept a bid (client only)
  */
 export const acceptBid = async (
-  auctionId: number,
-  bidId: number
+  auctionId: string,
+  bidId: string
 ): Promise<Bid> => {
   const response = await apiClient.put<ApiResponse<Bid>>(
     `/api/auctions/${auctionId}/bids/${bidId}/accept`
@@ -67,8 +67,8 @@ export const acceptBid = async (
  * Reject a bid (client only)
  */
 export const rejectBid = async (
-  auctionId: number,
-  bidId: number
+  auctionId: string,
+  bidId: string
 ): Promise<Bid> => {
   const response = await apiClient.put<ApiResponse<Bid>>(
     `/api/auctions/${auctionId}/bids/${bidId}/reject`
@@ -79,7 +79,7 @@ export const rejectBid = async (
 /**
  * Get live auction state (for late joiners)
  */
-export const getLiveState = async (auctionId: number): Promise<LiveAuctionState> => {
+export const getLiveState = async (auctionId: string): Promise<LiveAuctionState> => {
   const response = await apiClient.get<ApiResponse<LiveAuctionState>>(
     `/api/auctions/${auctionId}/live-state`
   );
@@ -89,9 +89,15 @@ export const getLiveState = async (auctionId: number): Promise<LiveAuctionState>
 /**
  * End an auction manually
  */
-export const endAuction = async (auctionId: number): Promise<AuctionDTO> => {
+export const endAuction = async (auctionId: string, userId: string): Promise<AuctionDTO> => {
   const response = await apiClient.post<ApiResponse<AuctionDTO>>(
-    `/api/auctions/${auctionId}/end`
+    `/api/auctions/${auctionId}/end`,
+    {},
+    {
+      headers: {
+        'X-User-Id': userId
+      }
+    }
   );
   return response.data.data;
 };
@@ -116,6 +122,26 @@ export const getActiveAuctions = async (page: number = 0, limit: number = 20) =>
   return response.data.data;
 };
 
+/**
+ * Get auction by ID
+ */
+export const getAuctionById = async (auctionId: string) => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    `/api/auctions/${auctionId}`
+  );
+  return response.data.data;
+};
+
+/**
+ * Get bids for an auction
+ */
+export const getAuctionBids = async (auctionId: string, page: number = 0, limit: number = 100) => {
+  const response = await apiClient.get<ApiResponse<any>>(
+    `/api/auctions/${auctionId}/bids?page=${page}&limit=${limit}`
+  );
+  return response.data.data;
+};
+
 const auctionApiService = {
   goLive,
   submitBid,
@@ -125,6 +151,8 @@ const auctionApiService = {
   endAuction,
   getMyAuctions,
   getActiveAuctions,
+  getAuctionById,
+  getAuctionBids,
 };
 
 export default auctionApiService;

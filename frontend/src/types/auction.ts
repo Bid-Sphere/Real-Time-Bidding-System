@@ -9,9 +9,9 @@ export type AuctionStatus = 'SCHEDULED' | 'ACTIVE' | 'LIVE' | 'CLOSED' | 'ENDED'
 
 // Core Interfaces
 export interface Bid {
-  id: number;
-  auctionId: number;
-  organizationId: number;
+  id: string;
+  auctionId: string;
+  organizationId: string;
   organizationName: string;
   amount: number;
   status: BidStatus;
@@ -28,7 +28,7 @@ export interface LiveAuctionState {
 }
 
 export interface AuctionStatusChange {
-  auctionId: number;
+  auctionId: string;
   oldStatus: AuctionStatus;
   newStatus: AuctionStatus;
   timestamp: string;
@@ -57,9 +57,9 @@ export interface AuctionDTO {
 }
 
 export interface BidDTO {
-  id: number;
-  auctionId: number;
-  organizationId: number;
+  id: string;
+  auctionId: string;
+  organizationId: string;
   organizationName: string;
   amount: number;
   status: BidStatus;

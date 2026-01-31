@@ -1,5 +1,6 @@
 package com.bidsphere.auctionservice.dto.response;
 
+import com.bidsphere.auctionservice.constant.BidStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -25,6 +26,7 @@ public class AuctionBidsResponse {
         private LocalDateTime bidTime;
 
         private Boolean isWinning;
+        private BidStatus bidStatus;
 
         public String getId() {
             return id;
@@ -64,6 +66,14 @@ public class AuctionBidsResponse {
 
         public void setIsWinning(Boolean isWinning) {
             this.isWinning = isWinning;
+        }
+
+        public BidStatus getBidStatus() {
+            return bidStatus;
+        }
+
+        public void setBidStatus(BidStatus bidStatus) {
+            this.bidStatus = bidStatus;
         }
     }
 }

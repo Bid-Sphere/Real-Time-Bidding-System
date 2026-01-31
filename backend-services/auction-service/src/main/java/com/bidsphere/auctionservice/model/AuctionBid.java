@@ -18,6 +18,7 @@ public class AuctionBid
     private String auctionId;
     private String bidderId;
     private String bidderName;
+    private String bidderEmail;
     private BigDecimal bidAmount;
     private String proposal;
     private Boolean isWinning;

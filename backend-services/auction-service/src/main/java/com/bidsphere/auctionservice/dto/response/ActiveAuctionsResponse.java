@@ -36,6 +36,8 @@ public class ActiveAuctionsResponse {
         private BigDecimal currentHighestBid;
         private Integer totalBids;
         private Long timeRemaining;
+        private BigDecimal reservePrice;
+        private BigDecimal winningBidAmount;
 
         public String getId() {
             return id;
@@ -123,6 +125,22 @@ public class ActiveAuctionsResponse {
 
         public void setTimeRemaining(Long timeRemaining) {
             this.timeRemaining = timeRemaining;
+        }
+
+        public BigDecimal getReservePrice() {
+            return reservePrice;
+        }
+
+        public void setReservePrice(BigDecimal reservePrice) {
+            this.reservePrice = reservePrice;
+        }
+
+        public BigDecimal getWinningBidAmount() {
+            return winningBidAmount;
+        }
+
+        public void setWinningBidAmount(BigDecimal winningBidAmount) {
+            this.winningBidAmount = winningBidAmount;
         }
     }
 }
