@@ -155,7 +155,7 @@ export default function ClientSidePanel({ onNavigate }: ClientSidePanelProps) {
         {/* Footer */}
         <div className="p-4 border-t border-white/10">
           <div className="text-xs text-gray-500 text-center">
-            © 2024 BidSphere
+            © 2026 BidSphere
           </div>
         </div>
       </div>
