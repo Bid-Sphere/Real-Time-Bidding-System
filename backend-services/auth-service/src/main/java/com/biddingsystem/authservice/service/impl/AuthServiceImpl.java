@@ -8,6 +8,7 @@ import com.biddingsystem.authservice.model.*;
 import com.biddingsystem.authservice.repository.interfaces.ClientRepository;
 import com.biddingsystem.authservice.repository.interfaces.OrganizationRepository;
 import com.biddingsystem.authservice.repository.interfaces.UserRepository;
+import com.biddingsystem.authservice.service.EmailService;
 import com.biddingsystem.authservice.service.interfaces.AuthService;
 import com.biddingsystem.authservice.util.JwtUtil;
 import org.slf4j.Logger;
