@@ -25,8 +25,8 @@ export const RecommendedProjects = ({
       )
     : projects;
 
-  // Limit to 6 projects
-  const displayProjects = filteredProjects.slice(0, 6);
+  // Limit to 1-2 projects
+  const displayProjects = filteredProjects.slice(0, 2);
 
   if (displayProjects.length === 0) {
     return (
@@ -41,7 +41,7 @@ export const RecommendedProjects = ({
     <div className="bg-gradient-to-br from-[rgba(26,26,46,0.6)] to-[rgba(26,26,46,0.4)] backdrop-blur-sm rounded-xl p-6 border border-gray-800">
       <h2 className="text-xl font-semibold text-white mb-6">Recommended Projects</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {displayProjects.map((project) => (
           <div
             key={project.id}
@@ -70,7 +70,9 @@ export const RecommendedProjects = ({
             <div className="flex items-center gap-2 text-sm text-gray-300 mb-2">
               <DollarSign className="w-4 h-4 text-green-400" />
               <span>
-                ${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}
+                ${project.budgetMin === project.budgetMax 
+                  ? project.budgetMin.toLocaleString() 
+                  : `${project.budgetMin.toLocaleString()} - ${project.budgetMax.toLocaleString()}`}
               </span>
             </div>
 

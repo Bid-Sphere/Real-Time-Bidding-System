@@ -24,6 +24,14 @@ public class Endpoints {
     // Statistics endpoint
     public static final String GET_AUCTION_STATS = AUCTION_ID + "/stats";
 
+    // Live auction endpoints
+    public static final String GO_LIVE = AUCTION_ID + "/go-live";
+    public static final String SUBMIT_LIVE_BID = AUCTION_ID + "/bids";
+    public static final String ACCEPT_BID = AUCTION_ID + "/bids/{bidId}/accept";
+    public static final String REJECT_BID = AUCTION_ID + "/bids/{bidId}/reject";
+    public static final String GET_LIVE_STATE = AUCTION_ID + "/live-state";
+    public static final String END_AUCTION = AUCTION_ID + "/end";
+
     // Health endpoints
     public static final String HEALTH = "/health";
     public static final String DB_HEALTH = "/health/db";

@@ -3,8 +3,6 @@ import {
   Home,
   FolderOpen,
   Plus,
-  MessageCircle,
-  Bell,
   Settings,
   User,
   CreditCard,
@@ -22,7 +20,8 @@ import {
   Clock,
   DollarSign,
   Users,
-  Building
+  Building,
+  Gavel
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
@@ -59,6 +58,17 @@ const sidebarItems: SidebarItem[] = [
     ]
   },
   {
+    id: 'auctions',
+    label: 'Auctions',
+    icon: <Gavel className="h-5 w-5" />,
+    badge: 3,
+    submenu: [
+      { id: 'auctions-live', label: 'Live Auctions', icon: <Gavel className="h-4 w-4" />, badge: 2 },
+      { id: 'auctions-scheduled', label: 'Scheduled', icon: <Calendar className="h-4 w-4" />, badge: 1 },
+      { id: 'auctions-ended', label: 'Ended', icon: <Clock className="h-4 w-4" /> },
+    ]
+  },
+  {
     id: 'bids',
     label: 'Bids & Proposals',
     icon: <Users className="h-5 w-5" />,
@@ -67,17 +77,6 @@ const sidebarItems: SidebarItem[] = [
       { id: 'bids-received', label: 'Received Bids', icon: <Users className="h-4 w-4" />, badge: 15 },
       { id: 'bids-shortlisted', label: 'Shortlisted', icon: <Star className="h-4 w-4" />, badge: 8 },
       { id: 'bids-awarded', label: 'Awarded', icon: <Award className="h-4 w-4" /> },
-    ]
-  },
-  {
-    id: 'messages',
-    label: 'Messages',
-    icon: <MessageCircle className="h-5 w-5" />,
-    badge: 7,
-    submenu: [
-      { id: 'messages-all', label: 'All Conversations', icon: <MessageCircle className="h-4 w-4" />, badge: 7 },
-      { id: 'messages-unread', label: 'Unread', icon: <Bell className="h-4 w-4" />, badge: 3 },
-      { id: 'messages-archived', label: 'Archived', icon: <FolderOpen className="h-4 w-4" /> },
     ]
   },
   {
@@ -134,7 +133,7 @@ const quickActions = [
 
 export default function ClientSidebar({ activeSection, onSectionChange, onPostProject }: ClientSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'bids']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['projects', 'auctions', 'bids']);
 
   const toggleExpanded = (itemId: string) => {
     setExpandedItems(prev =>

@@ -9,6 +9,10 @@ public class AppConstants {
     public static final String BID_SUBMITTED = "Bid submitted successfully";
     public static final String AUCTION_CLOSED = "Auction closed successfully";
     public static final String AUCTION_CANCELLED = "Auction cancelled successfully";
+    public static final String AUCTION_LIVE = "Auction is now live";
+    public static final String AUCTION_ENDED = "Auction ended successfully";
+    public static final String BID_ACCEPTED = "Bid accepted successfully";
+    public static final String BID_REJECTED = "Bid rejected successfully";
 
     // Error Messages
     public static final String AUCTION_NOT_FOUND = "Auction not found";

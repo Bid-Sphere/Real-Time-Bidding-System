@@ -28,10 +28,18 @@ export const useBidStore = create<BidState>((set, get) => ({
   fetchMyBids: async (status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => {
     set({ isLoading: true, error: null });
     try {
+      // Get user from auth store to get organization ID
+      const { useAuthStore } = await import('@/store/authStore');
+      const user = useAuthStore.getState().user;
+      const organizationId = user?.organizationProfile?.id || user?.id;
+      
+      // Fetch standard bids
       const result = await biddingApiService.getMyBids({ status, page: 0, limit: 100 });
       
-      // Fetch project titles for all bids
+      // Fetch project API service once
       const projectApiService = await import('@/services/projectApiService').then(m => m.default);
+      
+      // Fetch project titles for standard bids
       const bidsWithTitles = await Promise.all(
         result.content.map(async (bid) => {
           try {
@@ -50,9 +58,57 @@ export const useBidStore = create<BidState>((set, get) => ({
         })
       );
       
+      // Fetch auction bids only if we have an organization ID
+      let auctionBidsWithEmails: any[] = [];
+      if (organizationId) {
+        try {
+          const auctionApiService = await import('@/services/auctionApiService').then(m => m.default);
+          const auctionBidsResult = await auctionApiService.getMyAuctionBids(String(organizationId), 0, 100);
+          
+          // Convert auction bids to BidResponse format and fetch client emails
+          auctionBidsWithEmails = await Promise.all(
+            auctionBidsResult.content
+              .filter((ab: any) => ab.auctionStatus === 'ENDED' && ab.isWinning) // Only show winning bids from ended auctions
+              .map(async (ab: any) => {
+                let clientEmail = '';
+                try {
+                  const project = await projectApiService.getProjectById(ab.projectId);
+                  clientEmail = project.clientName; // Backend returns email in clientName field
+                } catch (error) {
+                  console.error(`Failed to fetch project ${ab.projectId} for client email:`, error);
+                }
+                
+                return {
+                  id: ab.auctionId, // Use auction ID as bid ID
+                  projectId: ab.projectId,
+                  projectTitle: ab.projectTitle,
+                  bidderId: '', // Not available in auction bid response
+                  bidderName: '',
+                  proposedPrice: ab.myHighestBid,
+                  estimatedDuration: 0, // Not available in auction bid response
+                  proposal: '',
+                  status: 'ACCEPTED' as const, // Winning auction bids are treated as accepted
+                  submittedAt: ab.endTime, // Use end time as submitted time
+                  updatedAt: ab.endTime,
+                  acceptedAt: ab.endTime, // Use end time as accepted time
+                  clientEmail: clientEmail,
+                  ranking: 1, // Winner is always rank 1
+                  isAuctionBid: true, // Flag to identify auction bids
+                };
+              })
+          );
+        } catch (error) {
+          console.error('Failed to fetch auction bids:', error);
+          // Continue without auction bids if there's an error
+        }
+      }
+      
+      // Merge standard bids and auction bids
+      const allBids = [...bidsWithTitles, ...auctionBidsWithEmails];
+      
       set({ 
-        bids: bidsWithTitles,
-        total: result.totalElements,
+        bids: allBids,
+        total: result.totalElements + auctionBidsWithEmails.length,
         isLoading: false 
       });
     } catch (error) {

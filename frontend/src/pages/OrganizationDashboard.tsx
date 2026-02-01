@@ -17,8 +17,8 @@ export default function OrganizationDashboard() {
       setActiveSection('profile');
     } else if (path.includes('/projects')) {
       setActiveSection('projects');
-    } else if (path.includes('/chat')) {
-      setActiveSection('chat');
+    } else if (path.includes('/auctions')) {
+      setActiveSection('auctions');
     }
   }, [location.pathname, setActiveSection]);
 

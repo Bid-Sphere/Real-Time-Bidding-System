@@ -56,6 +56,8 @@ public class SecurityConfig
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        // Allow OPTIONS requests for CORS preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints - note: context path /auth is already stripped by Spring
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/health").permitAll()
@@ -66,6 +68,8 @@ public class SecurityConfig
                         .requestMatchers("/db-config").permitAll()
                         .requestMatchers("/status").permitAll()
                         .requestMatchers("/error").permitAll()
+                        // User profile endpoints - require authentication
+                        .requestMatchers("/api/users/**").authenticated()
                         // Role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
@@ -87,14 +91,14 @@ public class SecurityConfig
 
         // Parse allowed origins from environment variable
         if ("*".equals(corsAllowedOrigins)) {
-            // Allow all origins for local development
+            // Allow all origins for local development - MUST use allowedOriginPatterns with credentials
             corsConfig.setAllowedOriginPatterns(Arrays.asList("*"));
-            corsConfig.setAllowCredentials(false); // Cannot use credentials with wildcard
+            corsConfig.setAllowCredentials(true);
             log.info("CORS: Allowing all origins (local development mode)");
         } else {
-            // Production mode - use specific origins
+            // Production mode - use specific origin patterns (not origins) to support credentials
             String[] origins = corsAllowedOrigins.split(",");
-            corsConfig.setAllowedOrigins(Arrays.asList(origins));
+            corsConfig.setAllowedOriginPatterns(Arrays.asList(origins));
             corsConfig.setAllowCredentials(true);
             log.info("CORS: Allowing specific origins: {}", Arrays.toString(origins));
         }
@@ -104,15 +108,21 @@ public class SecurityConfig
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
         ));
 
-        // Allow all headers - this is important for preflight requests
-        corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        // Allow specific headers
+        corsConfig.setAllowedHeaders(Arrays.asList(
+                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", 
+                "X-User-Id", "X-Organization-Id", "X-Organization-Name"
+        ));
 
         // Exposed headers (headers that browsers are allowed to access)
         corsConfig.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Disposition",
                 "Content-Length",
-                "Content-Type"
+                "Content-Type",
+                "X-User-Id",
+                "X-Organization-Id",
+                "X-Organization-Name"
         ));
 
         corsConfig.setMaxAge(3600L); // Cache preflight request for 1 hour

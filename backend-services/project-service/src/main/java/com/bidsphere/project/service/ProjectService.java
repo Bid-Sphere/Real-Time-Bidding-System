@@ -107,4 +107,17 @@ public interface ProjectService {
      * Get project analytics
      */
     ProjectAnalyticsResponse getProjectAnalytics(String projectId, String clientId);
+    
+    /**
+     * Handle auction completion - update project status and store winning bid info
+     */
+    void handleAuctionCompletion(
+        String projectId,
+        String winningBidId,
+        String winnerOrganizationId,
+        BigDecimal winningAmount,
+        Integer totalBids,
+        String winnerEmail,
+        String winnerOrganizationName
+    );
 }

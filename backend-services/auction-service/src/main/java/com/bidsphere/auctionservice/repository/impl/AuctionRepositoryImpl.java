@@ -235,8 +235,9 @@ public class AuctionRepositoryImpl implements AuctionRepository
 
     @Override
     public List<Auction> findActiveAuctions(int limit, int offset) {
-        String sql = "SELECT * FROM auctions WHERE status = 'ACTIVE' ORDER BY end_time ASC LIMIT ? OFFSET ?";
-        log.info("Finding active auctions, limit: {}, offset: {}", limit, offset);
+        // Return both SCHEDULED and ACTIVE auctions for organizations to browse
+        String sql = "SELECT * FROM auctions WHERE status IN ('SCHEDULED', 'ACTIVE') ORDER BY start_time ASC, end_time ASC LIMIT ? OFFSET ?";
+        log.info("Finding active and scheduled auctions, limit: {}, offset: {}", limit, offset);
 
         try {
             return jdbcTemplate.query(sql, auctionRowMapper, limit, offset);
@@ -301,14 +302,42 @@ public class AuctionRepositoryImpl implements AuctionRepository
 
     @Override
     public int countActiveAuctions() {
-        String sql = "SELECT COUNT(*) FROM auctions WHERE status = 'ACTIVE'";
-        log.info("Counting active auctions");
+        // Count both SCHEDULED and ACTIVE auctions for organizations to browse
+        String sql = "SELECT COUNT(*) FROM auctions WHERE status IN ('SCHEDULED', 'ACTIVE')";
+        log.info("Counting active and scheduled auctions");
 
         try {
             Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
             return count != null ? count : 0;
         } catch (Exception e) {
             log.error("Error counting active auctions: {}", e.getMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    public List<Auction> findByClientUserId(String clientUserId, int limit, int offset) {
+        String sql = "SELECT * FROM auctions WHERE project_owner_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        log.info("Finding auctions for client: {}, limit: {}, offset: {}", clientUserId, limit, offset);
+
+        try {
+            return jdbcTemplate.query(sql, auctionRowMapper, clientUserId, limit, offset);
+        } catch (Exception e) {
+            log.error("Error finding auctions for client: {}", e.getMessage());
+            throw new RuntimeException("Error finding auctions: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int countByClientUserId(String clientUserId) {
+        String sql = "SELECT COUNT(*) FROM auctions WHERE project_owner_id = ?";
+        log.info("Counting auctions for client: {}", clientUserId);
+
+        try {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, clientUserId);
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            log.error("Error counting auctions for client: {}", e.getMessage());
             return 0;
         }
     }

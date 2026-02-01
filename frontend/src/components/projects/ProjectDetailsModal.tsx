@@ -21,7 +21,21 @@ export function ProjectDetailsModal({
 }: ProjectDetailsModalProps) {
   if (!isOpen) return null;
 
+  // Debug logging
+  console.log('=== PROJECT DETAILS MODAL ===');
+  console.log('Project:', project);
+  console.log('Bidding Type:', project.biddingType);
+  console.log('Winning Bid Amount:', project.winningBidAmount);
+  console.log('Winner Organization Name:', project.winnerOrganizationName);
+  console.log('Winner Email:', project.winnerEmail);
+  console.log('Budget Min:', project.budgetMin);
+  console.log('Budget Max:', project.budgetMax);
+  console.log('============================');
+
   const formatBudget = (min: number, max: number) => {
+    if (min === max) {
+      return `$${min.toLocaleString()}`;
+    }
     return `$${min.toLocaleString()} - $${max.toLocaleString()}`;
   };
 
@@ -112,9 +126,15 @@ export function ProjectDetailsModal({
           {/* Budget and Deadline */}
           <div className="grid grid-cols-2 gap-4 p-4 bg-white/5 rounded-lg">
             <div>
-              <p className="text-sm text-gray-400 mb-1">Budget Range</p>
+              <p className="text-sm text-gray-400 mb-1">
+                {project.biddingType === 'LIVE_AUCTION' && project.winningBidAmount 
+                  ? 'Winning Bid' 
+                  : 'Budget Range'}
+              </p>
               <p className="text-xl font-semibold text-white">
-                {formatBudget(project.budgetMin, project.budgetMax)}
+                {project.biddingType === 'LIVE_AUCTION' && project.winningBidAmount
+                  ? `$${project.winningBidAmount.toLocaleString()}`
+                  : formatBudget(project.budgetMin, project.budgetMax)}
               </p>
             </div>
             <div>
@@ -259,26 +279,76 @@ export function ProjectDetailsModal({
             </div>
           )}
 
-          {/* Bid Stats */}
+          {/* Bid Stats / Winner Info */}
           <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <div className="flex items-center gap-2 text-blue-400">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              <span className="font-medium">
-                {project.bidCount} {project.bidCount === 1 ? 'bid' : 'bids'} submitted
-              </span>
-            </div>
+            {/* Show Winner Info for Live Auction with winner */}
+            {project.biddingType === 'LIVE_AUCTION' && project.winnerOrganizationName ? (
+              <div>
+                <p className="text-sm text-gray-400 mb-3">Winner</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-green-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span className="text-white font-medium text-lg">
+                      {project.winnerOrganizationName}
+                    </span>
+                  </div>
+                  {project.winnerEmail && (
+                    <Button
+                      onClick={() => window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${project.winnerEmail}`, '_blank')}
+                      variant="outline"
+                      className="h-9 text-sm"
+                    >
+                      <svg
+                        className="w-4 h-4 mr-1.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Contact
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Show bid count for other projects */
+              <div className="flex items-center gap-2 text-blue-400">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <span className="font-medium">
+                  {project.bidCount} {project.bidCount === 1 ? 'bid' : 'bids'} submitted
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

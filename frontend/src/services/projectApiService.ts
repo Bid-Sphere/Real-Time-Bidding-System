@@ -61,6 +61,7 @@ const mapProjectToBackend = (data: CreateProjectData) => {
     requiredSkills: data.requiredSkills || [],
     strictDeadline: data.strictDeadline || false,
     biddingType: data.biddingType, // Already in correct format (LIVE_AUCTION, STANDARD)
+    auctionStartTime: data.auctionStartTime ? data.auctionStartTime.toISOString() : null,
     auctionEndTime: data.auctionEndTime ? data.auctionEndTime.toISOString() : null,
     isDraft: data.isDraft || false,
     attachments: [] // Empty for now, file upload not implemented
@@ -69,6 +70,12 @@ const mapProjectToBackend = (data: CreateProjectData) => {
 
 // Map backend response to frontend format
 const mapProjectFromBackend = (backendProject: any): Project => {
+  // Debug logging
+  console.log('=== MAPPING PROJECT FROM BACKEND ===');
+  console.log('Backend Project:', backendProject);
+  console.log('Winner Organization Name from backend:', backendProject.winnerOrganizationName);
+  console.log('===================================');
+
   // Helper to safely parse dates
   const parseDate = (dateValue: any): Date => {
     if (!dateValue) return new Date();
@@ -98,7 +105,13 @@ const mapProjectFromBackend = (backendProject: any): Project => {
     auctionEndTime: backendProject.auctionEndTime ? parseDate(backendProject.auctionEndTime) : undefined,
     isDraft: backendProject.isDraft || false,
     isBookmarked: backendProject.isBookmarked || false,
-    averageBidAmount: backendProject.averageBidAmount || 0
+    averageBidAmount: backendProject.averageBidAmount || 0,
+    // Auction winner fields
+    winningBidId: backendProject.winningBidId,
+    winnerOrganizationId: backendProject.winnerOrganizationId,
+    winningAmount: backendProject.winningAmount,
+    winnerEmail: backendProject.winnerEmail,
+    winnerOrganizationName: backendProject.winnerOrganizationName
   };
 };
 
@@ -142,6 +155,51 @@ export const projectApiService = {
       };
     } catch (error) {
       console.error('Error in getMyProjects:', error);
+      throw error;
+    }
+  },
+
+  // Get all public projects (for organizations to browse)
+  getAllProjects: async (filters?: { 
+    biddingType?: string; 
+    category?: string; 
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ projects: Project[]; total: number }> => {
+    const params = new URLSearchParams({
+      page: (filters?.page || 0).toString(),
+      limit: (filters?.limit || 20).toString(),
+    });
+    
+    if (filters?.biddingType) {
+      params.append('biddingType', filters.biddingType);
+    }
+    
+    if (filters?.category) {
+      params.append('category', filters.category);
+    }
+    
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    
+    const response = await apiCall(`/api/projects?${params.toString()}`);
+    
+    try {
+      return {
+        projects: response.data.content.map((project: any, index: number) => {
+          try {
+            return mapProjectFromBackend(project);
+          } catch (error) {
+            console.error(`Error mapping project at index ${index}:`, project, error);
+            throw new Error(`Failed to map project "${project?.title || 'Unknown'}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }),
+        total: response.data.totalElements || 0
+      };
+    } catch (error) {
+      console.error('Error in getAllProjects:', error);
       throw error;
     }
   },

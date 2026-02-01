@@ -29,16 +29,24 @@ public class SecurityConfig
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow OPTIONS requests for CORS preflight
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Public endpoints
                         .requestMatchers(
                                 "/api/auctions",
                                 "/api/auctions/health",
                                 "/api/auctions/project/**",
                                 "/api/auctions/active",
+                                "/api/auctions/my-auctions",
                                 "/api/auctions/{auctionId}",
                                 "/api/auctions/{auctionId}/bids",
                                 "/api/auctions/{auctionId}/my-bids",
                                 "/api/auctions/{auctionId}/stats",
+                                "/api/auctions/{auctionId}/live-state",
+                                "/api/auctions/{auctionId}/go-live",
+                                "/api/auctions/{auctionId}/bids/{bidId}/accept",
+                                "/api/auctions/{auctionId}/bids/{bidId}/reject",
+                                "/api/auctions/{auctionId}/end",
                                 "/swagger-ui/**",
                                 "/api-docs/**"
                         ).permitAll()
@@ -57,7 +65,7 @@ public class SecurityConfig
         if ("*".equals(corsAllowedOrigins)) {
             // Allow all origins for local development
             configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-            configuration.setAllowCredentials(false); // Cannot use credentials with wildcard
+            configuration.setAllowCredentials(true); // Allow credentials with origin patterns
             System.out.println("CORS: Allowing all origins (local development mode)");
         } else {
             // Production mode - use specific origins
@@ -68,8 +76,8 @@ public class SecurityConfig
         }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With", "X-User-Id", "X-Organization-Id", "X-Organization-Name"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-User-Id", "X-Organization-Id", "X-Organization-Name"));
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

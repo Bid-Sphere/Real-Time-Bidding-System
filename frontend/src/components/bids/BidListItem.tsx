@@ -53,7 +53,7 @@ export const BidListItem = ({ bid, onEdit, onWithdraw }: BidListItemProps) => {
             </span>
             <span className="flex items-center gap-1">
               <DollarSign className="w-4 h-4" />
-              ${bid.proposedPrice.toLocaleString()}
+              {bid.proposedPrice.toLocaleString()}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />

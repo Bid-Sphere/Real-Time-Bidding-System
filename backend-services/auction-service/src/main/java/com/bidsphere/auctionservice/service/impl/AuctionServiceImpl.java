@@ -35,13 +35,17 @@ public class AuctionServiceImpl implements AuctionService
 
     private final AuctionRepository auctionRepository;
     private final AuctionBidRepository auctionBidRepository;
+    private final ProjectServiceClient projectServiceClient;
 
     @Value("${app.auction.default-min-bid-increment:100.00}")
     private String defaultMinBidIncrement;
 
-    public AuctionServiceImpl(AuctionRepository auctionRepository, AuctionBidRepository auctionBidRepository) {
+    public AuctionServiceImpl(AuctionRepository auctionRepository, 
+                             AuctionBidRepository auctionBidRepository,
+                             ProjectServiceClient projectServiceClient) {
         this.auctionRepository = auctionRepository;
         this.auctionBidRepository = auctionBidRepository;
+        this.projectServiceClient = projectServiceClient;
     }
 
     @Override
@@ -121,6 +125,27 @@ public class AuctionServiceImpl implements AuctionService
     }
 
     @Override
+    public ActiveAuctionsResponse getMyAuctions(String clientUserId, int page, int limit) {
+        log.info("Getting auctions for client: {}, page: {}, limit: {}", clientUserId, page, limit);
+
+        validatePageAndLimit(page, limit);
+
+        int offset = page * limit;
+        List<Auction> auctions = auctionRepository.findByClientUserId(clientUserId, limit, offset);
+        int totalAuctions = auctionRepository.countByClientUserId(clientUserId);
+        int totalPages = (int) Math.ceil((double) totalAuctions / limit);
+
+        ActiveAuctionsResponse response = new ActiveAuctionsResponse();
+        response.setContent(mapToActiveAuctions(auctions));
+        response.setTotalElements(totalAuctions);
+        response.setTotalPages(totalPages);
+        response.setCurrentPage(page);
+
+        log.info("Found {} auctions for client: {}", auctions.size(), clientUserId);
+        return response;
+    }
+
+    @Override
     @Transactional
     public AuctionBidResponse submitBid(String auctionId, SubmitAuctionBidRequest request,
                                         String bidderId, String bidderName, String organizationId) {
@@ -144,6 +169,7 @@ public class AuctionServiceImpl implements AuctionService
         bid.setIsWinning(false);
         bid.setBidTime(LocalDateTime.now());
         bid.setOrganizationId(organizationId);
+        bid.setBidStatus(com.bidsphere.auctionservice.constant.BidStatus.PENDING);
 
         AuctionBid savedBid = auctionBidRepository.save(bid);
 
@@ -204,22 +230,37 @@ public class AuctionServiceImpl implements AuctionService
         auction.setClosedAt(LocalDateTime.now());
         auction.setUpdatedAt(LocalDateTime.now());
 
-        AuctionBid highestBid = auctionBidRepository.findHighestBidForAuction(auctionId).orElse(null);
+        // For reverse auction, find the LOWEST ACCEPTED bid
+        AuctionBid lowestAcceptedBid = auctionBidRepository.findLowestBidForAuction(auctionId).orElse(null);
 
-        if (highestBid != null) {
-            auctionBidRepository.updateWinningStatus(highestBid.getId(), true);
+        if (lowestAcceptedBid != null) {
+            auctionBidRepository.updateWinningStatus(lowestAcceptedBid.getId(), true);
 
-            auction.setWinnerBidId(highestBid.getId());
-            auction.setWinnerBidderId(highestBid.getBidderId());
-            auction.setWinnerBidderName(highestBid.getBidderName());
-            auction.setWinningBidAmount(highestBid.getBidAmount());
+            auction.setWinnerBidId(lowestAcceptedBid.getId());
+            auction.setWinnerBidderId(lowestAcceptedBid.getBidderId());
+            auction.setWinnerBidderName(lowestAcceptedBid.getBidderName());
+            auction.setWinningBidAmount(lowestAcceptedBid.getBidAmount());
 
-            log.info("Auction {} closed with winner: {}", auctionId, highestBid.getBidderName());
+            log.info("Auction {} closed with winner: {} (lowest accepted bid: {})", 
+                    auctionId, lowestAcceptedBid.getBidderName(), lowestAcceptedBid.getBidAmount());
         } else {
-            log.info("Auction {} closed with no bids", auctionId);
+            log.info("Auction {} closed with no accepted bids", auctionId);
         }
 
         auctionRepository.update(auction);
+        
+        // Update project service if there's a winner
+        if (lowestAcceptedBid != null) {
+            projectServiceClient.updateProjectAfterAuction(
+                auction.getProjectId(),
+                lowestAcceptedBid.getId(),
+                lowestAcceptedBid.getOrganizationId(),
+                lowestAcceptedBid.getBidAmount(),
+                auction.getTotalBids(),
+                lowestAcceptedBid.getBidderEmail(),
+                lowestAcceptedBid.getBidderName()
+            );
+        }
 
         return mapToAuctionCloseResponse(auction);
     }
@@ -274,7 +315,10 @@ public class AuctionServiceImpl implements AuctionService
                 myBid.setProjectTitle(auction.getProjectTitle());
                 myBid.setMyHighestBid(bid.getBidAmount());
                 myBid.setCurrentHighestBid(auction.getCurrentHighestBid());
+                
+                // Use is_winning flag from database (maintained by trigger)
                 myBid.setIsWinning(bid.getIsWinning());
+                
                 myBid.setAuctionStatus(auction.getStatus().name());
                 myBid.setEndTime(auction.getEndTime());
                 myBid.setTimeRemaining(calculateTimeRemaining(auction));
@@ -448,6 +492,20 @@ public class AuctionServiceImpl implements AuctionService
         response.setTotalBids(auction.getTotalBids());
         response.setTimeRemaining(calculateTimeRemaining(auction));
         response.setNextMinimumBid(calculateNextMinimumBid(auction));
+        response.setWinningBidAmount(auction.getWinningBidAmount());
+        
+        // Calculate current lowest bid (for reverse auction)
+        if (auction.getStatus() == AuctionStatus.ACTIVE || auction.getStatus() == AuctionStatus.SCHEDULED) {
+            // Get the lowest bid from all bids
+            AuctionBid lowestBid = auctionBidRepository.findLowestBidForAuction(auction.getId()).orElse(null);
+            if (lowestBid != null) {
+                response.setCurrentLowestBid(lowestBid.getBidAmount());
+            }
+        } else if (auction.getStatus() == AuctionStatus.ENDED) {
+            // For ended auctions, show the winning bid as the lowest
+            response.setCurrentLowestBid(auction.getWinningBidAmount());
+        }
+        
         return response;
     }
 
@@ -460,10 +518,15 @@ public class AuctionServiceImpl implements AuctionService
             activeAuction.setProjectId(auction.getProjectId());
             activeAuction.setProjectTitle(auction.getProjectTitle());
             activeAuction.setProjectCategory(auction.getProjectCategory());
+            activeAuction.setStartTime(auction.getStartTime());
             activeAuction.setEndTime(auction.getEndTime());
+            activeAuction.setCreatedAt(auction.getCreatedAt());
+            activeAuction.setStatus(auction.getStatus());
             activeAuction.setCurrentHighestBid(auction.getCurrentHighestBid());
             activeAuction.setTotalBids(auction.getTotalBids());
             activeAuction.setTimeRemaining(calculateTimeRemaining(auction));
+            activeAuction.setReservePrice(auction.getReservePrice());
+            activeAuction.setWinningBidAmount(auction.getWinningBidAmount());
 
             activeAuctions.add(activeAuction);
         }
@@ -492,6 +555,7 @@ public class AuctionServiceImpl implements AuctionService
             detail.setBidAmount(bid.getBidAmount());
             detail.setBidTime(bid.getBidTime());
             detail.setIsWinning(bid.getIsWinning());
+            detail.setBidStatus(bid.getBidStatus());
 
             bidDetails.add(detail);
         }

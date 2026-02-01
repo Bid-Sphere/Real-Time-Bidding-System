@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Project, FilterState, Bid } from '@/types/organization';
 
-const API_BASE_URL = import.meta.env.VITE_PROJECT_API_URL || 'http://localhost:8082';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // Helper: Map backend status to frontend status
 const mapBackendStatusToFrontend = (backendStatus: string): Project['status'] => {
@@ -49,6 +49,10 @@ const mapFiltersToQueryParams = (filters: FilterState, page: number): URLSearchP
   // Convert frontend page (1-based) to backend page (0-based)
   params.append('page', (page - 1).toString());
   params.append('limit', '20');
+  
+  // Exclude LIVE_AUCTION projects from project discovery
+  // Organizations should only see STANDARD bidding projects
+  params.append('biddingType', 'STANDARD');
   
   if (filters.category) {
     params.append('category', filters.category);

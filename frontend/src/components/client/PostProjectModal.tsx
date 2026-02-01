@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Upload, Calendar, DollarSign, MapPin } from 'lucide-react';
+import { X, Upload, Calendar, Clock, DollarSign, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
@@ -16,6 +16,19 @@ interface PostProjectModalProps {
   initialData?: Project;
   isEditMode?: boolean;
 }
+
+// Helper function to format date for datetime-local input (keeps local timezone)
+const formatDateTimeLocal = (date: Date | undefined): string => {
+  if (!date) return '';
+  const d = new Date(date);
+  // Get local date components
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 // interface AttachedUrl {
 //   id: string;
@@ -94,6 +107,22 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
       if (!formData.budget || formData.budget <= 0) {
         newErrors.budget = 'Budget must be greater than 0';
       }
+      if (formData.biddingType === 'LIVE_AUCTION') {
+        if (!formData.auctionStartTime) {
+          newErrors.auctionStartTime = 'Auction start time is required for live auctions';
+        }
+        if (!formData.auctionEndTime) {
+          newErrors.auctionEndTime = 'Auction end time is required for live auctions';
+        }
+        if (formData.auctionStartTime && formData.auctionEndTime) {
+          if (formData.auctionEndTime <= formData.auctionStartTime) {
+            newErrors.auctionEndTime = 'Auction end time must be after start time';
+          }
+        }
+        if (formData.deadline && formData.auctionEndTime && formData.auctionEndTime >= formData.deadline) {
+          newErrors.auctionEndTime = 'Auction end time must be before project deadline';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -127,6 +156,7 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
         requiredSkills: formData.requiredSkills!,
         biddingType: formData.biddingType!,
         strictDeadline: formData.strictDeadline!,
+        auctionStartTime: formData.auctionStartTime,
         auctionEndTime: formData.auctionEndTime,
         isDraft: formData.isDraft
       };
@@ -381,8 +411,14 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
               <Input
                 label="Timeline/Deadline"
                 type="date"
+                min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 value={formData.deadline ? formData.deadline.toISOString().split('T')[0] : ''}
-                onChange={(e) => updateFormData('deadline', new Date(e.target.value))}
+                onChange={(e) => {
+                  // Set deadline to end of selected day (23:59:59) to ensure it's at least 24 hours from now
+                  const selectedDate = new Date(e.target.value);
+                  selectedDate.setHours(23, 59, 59, 999);
+                  updateFormData('deadline', selectedDate);
+                }}
                 error={errors.deadline}
                 leftIcon={<Calendar className="h-4 w-4" />}
                 required
@@ -448,6 +484,43 @@ export default function PostProjectModal({ isOpen, onClose, onSubmit, initialDat
                   </label>
                 </div>
               </div>
+
+              {/* Auction Times - Only show for LIVE_AUCTION */}
+              {formData.biddingType === 'LIVE_AUCTION' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Auction Start Time"
+                    type="datetime-local"
+                    min={new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16)}
+                    max={formData.deadline ? formatDateTimeLocal(formData.deadline) : undefined}
+                    value={formatDateTimeLocal(formData.auctionStartTime)}
+                    onChange={(e) => {
+                      const selectedDateTime = new Date(e.target.value);
+                      updateFormData('auctionStartTime', selectedDateTime);
+                    }}
+                    error={errors.auctionStartTime}
+                    leftIcon={<Clock className="h-4 w-4" />}
+                    required
+                    helperText="When the auction will be scheduled to start"
+                  />
+                  
+                  <Input
+                    label="Auction End Time"
+                    type="datetime-local"
+                    min={formData.auctionStartTime ? formatDateTimeLocal(formData.auctionStartTime) : new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().slice(0, 16)}
+                    max={formData.deadline ? formatDateTimeLocal(formData.deadline) : undefined}
+                    value={formatDateTimeLocal(formData.auctionEndTime)}
+                    onChange={(e) => {
+                      const selectedDateTime = new Date(e.target.value);
+                      updateFormData('auctionEndTime', selectedDateTime);
+                    }}
+                    error={errors.auctionEndTime}
+                    leftIcon={<Clock className="h-4 w-4" />}
+                    required
+                    helperText="When the auction will automatically end"
+                  />
+                </div>
+              )}
 
               <Input
                 label="Starting Bid/Budget"

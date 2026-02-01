@@ -71,6 +71,24 @@ public class Project {
     @Column(name = "auction_end_time")
     private LocalDateTime auctionEndTime;
     
+    @Column(name = "auction_id", length = 255)
+    private String auctionId;
+    
+    @Column(name = "winning_bid_id", length = 255)
+    private String winningBidId;
+    
+    @Column(name = "winner_organization_id", length = 255)
+    private String winnerOrganizationId;
+    
+    @Column(name = "winning_amount", precision = 12, scale = 2)
+    private BigDecimal winningAmount;
+    
+    @Column(name = "winner_email", length = 255)
+    private String winnerEmail;
+    
+    @Column(name = "winner_organization_name", length = 255)
+    private String winnerOrganizationName;
+    
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProjectAttachment> attachments = new ArrayList<>();
     
@@ -144,6 +162,18 @@ public class Project {
     public LocalDateTime getAuctionEndTime() { return auctionEndTime; }
     public void setAuctionEndTime(LocalDateTime auctionEndTime) { this.auctionEndTime = auctionEndTime; }
     
+    public String getAuctionId() { return auctionId; }
+    public void setAuctionId(String auctionId) { this.auctionId = auctionId; }
+    
+    public String getWinningBidId() { return winningBidId; }
+    public void setWinningBidId(String winningBidId) { this.winningBidId = winningBidId; }
+    
+    public String getWinnerOrganizationId() { return winnerOrganizationId; }
+    public void setWinnerOrganizationId(String winnerOrganizationId) { this.winnerOrganizationId = winnerOrganizationId; }
+    
+    public BigDecimal getWinningAmount() { return winningAmount; }
+    public void setWinningAmount(BigDecimal winningAmount) { this.winningAmount = winningAmount; }
+    
     public List<ProjectAttachment> getAttachments() { return attachments; }
     public void setAttachments(List<ProjectAttachment> attachments) { this.attachments = attachments; }
     
@@ -167,6 +197,12 @@ public class Project {
     
     public BigDecimal getAverageBidAmount() { return averageBidAmount; }
     public void setAverageBidAmount(BigDecimal averageBidAmount) { this.averageBidAmount = averageBidAmount; }
+    
+    public String getWinnerEmail() { return winnerEmail; }
+    public void setWinnerEmail(String winnerEmail) { this.winnerEmail = winnerEmail; }
+    
+    public String getWinnerOrganizationName() { return winnerOrganizationName; }
+    public void setWinnerOrganizationName(String winnerOrganizationName) { this.winnerOrganizationName = winnerOrganizationName; }
     
     // Helper methods
     public void addAttachment(ProjectAttachment attachment) {

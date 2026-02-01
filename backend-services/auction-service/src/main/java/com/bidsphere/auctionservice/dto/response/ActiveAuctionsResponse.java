@@ -1,5 +1,6 @@
 package com.bidsphere.auctionservice.dto.response;
 
+import com.bidsphere.auctionservice.constant.AuctionStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -23,11 +24,20 @@ public class ActiveAuctionsResponse {
         private String projectCategory;
 
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime startTime;
+
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime endTime;
 
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime createdAt;
+
+        private AuctionStatus status;
         private BigDecimal currentHighestBid;
         private Integer totalBids;
         private Long timeRemaining;
+        private BigDecimal reservePrice;
+        private BigDecimal winningBidAmount;
 
         public String getId() {
             return id;
@@ -61,12 +71,36 @@ public class ActiveAuctionsResponse {
             this.projectCategory = projectCategory;
         }
 
+        public LocalDateTime getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(LocalDateTime startTime) {
+            this.startTime = startTime;
+        }
+
         public LocalDateTime getEndTime() {
             return endTime;
         }
 
         public void setEndTime(LocalDateTime endTime) {
             this.endTime = endTime;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+        }
+
+        public AuctionStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(AuctionStatus status) {
+            this.status = status;
         }
 
         public BigDecimal getCurrentHighestBid() {
@@ -91,6 +125,22 @@ public class ActiveAuctionsResponse {
 
         public void setTimeRemaining(Long timeRemaining) {
             this.timeRemaining = timeRemaining;
+        }
+
+        public BigDecimal getReservePrice() {
+            return reservePrice;
+        }
+
+        public void setReservePrice(BigDecimal reservePrice) {
+            this.reservePrice = reservePrice;
+        }
+
+        public BigDecimal getWinningBidAmount() {
+            return winningBidAmount;
+        }
+
+        public void setWinningBidAmount(BigDecimal winningBidAmount) {
+            this.winningBidAmount = winningBidAmount;
         }
     }
 }

@@ -38,9 +38,12 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
+                // Allow OPTIONS requests for CORS preflight
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Public endpoints
                 .requestMatchers("/api/projects/health").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/projects/*/view").permitAll() // Allow tracking views
+                .requestMatchers(HttpMethod.POST, "/api/projects/*/auction-completed").permitAll() // Allow auction service to update
                 // GET endpoints - public for browsing projects
                 .requestMatchers(HttpMethod.GET, "/api/projects").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
@@ -60,7 +63,7 @@ public class SecurityConfig {
         if ("*".equals(corsAllowedOrigins)) {
             // Allow all origins for local development
             configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-            configuration.setAllowCredentials(false); // Cannot use credentials with wildcard
+            configuration.setAllowCredentials(true); // Allow credentials with origin patterns
             System.out.println("CORS: Allowing all origins (local development mode)");
         } else {
             // Production mode - use specific origins
@@ -71,8 +74,8 @@ public class SecurityConfig {
         }
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

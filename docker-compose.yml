@@ -257,6 +257,12 @@ services:
       # Auth Service URL
       SERVICES_AUTH_SERVICE_URL: http://auth-service:8081
       
+      # Realtime Service URL
+      SERVICES_REALTIME_SERVICE_URL: http://realtime-service:8084
+      
+      # Project Service URL
+      SERVICES_PROJECT_SERVICE_URL: http://project-service:8082
+      
       # CORS Configuration
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
       
@@ -330,7 +336,7 @@ services:
       
       # JWT Configuration (must match auth-service)
       Jwt__Secret: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-      Jwt__Issuer: bidsphere-auth
+      Jwt__Issuer: ${JWT_ISSUER:-bidsphere-auth}
       Jwt__Expiration: 86400000
       
       # Redis Configuration
@@ -361,14 +367,14 @@ services:
       dockerfile: Dockerfile
       args:
         # Environment variables for build
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8081}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
         VITE_APP_NAME: BidSphere
     container_name: bidsphere-frontend
     ports:
       - "3000:80"
     environment:
       # Runtime environment variables (if needed)
-      API_URL: ${VITE_API_URL:-http://localhost:8081}
+      API_URL: ${VITE_API_URL:-http://localhost:8080}
     # Note: Frontend is NOT connected to backend in docker-compose
     # This allows independent deployment and testing
     networks:

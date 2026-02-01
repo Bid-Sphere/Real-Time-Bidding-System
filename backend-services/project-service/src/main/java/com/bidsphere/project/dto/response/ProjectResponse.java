@@ -29,6 +29,11 @@ public class ProjectResponse {
     private Boolean isBookmarked;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String winningBidId;
+    private String winnerOrganizationId;
+    private BigDecimal winningAmount;
+    private String winnerEmail;
+    private String winnerOrganizationName;
     
     // Constructors
     public ProjectResponse() {
@@ -97,6 +102,21 @@ public class ProjectResponse {
     
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    
+    public String getWinningBidId() { return winningBidId; }
+    public void setWinningBidId(String winningBidId) { this.winningBidId = winningBidId; }
+    
+    public String getWinnerOrganizationId() { return winnerOrganizationId; }
+    public void setWinnerOrganizationId(String winnerOrganizationId) { this.winnerOrganizationId = winnerOrganizationId; }
+    
+    public BigDecimal getWinningAmount() { return winningAmount; }
+    public void setWinningAmount(BigDecimal winningAmount) { this.winningAmount = winningAmount; }
+    
+    public String getWinnerEmail() { return winnerEmail; }
+    public void setWinnerEmail(String winnerEmail) { this.winnerEmail = winnerEmail; }
+    
+    public String getWinnerOrganizationName() { return winnerOrganizationName; }
+    public void setWinnerOrganizationName(String winnerOrganizationName) { this.winnerOrganizationName = winnerOrganizationName; }
     
     // Inner class for AttachmentResponse
     public static class AttachmentResponse {

@@ -29,6 +29,8 @@ public class AuctionDetailResponse {
     private Integer totalBids;
     private Long timeRemaining;
     private BigDecimal nextMinimumBid;
+    private BigDecimal winningBidAmount;
+    private BigDecimal currentLowestBid;
 
     public String getId() {
         return id;
@@ -140,5 +142,21 @@ public class AuctionDetailResponse {
 
     public void setNextMinimumBid(BigDecimal nextMinimumBid) {
         this.nextMinimumBid = nextMinimumBid;
+    }
+
+    public BigDecimal getWinningBidAmount() {
+        return winningBidAmount;
+    }
+
+    public void setWinningBidAmount(BigDecimal winningBidAmount) {
+        this.winningBidAmount = winningBidAmount;
+    }
+
+    public BigDecimal getCurrentLowestBid() {
+        return currentLowestBid;
+    }
+
+    public void setCurrentLowestBid(BigDecimal currentLowestBid) {
+        this.currentLowestBid = currentLowestBid;
     }
 }

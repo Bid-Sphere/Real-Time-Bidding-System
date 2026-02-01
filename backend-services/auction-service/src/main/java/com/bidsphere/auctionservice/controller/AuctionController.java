@@ -9,6 +9,7 @@ import com.bidsphere.auctionservice.dto.request.CancelAuctionRequest;
 import com.bidsphere.auctionservice.dto.response.*;
 import com.bidsphere.auctionservice.model.ErrorResponse;
 import com.bidsphere.auctionservice.service.interfaces.AuctionService;
+import com.bidsphere.auctionservice.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -28,10 +29,12 @@ public class AuctionController {
 
     private final AuctionService auctionService;
     private final JdbcTemplate jdbcTemplate;
+    private final JwtUtil jwtUtil;
 
-    public AuctionController(AuctionService auctionService, JdbcTemplate jdbcTemplate) {
+    public AuctionController(AuctionService auctionService, JdbcTemplate jdbcTemplate, JwtUtil jwtUtil) {
         this.auctionService = auctionService;
         this.jdbcTemplate = jdbcTemplate;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping(Endpoints.CREATE_AUCTION)
@@ -145,6 +148,61 @@ public class AuctionController {
             ErrorResponse errorResponse = ErrorResponse.builder()
                     .error("ACTIVE_AUCTIONS_RETRIEVAL_FAILED")
                     .message("Failed to retrieve active auctions")
+                    .timestamp(LocalDateTime.now())
+                    .path(servletRequest.getRequestURI())
+                    .build();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
+        }
+    }
+
+    @GetMapping("/my-auctions")
+    public ResponseEntity<?> getMyAuctions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestHeader(value = SecurityConstants.USER_ID_HEADER, required = false) String clientUserId,
+            @RequestHeader(value = SecurityConstants.AUTH_HEADER, required = false) String authHeader,
+            HttpServletRequest servletRequest) {
+
+        log.info("Getting auctions for client, page: {}, limit: {}", page, limit);
+
+        try {
+            String userId = clientUserId;
+            
+            // If no X-User-Id header, try to extract from JWT token
+            if (userId == null || userId.isEmpty()) {
+                if (authHeader != null && authHeader.startsWith(SecurityConstants.BEARER_PREFIX)) {
+                    String token = authHeader.substring(SecurityConstants.BEARER_PREFIX.length());
+                    userId = jwtUtil.extractUserId(token);
+                    log.info("Extracted userId from JWT: {}", userId);
+                }
+            }
+            
+            // If still no user ID, return empty response
+            if (userId == null || userId.isEmpty()) {
+                log.warn("No user ID found in headers or JWT token");
+                ActiveAuctionsResponse emptyResponse = new ActiveAuctionsResponse();
+                emptyResponse.setContent(new java.util.ArrayList<>());
+                emptyResponse.setTotalElements(0);
+                emptyResponse.setTotalPages(0);
+                emptyResponse.setCurrentPage(page);
+                
+                BaseResponse<ActiveAuctionsResponse> response = BaseResponse.success(emptyResponse);
+                return ResponseEntity.ok(response);
+            }
+            
+            ActiveAuctionsResponse auctions = auctionService.getMyAuctions(userId, page, limit);
+
+            BaseResponse<ActiveAuctionsResponse> response = BaseResponse.success(auctions);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Get my auctions failed: {}", e.getMessage(), e);
+
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .error("MY_AUCTIONS_RETRIEVAL_FAILED")
+                    .message("Failed to retrieve my auctions")
                     .timestamp(LocalDateTime.now())
                     .path(servletRequest.getRequestURI())
                     .build();

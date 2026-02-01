@@ -53,6 +53,12 @@ export interface ClientProject {
   biddingEndDate: string;
   postedAt: string;
   updatedAt: string;
+  // Auction winner fields
+  winningBidId?: string;
+  winnerOrganizationId?: string;
+  winningAmount?: number;
+  winnerEmail?: string;
+  winnerOrganizationName?: string;
 }
 
 // Bid Received by Client

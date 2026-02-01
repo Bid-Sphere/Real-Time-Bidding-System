@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useOrganizationStore } from '@/store/useOrganizationStore';
 import { useBidStore } from '@/store/useBidStore';
 import { useProjectStore } from '@/store/useProjectStore';
+import { useAuthStore } from '@/store/authStore';
 import { MetricCard } from '@/components/analytics/MetricCard';
 import { RecommendedProjects } from '@/components/analytics/RecommendedProjects';
 import { MyBidsSummary } from '@/components/analytics/MyBidsSummary';
-import { RecentActivity } from '@/components/analytics/RecentActivity';
 import { EditBidModal } from '@/components/bids/EditBidModal';
-import type { Project, Activity, BidSummary, Bid } from '@/types/organization';
+import type { Project, BidSummary, Bid } from '@/types/organization';
 import type { BidResponse } from '@/services/biddingApiService';
 import { 
   TrendingUp, 
@@ -17,35 +17,34 @@ import {
 } from 'lucide-react';
 
 const AnalyticsHome = () => {
-  const { profile, analytics, fetchProfile, fetchAnalytics } = useOrganizationStore();
+  const { user } = useAuthStore();
+  const { profile, fetchProfile } = useOrganizationStore();
   const { bids, fetchMyBids } = useBidStore();
   const { markAsInterested } = useProjectStore();
   
   const [recommendedProjects, setRecommendedProjects] = useState<Project[]>([]);
-  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
   const [isLoadingRecommended, setIsLoadingRecommended] = useState(false);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
   const [showAllBids, setShowAllBids] = useState(false);
   const [editingBid, setEditingBid] = useState<Bid | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Hardcoded orgId for now - in production this would come from auth context
-  const orgId = 'org-1';
+  // Get organization ID from user
+  const orgId = user?.id || '';
 
   useEffect(() => {
     // Fetch all data on mount
     const fetchData = async () => {
+      if (!orgId) return;
+      
       await Promise.all([
         fetchProfile(orgId),
-        fetchAnalytics(orgId),
         fetchMyBids(), // Fetch bids to populate the summary
         fetchRecommendedProjectsData(),
-        fetchRecentActivitiesData(),
       ]);
     };
 
     fetchData();
-  }, []);
+  }, [orgId]);
 
   const fetchRecommendedProjectsData = async () => {
     setIsLoadingRecommended(true);
@@ -58,20 +57,6 @@ const AnalyticsHome = () => {
       console.error('Failed to fetch recommended projects:', error);
     } finally {
       setIsLoadingRecommended(false);
-    }
-  };
-
-  const fetchRecentActivitiesData = async () => {
-    setIsLoadingActivities(true);
-    try {
-      // TODO: Connect to real API
-      // Mock data for now
-      const activities: Activity[] = [];
-      setRecentActivities(activities);
-    } catch (error) {
-      console.error('Failed to fetch recent activities:', error);
-    } finally {
-      setIsLoadingActivities(false);
     }
   };
 
@@ -128,11 +113,8 @@ const AnalyticsHome = () => {
     const { updateBid } = useBidStore.getState();
     await updateBid(bidId, proposedPrice, estimatedDuration, proposal);
     
-    // Refresh bids and analytics after update
-    await Promise.all([
-      fetchMyBids(),
-      fetchAnalytics(orgId),
-    ]);
+    // Refresh bids after update
+    await fetchMyBids();
   };
 
   const handleCloseEditModal = () => {
@@ -140,14 +122,23 @@ const AnalyticsHome = () => {
     setEditingBid(null);
   };
 
-  // Calculate bid summary from analytics data
+  // Calculate bid summary from actual bids (includes both standard and auction bids)
   const bidSummary: BidSummary = {
-    total: analytics?.totalBids || 0,
-    pending: analytics?.pendingBids || 0,
-    accepted: analytics?.acceptedBids || 0,
-    shortlisted: 0, // Not in analytics data, would need to calculate from bids
-    rejected: analytics?.rejectedBids || 0,
+    total: bids.length,
+    pending: bids.filter(b => b.status === 'PENDING').length,
+    accepted: bids.filter(b => b.status === 'ACCEPTED').length,
+    shortlisted: 0, // Not tracking shortlisted status yet
+    rejected: bids.filter(b => b.status === 'REJECTED').length,
   };
+
+  // Calculate metrics from actual bids data
+  const totalBidsSubmitted = bids.length;
+  const acceptedBids = bids.filter(b => b.status === 'ACCEPTED' || (b as any).isWinning).length;
+  const winRate = totalBidsSubmitted > 0 ? Math.round((acceptedBids / totalBidsSubmitted) * 100) : 0;
+  const activeProjects = bids.filter(b => b.status === 'ACCEPTED' || (b as any).isWinning).length;
+  const totalEarnings = bids
+    .filter(b => b.status === 'ACCEPTED' || (b as any).isWinning)
+    .reduce((sum, bid) => sum + bid.proposedPrice, 0);
 
   return (
     <div className="space-y-6">
@@ -155,25 +146,23 @@ const AnalyticsHome = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Bids Submitted"
-          value={analytics?.totalBids || 0}
+          value={totalBidsSubmitted}
           icon={<Target className="w-6 h-6" />}
         />
         <MetricCard
           title="Win Rate"
-          value={`${analytics?.winRate || 0}%`}
+          value={`${winRate}%`}
           icon={<TrendingUp className="w-6 h-6" />}
-          trend={{ value: 5.2, direction: 'up' }}
         />
         <MetricCard
           title="Active Projects"
-          value={analytics?.activeProjects || 0}
+          value={activeProjects}
           icon={<Briefcase className="w-6 h-6" />}
         />
         <MetricCard
           title="Total Earnings"
-          value={`$${(analytics?.totalEarnings || 0).toLocaleString()}`}
+          value={`$${totalEarnings.toLocaleString()}`}
           icon={<DollarSign className="w-6 h-6" />}
-          trend={{ value: 12.5, direction: 'up' }}
         />
       </div>
 
@@ -192,25 +181,13 @@ const AnalyticsHome = () => {
         />
       )}
 
-      {/* Two Column Layout for Bids and Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* My Bids Summary */}
-        <MyBidsSummary
-          summary={bidSummary}
-          bids={showAllBids ? bids : undefined}
-          onViewAll={handleViewAllBids}
-          onEditBid={handleEditBid}
-        />
-
-        {/* Recent Activity */}
-        {isLoadingActivities ? (
-          <div className="bg-gradient-to-br from-[rgba(26,26,46,0.6)] to-[rgba(26,26,46,0.4)] backdrop-blur-sm rounded-xl p-8 border border-gray-800">
-            <div className="text-center text-gray-400">Loading recent activities...</div>
-          </div>
-        ) : (
-          <RecentActivity activities={recentActivities} />
-        )}
-      </div>
+      {/* Full Width Bids Summary */}
+      <MyBidsSummary
+        summary={bidSummary}
+        bids={showAllBids ? bids : undefined}
+        onViewAll={handleViewAllBids}
+        onEditBid={handleEditBid}
+      />
 
       {/* Edit Bid Modal */}
       <EditBidModal

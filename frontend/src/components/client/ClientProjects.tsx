@@ -109,7 +109,13 @@ export default function ClientProjects() {
       status: statusMap[project.status] || 'open',
       location: project.location,
       postedAt: project.createdAt.toISOString(),
-      hasBid: false
+      hasBid: false,
+      // Auction-specific fields
+      biddingType: project.biddingType,
+      winningBidAmount: project.winningAmount,
+      winnerOrganizationId: project.winnerOrganizationId,
+      winnerEmail: project.winnerEmail,
+      winnerOrganizationName: project.winnerOrganizationName
     };
   };
   
@@ -207,7 +213,17 @@ export default function ClientProjects() {
   };
 
   const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    console.log('=== FORMAT STATUS ===');
+    console.log('Input status:', status);
+    console.log('Type:', typeof status);
+    const step1 = status.replace(/_/g, ' ');
+    console.log('After replace underscores:', step1);
+    const step2 = step1.toLowerCase();
+    console.log('After toLowerCase:', step2);
+    const step3 = step2.replace(/\b\w/g, l => l.toUpperCase());
+    console.log('After capitalize:', step3);
+    console.log('====================');
+    return step3;
   };
 
   if (isLoading && projects.length === 0) {
@@ -382,7 +398,7 @@ export default function ClientProjects() {
                   <div className="flex items-center gap-4 text-sm text-gray-400">
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-4 w-4" />
-                      <span>${project.budget.toLocaleString()}</span>
+                      <span>{project.budget.toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />

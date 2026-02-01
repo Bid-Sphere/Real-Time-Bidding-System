@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type DashboardSection = 'analytics' | 'profile' | 'teams' | 'projects' | 'chat' | 'bids' | 'dashboard';
+export type DashboardSection = 'analytics' | 'profile' | 'teams' | 'projects' | 'chat' | 'bids' | 'dashboard' | 'auctions';
 
 interface DashboardState {
   activeSection: DashboardSection;

@@ -40,7 +40,7 @@ The Real-Time Service provides WebSocket-based real-time updates using SignalR f
   "projectId": "uuid",
   "bidderName": "TechCorp Inc",
   "bidAmount": 5300.00,
-  "bidTime": "2024-01-20T14:30:00Z",
+  "bidTime": "2024-01-20T14:30:00",
   "isWinning": true,
   "nextMinimumBid": 5400.00,
   "totalBids": 13
@@ -54,8 +54,8 @@ The Real-Time Service provides WebSocket-based real-time updates using SignalR f
   "auctionId": "uuid",
   "projectId": "uuid",
   "projectTitle": "E-commerce Website",
-  "startTime": "2024-01-20T10:00:00Z",
-  "endTime": "2024-01-20T18:00:00Z"
+  "startTime": "2024-01-20T10:00:00",
+  "endTime": "2024-01-20T18:00:00"
 }
 ```
 
@@ -68,7 +68,7 @@ The Real-Time Service provides WebSocket-based real-time updates using SignalR f
   "winnerBidderName": "TechCorp Inc",
   "winningBidAmount": 5300.00,
   "totalBids": 15,
-  "endTime": "2024-01-20T18:00:00Z"
+  "endTime": "2024-01-20T18:00:00"
 }
 ```
 
@@ -79,7 +79,7 @@ The Real-Time Service provides WebSocket-based real-time updates using SignalR f
   "auctionId": "uuid",
   "projectId": "uuid",
   "reason": "Project requirements changed",
-  "cancelledAt": "2024-01-20T15:00:00Z"
+  "cancelledAt": "2024-01-20T15:00:00"
 }
 ```
 
@@ -115,9 +115,10 @@ await connection.InvokeAsync("LeaveAuction", auctionId);
   "bidId": "uuid",
   "projectId": "uuid",
   "projectTitle": "E-commerce Website",
+  "projectOwnerId": "uuid",
   "bidderName": "TechCorp Inc",
   "bidAmount": 5000.00,
-  "submittedAt": "2024-01-20T14:30:00Z"
+  "submittedAt": "2024-01-20T14:30:00"
 }
 ```
 
@@ -128,7 +129,8 @@ await connection.InvokeAsync("LeaveAuction", auctionId);
   "bidId": "uuid",
   "projectId": "uuid",
   "projectTitle": "E-commerce Website",
-  "acceptedAt": "2024-01-20T16:00:00Z"
+  "bidderId": "uuid",
+  "acceptedAt": "2024-01-20T16:00:00"
 }
 ```
 
@@ -139,8 +141,9 @@ await connection.InvokeAsync("LeaveAuction", auctionId);
   "bidId": "uuid",
   "projectId": "uuid",
   "projectTitle": "E-commerce Website",
+  "bidderId": "uuid",
   "reason": "Budget constraints",
-  "rejectedAt": "2024-01-20T16:00:00Z"
+  "rejectedAt": "2024-01-20T16:00:00"
 }
 ```
 
@@ -153,7 +156,7 @@ await connection.InvokeAsync("LeaveAuction", auctionId);
   "category": "IT",
   "budget": 5000.00,
   "biddingType": "STANDARD",
-  "publishedAt": "2024-01-20T10:00:00Z"
+  "publishedAt": "2024-01-20T10:00:00"
 }
 ```
 
@@ -187,7 +190,7 @@ await connection.InvokeAsync("MarkAsRead", notificationId);
   "projectId": "uuid",
   "bidderName": "TechCorp Inc",
   "bidAmount": 5300.00,
-  "bidTime": "2024-01-20T14:30:00Z",
+  "bidTime": "2024-01-20T14:30:00",
   "isWinning": true,
   "nextMinimumBid": 5400.00,
   "totalBids": 13
@@ -344,14 +347,12 @@ await connection.InvokeAsync("MarkAsRead", notificationId);
 **Response:** `200 OK`
 ```json
 {
-  "success": true,
-  "message": "Real-Time Service is running",
-  "data": {
-    "connectedClients": 45,
-    "redisConnected": true
-  }
+  "status": "Healthy",
+  "timestamp": "2024-01-20T10:00:00"
 }
 ```
+
+**Note:** The actual implementation returns a simple status object. Connection tracking and Redis status are not included in MVP.
 
 ---
 
